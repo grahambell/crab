@@ -1,0 +1,95 @@
+#!/usr/bin/env python2
+
+import os
+import sys
+import subprocess
+
+from optparse import OptionParser
+
+from crab import CrabError
+from crab.client import CrabClient, CrabStatus
+
+def main():
+    parser = OptionParser()
+    parser.add_option("-c",
+        type = "string", dest = "command",
+        help = "specify the COMMAND to execute", metavar = "COMMAND")
+    parser.add_option("--id",
+        type = "string", dest = "id",
+        help = "set job ID", metavar = "ID")
+    parser.add_option("--shell",
+        type = "string", dest = "shell",
+        help = "use SHELL to execute COMMAND", metavar = "SHELL")
+
+    (options, args) = parser.parse_args()
+
+    # Determine command to execute
+
+    if len(args) != 0:
+        parser.error("no arguments required")
+    if options.command == None:
+        parser.error("COMMAND not specified")
+
+    command = options.command
+
+    # Determine shell to use
+    #
+    # Note that cron defaults to sh regardless of the user's shell.
+
+    shell = "/bin/sh"
+
+    if options.shell:
+        shell = options.shell
+    elif os.environ.has_key("CRABSHELL"):
+        shell = os.environ["CRABSHELL"]
+
+    # Look for cron job ID
+
+    id = None
+
+    if options.id:
+        id = options.id
+    elif command.startswith("CRABID="):
+        (stmt, command) = command.split(None, 1)
+        id = stmt[7:]
+    elif os.environ.has_key("CRABID"):
+        id = os.environ["CRABID"]
+
+    # Attempt to execute the command
+
+    client = CrabClient(command, id = id)
+
+    try:
+        client.start()
+    except CrabError as err:
+        print sys.argv[0], ":", command, \
+            ": failed to notify job start:\n", str(err)
+
+    try:
+        p = subprocess.Popen([shell, "-c", command],
+                          stdout = subprocess.PIPE,
+                          stderr = subprocess.PIPE,
+                          env = os.environ)
+
+        (stdoutdata, stderrdata) = p.communicate()
+        returncode = CrabStatus.SUCCESS
+
+        if p.returncode:
+            returncode = CrabStatus.FAIL
+
+        client.finish(returncode, stdoutdata, stderrdata)
+
+    except OSError as err:
+        try:
+            client.fail(CrabStatus.COULDNOTSTART, str(err))
+        except CrabError:
+            print sys.argv[0], ":", command, \
+                ": failed to notify job fail:\n", str(err)
+
+    except CrabError as err:
+        print sys.argv[0], ":", command, \
+            ": failed to notify job finish:\n", str(err)
+
+
+if __name__ == "__main__":
+    main()
