@@ -2,6 +2,8 @@ from BaseHTTPServer import BaseHTTPRequestHandler
 import json
 import socket
 
+from crab import CrabError
+
 class CrabServer(BaseHTTPRequestHandler):
     def do_GET(self):
         self.split_path()
@@ -9,8 +11,14 @@ class CrabServer(BaseHTTPRequestHandler):
         if self.command == None:
             self.send_response(404, "no command specified")
         elif self.command == "crontab":
-            self.write_json({"crontab": ["* * * * * some command",
-                "* * * * * another command"]})
+            if self.host == None or self.user == None:
+                self.send_response(500, "host or user not specified")
+            else:
+                try:
+                    crontab = self.store.get_crontab(self.host, self.user)
+                    self.write_json({"crontab": crontab})
+                except CrabError as err:
+                    self.send_response(500, "read error : " + str(err))
         else:
             self.send_response(404, "unknown request")
 
@@ -39,15 +47,18 @@ class CrabServer(BaseHTTPRequestHandler):
         elif self.command == "crontab":
             try:
                 data = self.read_json()
-                print "received:", data, "from:", self.get_host()
+                self.store.save_crontab(self.host, self.user,
+                    data["crontab"], timezone = data["timezone"])
                 self.send_response(200)
             except ValueError as err:
                 self.send_response(500, "did not understand request")
+            except CrabError as err:
+                self.send_response(500, "write error : " + str(err))
         else:
             self.send_response(404, "unknown request")
 
     def split_path(self):
-        path = self.path.split("/")[2:]
+        path = self.path.split("/")[3:]
         self.command = self.host = self.user = self.id = None
         try:
             self.command = path[0]

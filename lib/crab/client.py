@@ -42,7 +42,7 @@ class CrabClient:
         return os.getlogin()
 
     def get_url(self, action):
-        url = "/api-v0/" + action \
+        url = "/api/0/" + action \
             + "/" + self.get_host() \
             + "/" + self.get_user()
 
@@ -71,6 +71,9 @@ class CrabClient:
         except HTTPException as err:
             raise CrabError("HTTP error : " + str(err))
 
+        except socket.error as err:
+            raise CrabError("socket error : " + str(err))
+
         except ValueError as err:
             raise CrabError("did not understand response : " + str(err))
 
@@ -87,5 +90,6 @@ class CrabClient:
         except HTTPException as err:
             raise CrabError("HTTP error : " + str(err))
 
-
+        except socket.error as err:
+            raise CrabError("socket error : " + str(err))
 

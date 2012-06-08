@@ -3,18 +3,19 @@ CREATE TABLE job (
     host VARCHAR(255) NOT NULL,
     user VARCHAR(255) NOT NULL,
     command VARCHAR(255) NOT NULL,
-    commandid VARCHAR(255),
-    minute INT,
-    hour INT,
-    day INT,
-    month INT,
-    dow INT,
+    jobid VARCHAR(255),
+    time VARCHAR(255),
     timezone VARCHAR(255),
     installed VARCHAR(255) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted VARCHAR(255),
-    UNIQUE (host, user, commandid)
+    UNIQUE (host, user, jobid)
 );
 
+CREATE INDEX job_jobid ON job (jobid);
+CREATE INDEX job_host ON job (host);
+CREATE INDEX job_command ON job (command);
+CREATE INDEX job_installed ON job (installed);
+CREATE INDEX job_deleted ON job (deleted);
 
 CREATE TABLE jobstart (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -24,14 +25,30 @@ CREATE TABLE jobstart (
     datetime VARCHAR(255) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE INDEX jobstart_jobid ON jobstart (jobid);
+
 CREATE TABLE jobfinish (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     jobid INTEGER NOT NULL REFERENCES job(id)
         ON DELETE RESTRICT ON UPDATE RESTRICT,
     command VARCHAR(255) NOT NULL,
     datetime VARCHAR(255) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    status INT NOT NULL,
+    status INT NOT NULL
+);
+
+CREATE INDEX jobfinish_jobid ON jobfinish (jobid);
+
+CREATE TABLE joboutput (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    finishid INTEGER NOT NULL UNIQUE REFERENCES jobfinish(id)
+        ON DELETE RESTRICT ON UPDATE RESTRICT,
     stdout TEXT DEFAULT "" NOT NULL,
     stderr TEXT DEFAULT "" NOT NULL
 );
 
+CREATE TABLE jobinfo (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    jobid INTEGER NOT NULL UNIQUE REFERENCES job(id),
+    graceperiod INTEGER,
+    timeout INTEGER
+);

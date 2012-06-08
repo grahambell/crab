@@ -10,11 +10,12 @@ from crab.db import CrabDB
 class CrabHandler(CrabServer, CrabWWW):
 
     # Static variable which must be set to the storage backend
-    # to be used.
+    # to be used.  It's called 'store' so that it could take a
+    # type using a storage mechanism other than a database.
     store = None
 
     def is_crab(self):
-        return self.path.startswith('/api-v0/')
+        return self.path.startswith('/api/')
 
     def do_GET(self):
         if self.is_crab():
