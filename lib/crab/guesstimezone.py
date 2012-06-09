@@ -5,6 +5,9 @@ import pytz
 # following might work anywhere the timezone database is installed in the
 # correct place.  If the environment variable TZ is set, then it should
 # be used instead of calling this.
+#
+# The Perl module DateTime::TimeZone::Local::Unix uses this method, among
+# others.
 
 def guess_timezone():
     try:

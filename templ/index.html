@@ -1,3 +1,29 @@
 <%inherit file="base.html"/>
 
-<p>No web interface yet.</p>
+<table>
+    <tr>
+        <th>Job status</th>
+        <th>Host</th>
+        <th>User</th>
+        <th>Job ID</th>
+        <th>Command</th>
+        <th>Tools</th>
+    </tr>
+% for job in jobs:
+    <tr id="row_${job["id"] | h}">
+        <td><i>loading</i></td>
+        <td>${job["host"] | h}</td>
+        <td>${job["user"] | h}</td>
+% if job["jobid"] == None:
+        <td><i>none specified</i></td>
+% else:
+        <td>${job["jobid"] | h}</td>
+% endif
+        <td>${job["command"] | h}</td>
+        <td>
+            <a href="/job/${job["id"] | h}">Info</a>
+            <a href="/job/${job["id"] | h}/output">Output</a>
+        </td>
+    </tr>
+% endfor
+</table>

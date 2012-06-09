@@ -1,0 +1,12 @@
+<%inherit file="base.html"/>
+
+<table>
+    <tr>
+        <th>Standard output</th>
+        <td><pre>${stdout | h}</pre></td>
+    </tr>
+    <tr>
+        <th>Standard error</th>
+        <td><pre>${stderr | h}</pre></td>
+    </tr>
+</table>

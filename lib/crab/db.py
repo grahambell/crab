@@ -11,9 +11,35 @@ class CrabDB:
 
         # An outputstore should implement write_output and read_output,
         # and if provided will be used instead of writing the stdout
-        # and stderr from the cron jobs to the database.
+        # and stderr from the cron jobs to the database.  The outputstore
+        # should only raise instances of CrabError.
         self.outputstore = outputstore
 
+    def get_jobs(self):
+        c = self.conn.cursor()
+        jobs = []
+
+        try:
+            c.execute("SELECT id, host, user, jobid, command "
+                    + "FROM job WHERE deleted IS NULL "
+                    + "ORDER BY host ASC, user ASC, installed ASC")
+
+            while True:
+                row = c.fetchone()
+                if row == None:
+                    break
+
+                (id, host, user, jobid, command) = row
+                jobs.append({"id": id, "host": host, "user": user,
+                             "jobid": jobid, "command": command})
+
+        except DatabaseError as err:
+            raise CrabError("database error : " + str(err))
+
+        finally:
+            c.close()
+
+        return jobs
 
     def get_crontab(self, host, user):
         c = self.conn.cursor()
@@ -46,6 +72,9 @@ class CrabDB:
                     command = "CRABID=" + quote_multiword(id) + " " + command
 
                 crontab.append(time + " " + command)
+
+        except DatabaseError as err:
+            raise CrabError("database error : " + str(err))
 
         finally:
             c.close()
@@ -294,4 +323,87 @@ class CrabDB:
 
         finally:
             c.close()
+
+    def get_job_info(self, id):
+        return self._query_to_dicts(
+                "SELECT host, user, command, jobid, time, timezone, "
+              + "installed, deleted "
+              + "FROM job WHERE id=?", [id])
+
+    def get_job_starts(self, id):
+        return self._query_to_dicts(
+                "SELECT id, datetime, command "
+              + "FROM jobstart WHERE jobid=? "
+              + "ORDER BY datetime DESC", [id])
+
+
+    def get_job_finishes(self, id):
+        return self._query_to_dicts(
+                "SELECT id, datetime, command, status "
+              + "FROM jobfinish WHERE jobid=? "
+              + "ORDER BY datetime DESC", [id])
+
+    def get_starts_finishes(self, id):
+        return self._query_to_dicts(
+                "SELECT "
+                    + "id AS startid, NULL AS finishid, datetime, "
+                        + "command, NULL AS status FROM jobstart "
+                        + "WHERE jobid=? "
+              + "UNION SELECT "
+                    + "NULL AS startid, id AS finishid, datetime, "
+                        + "command, status FROM jobfinish "
+                        + "WHERE jobid=? "
+              + "ORDER BY datetime DESC, finishid DESC", [id, id])
+
+    def _query_to_dicts(self, sql, param = []):
+        c = self.conn.cursor()
+        output = []
+
+        try:
+            c.execute(sql, param)
+
+            while True:
+                row = c.fetchone()
+                if row == None:
+                    break
+
+                dict = {}
+
+                for (i, coldescription) in enumerate(c.description):
+                    dict[coldescription[0]] = row[i]
+
+                output.append(dict)
+
+        except DatabaseError as err:
+            raise CrabError("database error : " + str(err))
+
+        finally:
+            c.close()
+
+        return output
+
+    def get_job_output(self, id):
+        if self.outputstore != None:
+            # Really need to provide: host, user, jobid, command
+            # in case the storage method used these to organise its files.
+            return self.outputstore.read_output(finishid)
+        else:
+            c = self.conn.cursor()
+
+            try:
+                c.execute("SELECT stdout, stderr FROM joboutput "
+                        + "WHERE finishid=?", [id])
+
+                row = c.fetchone()
+
+                if row == None:
+                    raise CrabError("no output found")
+
+                return row
+
+            except DatabaseError as err:
+                raise CrabError("database error : " + str(err))
+
+            finally:
+                c.close()
 

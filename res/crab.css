@@ -1,3 +1,28 @@
 h1 {
-  color: red;
+    color: red;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+td, th {
+    border: 1px solid black;
+    padding: 5px;
+    text-align: left;
+}
+
+.status_ok {
+    background: green;
+    color: white;
+}
+
+.status_warn {
+    background: yellow;
+    color: black;
+}
+
+.status_fail {
+    background: red;
+    color: white;
 }

@@ -1,0 +1,101 @@
+<%inherit file="base.html"/>
+
+<h2>Job Information</h2>
+
+<table>
+    <tr>
+        <th>Host</th>
+        <td>${info["host"] | h}</td>
+    </tr>
+    <tr>
+        <th>User</th>
+        <td>${info["user"] | h}</td>
+    </tr>
+% if info["jobid"] != None:
+    <tr>
+        <th>Job ID</th>
+        <td>${info["jobid"] | h}</td>
+    </tr>
+% endif
+    <tr>
+        <th>Command</th>
+        <td>${info["command"] | h}</td>
+    </tr>
+     <tr>
+        <th>Schedule</th>
+        <td>
+% if info["time"] != None:
+            ${info["time"] | h}
+% else:
+            <span class="status_warn">Unknown</span>
+% endif
+        </td>
+    </tr>
+% if info["timezone"] != None:
+    <tr>
+        <th>Time zone</th>
+        <td>${info["timezone"] | h}</td>
+    </tr>
+% endif
+% if info["installed"] != None:
+    <tr>
+        <th>Installed</th>
+        <td>${info["installed"] | h}</td>
+    </tr>
+% endif
+% if info["deleted"] != None:
+    <tr>
+        <th>Deleted</th>
+        <td>${info["deleted"] | h}</td>
+    </tr>
+% endif
+
+
+
+</table>
+
+<h2>Job History</h2>
+
+<table>
+    <tr>
+        <th>Action</th>
+        <th>Date and Time</th>
+        <th>Command</th>
+        <th>Status</th>
+        <th>Tools</th>
+    </tr>
+% for action in actions:
+% if action["startid"] != None:
+    <tr id="row_start_${action["startid"] | h}">
+        <td>Started</td>
+% else:
+    <tr id="row_finish_${action["finishid"] | h}">
+        <td>Finished</td>
+% endif
+        <td>${action["datetime"] | h}</td>
+        <td>${action["command"] | h}</td>
+        <td>
+% if action["status"] == None:
+            &nbsp;
+% elif action["status"] == 0:
+            <span class="status_ok">Succeeded</span>
+% elif action["status"] == 1:
+            <span class="status_fail">Failed</span>
+% elif action["status"] == 2:
+            <span class="status_warn">Unknown</span>
+% elif action["status"] == 3:
+            <span class="status_fail">Could not start</span>
+% else:
+            <span class="status_warn">Status ${action["status"] | h}</span>
+% endif
+        </td>
+        <td>
+% if action["startid"] != None:
+            &nbsp;
+% else:
+            <a href="/job/${jobid | h}/output/${action["finishid"] | h}">Output</a>
+% endif
+        </td>
+    </tr>
+% endfor
+</table>
