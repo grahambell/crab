@@ -6,3 +6,5 @@ class CrabStatus:
     FAIL = 1
     UNKNOWN = 2
     COULDNOTSTART = 3
+
+    VALUES = set([SUCCESS, FAIL, UNKNOWN, COULDNOTSTART])

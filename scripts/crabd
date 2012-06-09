@@ -1,6 +1,6 @@
 #!/usr/bin/env python2
 
-from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
+from BaseHTTPServer import HTTPServer
 import sqlite3
 
 from crab.server import CrabServer
@@ -13,6 +13,12 @@ class CrabHandler(CrabServer, CrabWWW):
     # to be used.  It's called 'store' so that it could take a
     # type using a storage mechanism other than a database.
     store = None
+
+    @staticmethod
+    def initialize(store):
+        CrabHandler.store = store
+        CrabServer.initialize()
+        CrabWWW.initialize()
 
     def is_crab(self):
         return self.path.startswith('/api/')
@@ -42,7 +48,7 @@ def main():
     c.execute("PRAGMA foreign_keys = ON");
     c.close()
 
-    CrabHandler.store = CrabDB(dbconn)
+    CrabHandler.initialize(store = CrabDB(dbconn))
 
     httpd = HTTPServer(("", 8000), CrabHandler)
     httpd.serve_forever()

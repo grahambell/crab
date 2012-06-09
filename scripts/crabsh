@@ -8,6 +8,7 @@ from optparse import OptionParser
 
 from crab import CrabError
 from crab.client import CrabClient, CrabStatus
+from crab.util import split_quoted_word
 
 def main():
     parser = OptionParser()
@@ -37,11 +38,12 @@ def main():
     # Note that cron defaults to sh regardless of the user's shell.
 
     shell = "/bin/sh"
+    env = os.environ
 
     if options.shell:
         shell = options.shell
-    elif os.environ.has_key("CRABSHELL"):
-        shell = os.environ["CRABSHELL"]
+    elif env.has_key("CRABSHELL"):
+        shell = env["CRABSHELL"]
 
     # Look for cron job ID
 
@@ -50,10 +52,15 @@ def main():
     if options.id:
         id = options.id
     elif command.startswith("CRABID="):
-        (stmt, command) = command.split(None, 1)
-        id = stmt[7:]
-    elif os.environ.has_key("CRABID"):
-        id = os.environ["CRABID"]
+        (id, command) = split_quoted_word(command[7:])
+
+        # We could leave the CRABID in the command for the shell to
+        # extract, but doing it this way makes sure the command matches
+        # that in the database and allows for shells which cannot handle
+        # variables given at the start of a command
+        env["CRABID"] = id
+    elif env.has_key("CRABID"):
+        id = env["CRABID"]
 
     # Attempt to execute the command
 
@@ -69,7 +76,7 @@ def main():
         p = subprocess.Popen([shell, "-c", command],
                           stdout = subprocess.PIPE,
                           stderr = subprocess.PIPE,
-                          env = os.environ)
+                          env = env)
 
         (stdoutdata, stderrdata) = p.communicate()
         returncode = CrabStatus.SUCCESS

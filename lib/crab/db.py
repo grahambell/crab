@@ -1,24 +1,51 @@
 import re
 
+from sqlite3 import DatabaseError
+
 from crab import CrabError
+from crab.util import remove_quotes, quote_multiword, split_quoted_word
 
 class CrabDB:
-    def __init__(self, conn):
+    def __init__(self, conn, outputstore = None):
         self.conn = conn
+
+        # An outputstore should implement write_output and read_output,
+        # and if provided will be used instead of writing the stdout
+        # and stderr from the cron jobs to the database.
+        self.outputstore = outputstore
+
 
     def get_crontab(self, host, user):
         c = self.conn.cursor()
         crontab = []
+        timezone = None
 
         try:
-            c.execute("SELECT time, command FROM job WHERE host=? AND user=? "
-                    + "AND deleted IS NULL",
+            c.execute("SELECT time, command, jobid, timezone "
+                    + "FROM job WHERE host=? AND user=? AND deleted IS NULL "
+                    + "ORDER BY installed ASC",
                     [host, user]);
             while True:
                 row = c.fetchone()
                 if row == None:
                     break
-                crontab.append(row[0] + " " + row[1])
+                (time, command, id, dbtz) = row
+
+                if time == None:
+                    time = "### CRAB: UNKNOWN SCHEDULE ###"
+
+                if dbtz != None and dbtz != timezone:
+                    timezone = dbtz
+                    crontab.append("CRON_TZ=" + quote_multiword(timezone))
+
+                elif dbtz == None and timezone != None:
+                    crontab.append("### CRAB: UNKNOWN TIMEZONE ###")
+                    timezone = None
+
+                if id != None:
+                    command = "CRABID=" + quote_multiword(id) + " " + command
+
+                crontab.append(time + " " + command)
 
         finally:
             c.close()
@@ -30,10 +57,12 @@ class CrabDB:
         jobid = None
         rowid = set()
 
+        # These patterns do not deal with quoting or trailing spaces,
+        # so these must be dealt with in the code below.
         blankline = re.compile("^\s*$")
         comment   = re.compile("^\s*#")
         variable  = re.compile("^\s*(\w+)\s*=\s*(.*)$")
-        cronrule  = re.compile("^\s*(\S+\s+\S+\s+\S+\s+\S+\s+\S+|@\w+)\s+(.*)$")
+        cronrule  = re.compile("^\s*(@\w+|\S+\s+\S+\s+\S+\s+\S+\s+\S+)\s+(.*)$")
 
         try:
             # Fetch the current list of jobs on this crontab.
@@ -58,9 +87,9 @@ class CrabDB:
                 if m != None:
                     (var, value) = m.groups()
                     if var == "CRABID":
-                        jobid = value
+                        jobid = remove_quotes(value.rstrip())
                     if var == "CRON_TZ":
-                        timezone = value
+                        timezone = remove_quotes(value.rstrip())
                     continue
 
                 m = cronrule.search(job)
@@ -68,12 +97,14 @@ class CrabDB:
                     (time, command) = m.groups()
 
                     if command.startswith("CRABID="):
-                        (stmt, command) = command.split(None, 1)
-                        jobid = stmt[7:]
+                        (jobid, command) = split_quoted_word(
+                                               command[7:].rstrip())
 
-                    id = self.store_job(c, host, user, jobid,
-                                        time, command, timezone)
-                    print "Row id: ", id
+                    command = command.rstrip()
+
+                    id = self.check_job(c, host, user, jobid,
+                                        command, time, timezone)
+
                     rowid.discard(id)
                     jobid = None
                     continue
@@ -96,8 +127,9 @@ class CrabDB:
         finally:
             c.close()
 
-    # Store the specified cron job and return the row id.
-    def store_job(self, c, host, user, jobid, time, command, timezone):
+    # Find and update, or store the specified cron job and return the row id.
+    def check_job(self, c, host, user, jobid, command,
+                  time = None, timezone = None):
 
         # We know the jobid, so use it to search
 
@@ -121,6 +153,7 @@ class CrabDB:
                         time = dbtime
                     if timezone == None:
                         timezone = dbtz
+
                     c.execute("UPDATE job SET command=?, time=?, timezone=?, "
                             + "installed=CURRENT_TIMESTAMP, deleted=NULL "
                             + "WHERE id=?",
@@ -129,25 +162,43 @@ class CrabDB:
                 return id
 
             else:
-
                 # Need to check if the job already existed without
-                # a job ID.
+                # a job ID, in which case we update it to add the job ID.
 
-                #c.execute("SELECT id, time, timezone, deleted "
-                #    + "FROM job WHERE host=? AND user=? AND command=? "
-                #    + "AND jobid IS NULL",
-                #    [host, user, command])
+                c.execute("SELECT id, time, timezone, deleted "
+                    + "FROM job WHERE host=? AND user=? AND command=? "
+                    + "AND jobid IS NULL",
+                    [host, user, command])
 
+                row = c.fetchone()
 
-                self._insert_job(c, host, user, jobid, time, command, timezone)
+                if row != None:
+                    (id, dbtime, dbtz, deleted) = row
 
-                return c.lastrowid
+                    if time == None:
+                        time = dbtime
+                    if timezone == None:
+                        timezone = dbtz
+
+                    c.execute("UPDATE job SET time=?, timezone=?, "
+                            + "jobid=?, "
+                            + "installed=CURRENT_TIMESTAMP, deleted=NULL "
+                            + "WHERE id=?",
+                            [time, timezone, jobid, id])
+
+                    return id
+
+                else:
+                  self._insert_job(c, host, user, jobid, time,
+                                   command, timezone)
+
+                  return c.lastrowid
 
         # We don't know the jobid, so we must search by command.
         # In general we can't distinguish multiple copies of the same
         # command running at different times.
         # Such jobs should be given job IDs, or combined using
-        # time ranges / steps if possible.
+        # time ranges / steps.
 
         else:
             c.execute("SELECT id, time, timezone, deleted "
@@ -169,6 +220,7 @@ class CrabDB:
                         time = dbtime
                     if timezone == None:
                         timezone = dbtz
+
                     c.execute("UPDATE job SET time=?, timezone=?, "
                             + "installed=CURRENT_TIMESTAMP, deleted=NULL "
                             + "WHERE id=?",
@@ -196,4 +248,50 @@ class CrabDB:
 #            raise CrabError("could not fetch row id")
 #
 #        return row[0]
+
+    def log_start(self, host, user, jobid, command):
+        c = self.conn.cursor()
+
+        try:
+            id = self.check_job(c, host, user, jobid, command)
+
+            c.execute("INSERT INTO jobstart (jobid, command) VALUES (?, ?)",
+                      [id, command])
+            self.conn.commit()
+
+        except DatabaseError as err:
+            raise CrabError("database error : " + str(err))
+
+        finally:
+            c.close()
+
+    def log_finish(self, host, user, jobid, command, status,
+                   stdout = None, stderr = None):
+
+        c = self.conn.cursor()
+
+        try:
+            id = self.check_job(c, host, user, jobid, command)
+
+            c.execute("INSERT INTO jobfinish (jobid, command, status) "
+                    + "VALUES (?, ?, ?)",
+                    [id, command, status])
+
+            finishid = c.lastrowid
+
+            if self.outputstore != None:
+                self.outputstore.write_output(host, user, jobid, command,
+                                              finishid, stdout, stderr)
+            else:
+                c.execute("INSERT INTO joboutput (finishid, stdout, stderr) "
+                        + "VALUES (?, ?, ?)",
+                        [finishid, stdout, stderr])
+
+            self.conn.commit()
+
+        except DatabaseError as err:
+            raise CrabError("database error : " + str(err))
+
+        finally:
+            c.close()
 

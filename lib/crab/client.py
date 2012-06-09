@@ -1,7 +1,9 @@
-from httplib import HTTPConnection, HTTPException
-import json
 import os
+import json
 import socket
+import urllib
+
+from httplib import HTTPConnection, HTTPException
 
 from crab import CrabError, CrabStatus
 
@@ -43,11 +45,11 @@ class CrabClient:
 
     def get_url(self, action):
         url = "/api/0/" + action \
-            + "/" + self.get_host() \
-            + "/" + self.get_user()
+            + "/" + urllib.quote(self.get_host(), "") \
+            + "/" + urllib.quote(self.get_user(), "")
 
         if self.id != None:
-            url = url + "/" + self.id
+            url = url + "/" + urllib.quote(self.id, "")
 
         return url
 
