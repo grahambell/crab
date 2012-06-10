@@ -26,3 +26,9 @@ td, th {
     background: red;
     color: white;
 }
+
+.status_unknown {
+    font-style: italic;
+    background: white;
+    color: gray;
+}

@@ -2,7 +2,6 @@ import os
 import json
 import socket
 import urllib
-
 from httplib import HTTPConnection, HTTPException
 
 from crab import CrabError, CrabStatus
@@ -11,7 +10,6 @@ class CrabClient:
     def __init__(self, command = None, id = None):
         self.command = command
         self.id = id
-        self.conn = None
 
     def start(self):
         self.write_json(self.get_url("start"),
@@ -54,10 +52,7 @@ class CrabClient:
         return url
 
     def get_conn(self):
-        if self.conn == None:
-            self.conn = HTTPConnection("localhost", 8000)
-
-        return self.conn
+        return HTTPConnection("localhost", 8000)
 
     def read_json(self, url):
         try:

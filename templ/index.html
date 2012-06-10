@@ -11,11 +11,11 @@
     </tr>
 % for job in jobs:
     <tr id="row_${job["id"] | h}">
-        <td id="status_${job["id"] | h}"><i>loading</i></td>
+        <td id="status_${job["id"] | h}" class="status_unknown">loading</td>
         <td>${job["host"] | h}</td>
         <td>${job["user"] | h}</td>
 % if job["jobid"] == None:
-        <td><i>none specified</i></td>
+        <td class="status_unknown">unspecified</td>
 % else:
         <td>${job["jobid"] | h}</td>
 % endif

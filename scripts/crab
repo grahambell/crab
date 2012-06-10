@@ -3,7 +3,6 @@
 import os
 import sys
 import subprocess
-
 from optparse import OptionParser
 
 from crab import CrabError, CrabStatus

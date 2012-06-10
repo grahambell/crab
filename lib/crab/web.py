@@ -1,122 +1,74 @@
-import os
 import mimetypes
-import urllib
+import os
 import re
+import urllib
 
-from BaseHTTPServer import BaseHTTPRequestHandler
+import cherrypy
+from cherrypy import HTTPError
 from mako import exceptions
-from mako.template import Template
 from mako.lookup import TemplateLookup
+from mako.template import Template
 
 from crab import CrabError
 
-class CrabWeb(BaseHTTPRequestHandler):
-    @staticmethod
-    def initialize():
-        CrabWeb.templ = TemplateLookup(directories = ['templ'])
+class CrabWeb:
+    def __init__(self, store):
+        self.store = store
+        self.templ = TemplateLookup(directories = ['templ'])
 
-        # Pre-load resource files
+    class SomeClassOrOther:
+        pass
 
-        CrabWeb.res = {}
-        CrabWeb.restype = {}
+    res = SomeClassOrOther()
+    res._cp_config ={"tools.staticdir.on": True,
+                     "tools.staticdir.dir": os.getcwd() + "/res"}
 
-        for file in os.listdir("res"):
-            if not (os.path.isdir(file) or file.startswith(".")):
-              f = None
-              try:
-                  f = open("res/" + file)
-                  CrabWeb.res[file] = f.read()
+    @cherrypy.expose
+    def index(self):
+        try:
+            jobs = self.store.get_jobs()
+            return self.write_template('index.html', {"jobs": jobs})
 
-                  (type, enc) = mimetypes.guess_type(file)
-                  CrabWeb.restype[file] = type
+        except CrabError as err:
+            raise HTTPError(message=str(err))
 
-              except:
-                  pass
+    @cherrypy.expose
+    def job(self, jobid, command=None, finishid=None):
+        if not re.match("^\d+$", jobid):
+                raise HTTPError(404, "Not a number")
 
-              finally:
-                  if f != None:
-                      f.close()
+        if command is None:
+            info = self.store.get_job_info(jobid)
+            if len(info) != 1:
+                raise HTTPError(404, "Job not found")
 
-    def do_GET(self):
-        path = urllib.unquote(self.path).split("/")[1:]
-        number = re.compile("^\d+$")
+            actions = self.store.get_starts_finishes(jobid)
+            return self.write_template('job.html',
+                    {"jobid": jobid, "info": info[0], "actions": actions})
 
-        # Display home dashboard page
+        elif command == "output":
+            if finishid is None:
+                finishes = self.store.get_job_finishes(jobid)
 
-        if len(path) == 0 or path[0] == "":
-            try:
-                jobs = self.store.get_jobs()
-                self.write_template('index.html', {"jobs": jobs})
+                if len(finishes) == 0:
+                    raise HTTPError(404, "No job output found")
 
-            except CrabError as err:
-                self.send_error(500, str(err))
+                finishid = finishes[0]["id"]
 
+            elif not re.match("^\d+$", finishid):
+                raise HTTPError(404, "Not a number")
 
-        # Display job info
-
-        elif path[0] == "job" and len(path) > 1 and number.search(path[1]):
-            jobid = path[1]
-
-            try:
-                if len(path) == 2:
-                    info = self.store.get_job_info(jobid)
-                    if len(info) != 1:
-                        raise CrabError("could not find job")
-
-                    actions = self.store.get_starts_finishes(jobid)
-                    self.write_template('job.html',
-                        {"jobid": jobid, "info": info[0], "actions": actions})
-
-                elif path[2] == "output":
-                    if len(path) > 3 and number.search(path[3]):
-                        finishid = path[3]
-
-                    else:
-                        finishes = self.store.get_job_finishes(jobid)
-
-                        if len(finishes) == 0:
-                            raise CrabError("no job output records found")
-
-                        finishid = finishes[0]["id"]
-
-
-                    (stdout, stderr) = self.store.get_job_output(finishid)
-                    self.write_template('joboutput.html', {"jobid": jobid,
+            # TODO: check that the given finishid is for the correct jobid.
+            (stdout, stderr) = self.store.get_job_output(finishid)
+            return self.write_template('joboutput.html', {"jobid": jobid,
                             "stdout": stdout, "stderr": stderr})
 
-                else:
-                    self.send_error(404, "unknown request")
-
-            except CrabError as err:
-                self.send_error(500, str(err))
-
-
-        # Provide a resource file
-
-        elif path[0] == "res":
-            file = path[1]
-
-            if file in self.res:
-                self.send_response(200)
-                self.send_header("Content-type", self.restype[file])
-                self.end_headers()
-                self.wfile.write(self.res[file])
-
-            else:
-                self.send_error(404, "resource not found")
-
-
-        # Otherwise 404 error
-
         else:
-            self.send_error(404, "unknown request")
+            raise HTTPError(404)
 
     def write_template(self, name, dict = {}):
         try:
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.end_headers()
             template = self.templ.get_template(name)
-            self.wfile.write(template.render(**dict))
+            return template.render(**dict)
         except:
-            self.wfile.write(exceptions.html_error_template().render())
+            return exceptions.html_error_template().render()

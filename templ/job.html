@@ -23,13 +23,11 @@
     </tr>
      <tr>
         <th>Schedule</th>
-        <td>
 % if info["time"] != None:
-            ${info["time"] | h}
+        <td>${info["time"] | h}</td>
 % else:
-            <span class="status_warn">Unknown</span>
+        <td class="status_unknown">Unknown</td>
 % endif
-        </td>
     </tr>
 % if info["timezone"] != None:
     <tr>
@@ -74,21 +72,19 @@
 % endif
         <td>${action["datetime"] | h}</td>
         <td>${action["command"] | h}</td>
-        <td>
 % if action["status"] == None:
-            &nbsp;
+        <td>&nbsp;</td>
 % elif action["status"] == 0:
-            <span class="status_ok">Succeeded</span>
+        <td class="status_ok">Succeeded</td>
 % elif action["status"] == 1:
-            <span class="status_fail">Failed</span>
+        <td class="status_fail">Failed</td>
 % elif action["status"] == 2:
-            <span class="status_warn">Unknown</span>
+        <td class="status_warn">Unknown</td>
 % elif action["status"] == 3:
-            <span class="status_fail">Could not start</span>
+        <td class="status_fail">Could not start</td>
 % else:
-            <span class="status_warn">Status ${action["status"] | h}</span>
+        <td class="status_warn">Status ${action["status"] | h}</td>
 % endif
-        </td>
         <td>
 % if action["startid"] != None:
             &nbsp;

@@ -3,7 +3,6 @@
 import os
 import sys
 import subprocess
-
 from optparse import OptionParser
 
 from crab import CrabError
@@ -91,11 +90,11 @@ def main():
             client.fail(CrabStatus.COULDNOTSTART, str(err))
         except CrabError:
             print sys.argv[0], ":", command, \
-                ": failed to notify job fail:\n", str(err)
+                ": failed to notify that job could not start :\n", str(err)
 
     except CrabError as err:
         print sys.argv[0], ":", command, \
-            ": failed to notify job finish:\n", str(err)
+            ": failed to notify job finish :\n", str(err)
 
 
 if __name__ == "__main__":
