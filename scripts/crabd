@@ -3,22 +3,28 @@
 from BaseHTTPServer import HTTPServer
 import sqlite3
 
-from crab.server import CrabServer
-from crab.www import CrabWWW
 from crab.db import CrabDB
+from crab.server import CrabServer
+from crab.monitor import CrabMonitor
+from crab.web import CrabWeb
 
-class CrabHandler(CrabServer, CrabWWW):
+class CrabHandler(CrabServer, CrabWeb):
 
     # Static variable which must be set to the storage backend
     # to be used.  It's called 'store' so that it could take a
     # type using a storage mechanism other than a database.
     store = None
 
+    # Static variable which must contain the CrabMonitor thread
+    # so that we can access status information.
+    monitor = None
+
     @staticmethod
-    def initialize(store):
+    def initialize(store, monitor):
         CrabHandler.store = store
+        CrabHandler.monitor = monitor
         CrabServer.initialize()
-        CrabWWW.initialize()
+        CrabWeb.initialize()
 
     def is_crab(self):
         return self.path.startswith('/api/')
@@ -27,19 +33,19 @@ class CrabHandler(CrabServer, CrabWWW):
         if self.is_crab():
             CrabServer.do_GET(self)
         else:
-            CrabWWW.do_GET(self)
+            CrabWeb.do_GET(self)
 
     def do_POST(self):
         if self.is_crab():
             CrabServer.do_POST(self)
         else:
-            CrabWWW.do_POST(self)
+            CrabWeb.do_POST(self)
 
     def do_PUT(self):
         if self.is_crab():
             CrabServer.do_PUT(self)
         else:
-            CrabWWW.do_PUT(self)
+            CrabWeb.do_PUT(self)
 
 
 def main():
@@ -48,7 +54,12 @@ def main():
     c.execute("PRAGMA foreign_keys = ON");
     c.close()
 
-    CrabHandler.initialize(store = CrabDB(dbconn))
+    store = CrabDB(dbconn)
+    monitor = CrabMonitor(store)
+    monitor.daemon = True
+    monitor.start()
+
+    CrabHandler.initialize(store = store, monitor = monitor)
 
     httpd = HTTPServer(("", 8000), CrabHandler)
     httpd.serve_forever()

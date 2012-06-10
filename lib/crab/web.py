@@ -10,25 +10,25 @@ from mako.lookup import TemplateLookup
 
 from crab import CrabError
 
-class CrabWWW(BaseHTTPRequestHandler):
+class CrabWeb(BaseHTTPRequestHandler):
     @staticmethod
     def initialize():
-        CrabWWW.templ = TemplateLookup(directories = ['templ'])
+        CrabWeb.templ = TemplateLookup(directories = ['templ'])
 
         # Pre-load resource files
 
-        CrabWWW.res = {}
-        CrabWWW.restype = {}
+        CrabWeb.res = {}
+        CrabWeb.restype = {}
 
         for file in os.listdir("res"):
             if not (os.path.isdir(file) or file.startswith(".")):
               f = None
               try:
                   f = open("res/" + file)
-                  CrabWWW.res[file] = f.read()
+                  CrabWeb.res[file] = f.read()
 
                   (type, enc) = mimetypes.guess_type(file)
-                  CrabWWW.restype[file] = type
+                  CrabWeb.restype[file] = type
 
               except:
                   pass

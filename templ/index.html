@@ -11,7 +11,7 @@
     </tr>
 % for job in jobs:
     <tr id="row_${job["id"] | h}">
-        <td><i>loading</i></td>
+        <td id="status_${job["id"] | h}"><i>loading</i></td>
         <td>${job["host"] | h}</td>
         <td>${job["user"] | h}</td>
 % if job["jobid"] == None:

@@ -1,7 +1,8 @@
-from BaseHTTPServer import BaseHTTPRequestHandler
 import json
 import socket
 import urllib
+
+from BaseHTTPServer import BaseHTTPRequestHandler
 
 from crab import CrabError, CrabStatus
 
