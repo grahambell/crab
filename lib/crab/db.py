@@ -345,7 +345,9 @@ class CrabDB:
                     "ORDER BY datetime DESC LIMIT ?",
                 [id_, limit])
 
-    # Return events, newest first, with finishes first(for the same datetime).
+    # Return events, newest first (with finishes first for the same datetime).
+    # This ordering allows us to apply the limit and also gives the correct
+    # order for the job info page.
     def get_job_events(self, id_, limit=100):
         return self._query_to_dict_list(
                 'SELECT ' +
