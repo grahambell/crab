@@ -12,6 +12,9 @@ td, th {
     text-align: left;
 }
 
+.status_normal {
+}
+
 .status_ok {
     background: green;
     color: white;
@@ -31,4 +34,8 @@ td, th {
     font-style: italic;
     background: white;
     color: gray;
+}
+
+.status_running {
+    opacity: 0.5;
 }

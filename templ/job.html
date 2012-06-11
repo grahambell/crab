@@ -62,34 +62,37 @@
         <th>Status</th>
         <th>Tools</th>
     </tr>
-% for action in actions:
-% if action["startid"] != None:
-    <tr id="row_start_${action["startid"] | h}">
+% for event in events:
+% if event["startid"] is not None:
+    <tr id="row_start_${event["startid"] | h}">
         <td>Started</td>
-% else:
-    <tr id="row_finish_${action["finishid"] | h}">
+% elif event["finishid"] is not None:
+    <tr id="row_finish_${event["finishid"] | h}">
         <td>Finished</td>
+% else:
+    <tr>
+        <td>Unknown event</td>
 % endif
-        <td>${action["datetime"] | h}</td>
-        <td>${action["command"] | h}</td>
-% if action["status"] == None:
+        <td>${event["datetime"] | h}</td>
+        <td>${event["command"] | h}</td>
+% if event["status"] is None:
         <td>&nbsp;</td>
-% elif action["status"] == 0:
+% elif event["status"] == 0:
         <td class="status_ok">Succeeded</td>
-% elif action["status"] == 1:
+% elif event["status"] == 1:
         <td class="status_fail">Failed</td>
-% elif action["status"] == 2:
+% elif event["status"] == 2:
         <td class="status_warn">Unknown</td>
-% elif action["status"] == 3:
+% elif event["status"] == 3:
         <td class="status_fail">Could not start</td>
 % else:
-        <td class="status_warn">Status ${action["status"] | h}</td>
+        <td class="status_warn">Status ${event["status"] | h}</td>
 % endif
         <td>
-% if action["startid"] != None:
-            &nbsp;
+% if event["finishid"] is not None:
+            <a href="/job/${jobid | h}/output/${event["finishid"] | h}">Output</a>
 % else:
-            <a href="/job/${jobid | h}/output/${action["finishid"] | h}">Output</a>
+            &nbsp;
 % endif
         </td>
     </tr>

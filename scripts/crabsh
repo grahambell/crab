@@ -68,8 +68,9 @@ def main():
     try:
         client.start()
     except CrabError as err:
-        print sys.argv[0], ":", command, \
-            ": failed to notify job start:\n", str(err)
+        print "crabsh:", command
+        print "Failed to notify job start."
+        print "ERROR:", str(err), "\n"
 
     try:
         p = subprocess.Popen([shell, "-c", command],
@@ -89,13 +90,21 @@ def main():
         try:
             client.fail(CrabStatus.COULDNOTSTART, str(err))
         except CrabError:
-            print sys.argv[0], ":", command, \
-                ": failed to notify that job could not start :\n", str(err)
+            print "crabsh:", command
+            print "Failed to notify that job could not start."
+            print "ERROR:", str(err)
 
     except CrabError as err:
-        print sys.argv[0], ":", command, \
-            ": failed to notify job finish :\n", str(err)
-
+        # Print fall-back message for cron to send by email (to the
+        # crontab owner or address set its MAILTO variable.
+        print "crabsh:", command
+        print "Failed to notify job finish."
+        print "ERROR:", str(err)
+        print "\nRETURN CODE:", returncode
+        print "\nSTDOUT:"
+        print stdoutdata
+        print "\nSTDERR:"
+        print stderrdata
 
 if __name__ == "__main__":
     main()

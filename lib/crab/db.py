@@ -20,9 +20,9 @@ class CrabDB:
         jobs = []
 
         try:
-            c.execute("SELECT id, host, user, jobid, command "
-                    + "FROM job WHERE deleted IS NULL "
-                    + "ORDER BY host ASC, user ASC, installed ASC")
+            c.execute("SELECT id, host, user, jobid, command " +
+                      "FROM job WHERE deleted IS NULL " +
+                      "ORDER BY host ASC, user ASC, installed ASC")
 
             while True:
                 row = c.fetchone()
@@ -47,10 +47,10 @@ class CrabDB:
         timezone = None
 
         try:
-            c.execute("SELECT time, command, jobid, timezone "
-                    + "FROM job WHERE host=? AND user=? AND deleted IS NULL "
-                    + "ORDER BY installed ASC",
-                    [host, user]);
+            c.execute("SELECT time, command, jobid, timezone " +
+                      "FROM job WHERE host=? AND user=? AND deleted IS NULL " +
+                      "ORDER BY installed ASC",
+                      [host, user]);
             while True:
                 row = c.fetchone()
                 if row == None:
@@ -145,7 +145,8 @@ class CrabDB:
             # because we did not see them in the current crontab
 
             for id in rowid:
-                c.execute("UPDATE job SET deleted=CURRENT_TIMESTAMP WHERE id=?",
+                c.execute("UPDATE job SET deleted=CURRENT_TIMESTAMP " +
+                          "WHERE id=?",
                           [id]);
 
             self.conn.commit()
@@ -163,9 +164,9 @@ class CrabDB:
         # We know the jobid, so use it to search
 
         if jobid != None:
-            c.execute("SELECT id, command, time, timezone, deleted "
-                    + "FROM job WHERE host=? AND user=? AND jobid=?",
-                    [host, user, jobid])
+            c.execute("SELECT id, command, time, timezone, deleted " +
+                      "FROM job WHERE host=? AND user=? AND jobid=?",
+                      [host, user, jobid])
             row = c.fetchone()
 
             if row != None:
@@ -183,10 +184,10 @@ class CrabDB:
                     if timezone == None:
                         timezone = dbtz
 
-                    c.execute("UPDATE job SET command=?, time=?, timezone=?, "
-                            + "installed=CURRENT_TIMESTAMP, deleted=NULL "
-                            + "WHERE id=?",
-                            [command, time, timezone, id])
+                    c.execute("UPDATE job SET command=?, time=?, " +
+                              "timezone=?, installed=CURRENT_TIMESTAMP, " +
+                              "deleted=NULL WHERE id=?",
+                              [command, time, timezone, id])
 
                 return id
 
@@ -194,10 +195,10 @@ class CrabDB:
                 # Need to check if the job already existed without
                 # a job ID, in which case we update it to add the job ID.
 
-                c.execute("SELECT id, time, timezone, deleted "
-                    + "FROM job WHERE host=? AND user=? AND command=? "
-                    + "AND jobid IS NULL",
-                    [host, user, command])
+                c.execute("SELECT id, time, timezone, deleted " +
+                          "FROM job WHERE host=? AND user=? AND command=? " +
+                          "AND jobid IS NULL",
+                          [host, user, command])
 
                 row = c.fetchone()
 
@@ -209,11 +210,11 @@ class CrabDB:
                     if timezone == None:
                         timezone = dbtz
 
-                    c.execute("UPDATE job SET time=?, timezone=?, "
-                            + "jobid=?, "
-                            + "installed=CURRENT_TIMESTAMP, deleted=NULL "
-                            + "WHERE id=?",
-                            [time, timezone, jobid, id])
+                    c.execute("UPDATE job SET time=?, timezone=?, " +
+                                  "jobid=?, "
+                                  "installed=CURRENT_TIMESTAMP, deleted=NULL "
+                              "WHERE id=?",
+                              [time, timezone, jobid, id])
 
                     return id
 
@@ -230,9 +231,9 @@ class CrabDB:
         # time ranges / steps.
 
         else:
-            c.execute("SELECT id, time, timezone, deleted "
-                 + "FROM job WHERE host=? AND user=? AND command=?",
-                 [host, user, command])
+            c.execute("SELECT id, time, timezone, deleted " +
+                      "FROM job WHERE host=? AND user=? AND command=?",
+                      [host, user, command])
 
             row = c.fetchone()
 
@@ -250,10 +251,10 @@ class CrabDB:
                     if timezone == None:
                         timezone = dbtz
 
-                    c.execute("UPDATE job SET time=?, timezone=?, "
-                            + "installed=CURRENT_TIMESTAMP, deleted=NULL "
-                            + "WHERE id=?",
-                            [time, timezone, id])
+                    c.execute("UPDATE job SET time=?, timezone=?, " +
+                              "installed=CURRENT_TIMESTAMP, deleted=NULL " +
+                              "WHERE id=?",
+                              [time, timezone, id])
 
                 return id
 
@@ -263,10 +264,10 @@ class CrabDB:
                 return c.lastrowid
 
     def _insert_job(self, c, host, user, jobid, time, command, timezone):
-        c.execute("INSERT INTO job (host, user, jobid, "
-                        + "time, command, timezone)"
-                        + "VALUES (?, ?, ?, ?, ?, ?)",
-                        [host, user, jobid, time, command, timezone])
+        c.execute("INSERT INTO job (host, user, jobid, " +
+                      "time, command, timezone)" +
+                      "VALUES (?, ?, ?, ?, ?, ?)",
+                  [host, user, jobid, time, command, timezone])
 
 
 #    def _last_id(self, c):
@@ -302,9 +303,9 @@ class CrabDB:
         try:
             id = self.check_job(c, host, user, jobid, command)
 
-            c.execute("INSERT INTO jobfinish (jobid, command, status) "
-                    + "VALUES (?, ?, ?)",
-                    [id, command, status])
+            c.execute("INSERT INTO jobfinish (jobid, command, status) " +
+                      "VALUES (?, ?, ?)",
+                      [id, command, status])
 
             finishid = c.lastrowid
 
@@ -312,9 +313,9 @@ class CrabDB:
                 self.outputstore.write_output(host, user, jobid, command,
                                               finishid, stdout, stderr)
             else:
-                c.execute("INSERT INTO joboutput (finishid, stdout, stderr) "
-                        + "VALUES (?, ?, ?)",
-                        [finishid, stdout, stderr])
+                c.execute("INSERT INTO joboutput (finishid, stdout, stderr) " +
+                          "VALUES (?, ?, ?)",
+                          [finishid, stdout, stderr])
 
             self.conn.commit()
 
@@ -324,38 +325,77 @@ class CrabDB:
         finally:
             c.close()
 
-    def get_job_info(self, id):
-        return self._query_to_dicts(
-                "SELECT host, user, command, jobid, time, timezone, "
-              + "installed, deleted "
-              + "FROM job WHERE id=?", [id])
+    def get_job_info(self, id_):
+        return self._query_to_dict(
+                "SELECT host, user, command, jobid, time, timezone, " +
+                    "installed, deleted " +
+                    "FROM job WHERE id = ?", [id_])
 
-    def get_job_starts(self, id):
-        return self._query_to_dicts(
-                "SELECT id, datetime, command "
-              + "FROM jobstart WHERE jobid=? "
-              + "ORDER BY datetime DESC", [id])
+    def get_job_starts(self, id_, limit):
+        return self._query_to_dict_list(
+                "SELECT id, datetime, command " +
+                    "FROM jobstart WHERE jobid = ? " +
+                    "ORDER BY datetime DESC LIMIT ?",
+                [id_, limit])
 
+    def get_job_finishes(self, id_, limit=100):
+        return self._query_to_dict_list(
+                "SELECT id, datetime, command, status " +
+                    "FROM jobfinish WHERE jobid = ? " +
+                    "ORDER BY datetime DESC LIMIT ?",
+                [id_, limit])
 
-    def get_job_finishes(self, id):
-        return self._query_to_dicts(
-                "SELECT id, datetime, command, status "
-              + "FROM jobfinish WHERE jobid=? "
-              + "ORDER BY datetime DESC", [id])
+    # Return events, newest first, with finishes first(for the same datetime).
+    def get_job_events(self, id_, limit=100):
+        return self._query_to_dict_list(
+                'SELECT ' +
+                    'id AS startid, NULL AS finishid, ' +
+                    'NULL AS warnid, 1 AS eventtype, ' +
+                    'datetime, command, NULL AS status FROM jobstart ' +
+                        'WHERE jobid = ? ' +
+                'UNION SELECT ' +
+                    'NULL AS startid, NULL AS finishid, ' +
+                    'id AS warnid, 2 AS eventtype, ' +
+                        'datetime, NULL AS command, status FROM jobwarn ' +
+                        'WHERE jobid = ? ' +
+                'UNION SELECT ' +
+                    'NULL AS startid, id AS finishid, ' +
+                    'NULL AS warnid, 3 AS eventtype, ' +
+                        'datetime, command, status FROM jobfinish ' +
+                        'WHERE jobid = ? ' +
+                'ORDER BY datetime DESC, eventtype DESC LIMIT ?',
+                [id_, id_, id_, limit])
 
-    def get_starts_finishes(self, id):
-        return self._query_to_dicts(
-                "SELECT "
-                    + "id AS startid, NULL AS finishid, datetime, "
-                        + "command, NULL AS status FROM jobstart "
-                        + "WHERE jobid=? "
-              + "UNION SELECT "
-                    + "NULL AS startid, id AS finishid, datetime, "
-                        + "command, status FROM jobfinish "
-                        + "WHERE jobid=? "
-              + "ORDER BY datetime DESC, finishid DESC", [id, id])
+    # Extract minimal summary information for events on all jobs
+    # since the given IDs, oldest first.
+    def get_events_since(self, startid, warnid, finishid):
+        return self._query_to_dict_list(
+                "SELECT " +
+                    "jobid, id AS startid, NULL AS finishid, " +
+                    "NULL AS warnid, 1 AS eventtype, " +
+                    "datetime, NULL AS status FROM jobstart " +
+                    "WHERE startid > ? " +
+                "UNION SELECT " +
+                    "jobid, NULL AS startid, NULL AS finishid, " +
+                    "id AS warnid, 2 AS eventtype, " +
+                    "datetime, status FROM jobwarn " +
+                    "WHERE warnid > ? " +
+                "UNION SELECT " +
+                    "jobid, NULL AS startid, id AS finishid, " +
+                    "NULL AS warnid, 3 AS eventtype, " +
+                    "datetime, status FROM jobfinish " +
+                    "WHERE finishid > ? " +
+                "ORDER BY datetime ASC, eventtype ASC",
+                [startid, warnid, finishid])
 
-    def _query_to_dicts(self, sql, param = []):
+    def _query_to_dict(self, sql, param = []):
+        result = self._query_to_dict_list(sql, param)
+        if len(result) == 1:
+            return result[0]
+        else:
+            return None
+
+    def _query_to_dict_list(self, sql, param = []):
         c = self.conn.cursor()
         output = []
 
@@ -384,15 +424,15 @@ class CrabDB:
 
     def get_job_output(self, id):
         if self.outputstore != None:
-            # Really need to provide: host, user, jobid, command
+            # TODO: really need to provide: host, user, jobid, command
             # in case the storage method used these to organise its files.
             return self.outputstore.read_output(finishid)
         else:
             c = self.conn.cursor()
 
             try:
-                c.execute("SELECT stdout, stderr FROM joboutput "
-                        + "WHERE finishid=?", [id])
+                c.execute("SELECT stdout, stderr FROM joboutput " +
+                          "WHERE finishid=?", [id])
 
                 row = c.fetchone()
 

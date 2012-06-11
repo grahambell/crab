@@ -1,3 +1,4 @@
+import json
 import mimetypes
 import os
 import re
@@ -11,17 +12,28 @@ from mako.template import Template
 
 from crab import CrabError
 
+class CrabWebResources:
+    _cp_config = {"tools.staticdir.on": True,
+                  "tools.staticdir.dir": os.getcwd() + "/res"}
+
+class CrabWebQuery:
+    def __init__(self, monitor):
+        self.monitor = monitor
+
+    @cherrypy.expose
+    def index(self):
+        return json.dumps(self.monitor.get_job_status())
+
 class CrabWeb:
-    def __init__(self, store):
+    def __init__(self, store, monitor):
         self.store = store
         self.templ = TemplateLookup(directories = ['templ'])
+        self.query = CrabWebQuery(monitor)
 
     class SomeClassOrOther:
         pass
 
-    res = SomeClassOrOther()
-    res._cp_config ={"tools.staticdir.on": True,
-                     "tools.staticdir.dir": os.getcwd() + "/res"}
+    res = CrabWebResources()
 
     @cherrypy.expose
     def index(self):
@@ -39,16 +51,16 @@ class CrabWeb:
 
         if command is None:
             info = self.store.get_job_info(jobid)
-            if len(info) != 1:
+            if info is None:
                 raise HTTPError(404, "Job not found")
 
-            actions = self.store.get_starts_finishes(jobid)
+            events = self.store.get_job_events(jobid)
             return self.write_template('job.html',
-                    {"jobid": jobid, "info": info[0], "actions": actions})
+                    {"jobid": jobid, "info": info, "events": events})
 
         elif command == "output":
             if finishid is None:
-                finishes = self.store.get_job_finishes(jobid)
+                finishes = self.store.get_job_finishes(jobid, limit=1)
 
                 if len(finishes) == 0:
                     raise HTTPError(404, "No job output found")
@@ -72,3 +84,4 @@ class CrabWeb:
             return template.render(**dict)
         except:
             return exceptions.html_error_template().render()
+

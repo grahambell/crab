@@ -1,25 +1,34 @@
+<%!
+    scripts = ["joblist"]
+%>
 <%inherit file="base.html"/>
 
-<table>
+<p>
+    <a href="#" id="command_refresh">Refresh</a>
+<p>
+
+<table id="joblist">
     <tr>
         <th>Job status</th>
         <th>Host</th>
         <th>User</th>
-        <th>Job ID</th>
         <th>Command</th>
+        <th>Job ID</th>
+        <th>Reliability</th>
         <th>Tools</th>
     </tr>
 % for job in jobs:
     <tr id="row_${job["id"] | h}">
-        <td id="status_${job["id"] | h}" class="status_unknown">loading</td>
+        <td id="status_${job["id"] | h}" class="status_unknown">Loading</td>
         <td>${job["host"] | h}</td>
         <td>${job["user"] | h}</td>
+        <td>${job["command"] | h}</td>
 % if job["jobid"] == None:
-        <td class="status_unknown">unspecified</td>
+        <td class="status_unknown">Unspecified</td>
 % else:
         <td>${job["jobid"] | h}</td>
 % endif
-        <td>${job["command"] | h}</td>
+        <td id="reliability_${job["id"] | h}" class="status_unknown">Loading</td>
         <td>
             <a href="/job/${job["id"] | h}">Info</a>
             <a href="/job/${job["id"] | h}/output">Output</a>

@@ -26,6 +26,7 @@ CREATE TABLE jobstart (
 );
 
 CREATE INDEX jobstart_jobid ON jobstart (jobid);
+CREATE INDEX jobstart_datetime ON jobstart (datetime);
 
 CREATE TABLE jobfinish (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,6 +38,18 @@ CREATE TABLE jobfinish (
 );
 
 CREATE INDEX jobfinish_jobid ON jobfinish (jobid);
+CREATE INDEX jobfinish_datetime ON jobfinish (datetime);
+
+CREATE TABLE jobwarn (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    jobid INTEGER NOT NULL REFERENCES job(id)
+        ON DELETE RESTRICT ON UPDATE RESTRICT,
+    datetime VARCHAR(255) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status INT NOT NULL
+);
+
+CREATE INDEX jobwarn_jobid ON jobwarn (jobid);
+CREATE INDEX jobwarn_datetime ON jobwarn (datetime);
 
 CREATE TABLE joboutput (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,7 +59,7 @@ CREATE TABLE joboutput (
     stderr TEXT DEFAULT "" NOT NULL
 );
 
-CREATE TABLE jobinfo (
+CREATE TABLE jobconfig (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     jobid INTEGER NOT NULL UNIQUE REFERENCES job(id),
     graceperiod INTEGER,
