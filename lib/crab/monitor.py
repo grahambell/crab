@@ -2,7 +2,7 @@ import pytz
 import time
 from threading import Event, Thread
 
-from crab import CrabError, CrabStatus
+from crab import CrabError, CrabEvent, CrabStatus
 
 HISTORY_COUNT = 10
 
@@ -45,16 +45,17 @@ class CrabMonitor(Thread):
             history = []
 
             for event in events:
-                if (event["startid"] is not None
-                        and event["startid"] > self.max_startid):
-                    self.max_startid = event["startid"]
-                if (event["warnid"] is not None
-                        and event["warnid"] > self.max_warnid):
-                    self.max_warnid = event["warnid"]
-                if (event["finishid"] is not None
-                        and event["finishid"] > self.max_finishid):
-                    self.max_finishid = event["finishid"]
+                if (event["type"] == CrabEvent.START
+                        and event["id"] > self.max_startid):
+                    self.max_startid = event["id"]
+                if (event["type"] == CrabEvent.WARN
+                        and event["id"] > self.max_warnid):
+                    self.max_warnid = event["id"]
+                if (event["type"] == CrabEvent.FINISH
+                        and event["id"] > self.max_finishid):
+                    self.max_finishid = event["id"]
 
+                # Don't insert things like LATE into history.
                 if event["status"] is not None:
                     if info["status"] is None:
                         info["status"] = event['status']
@@ -80,25 +81,25 @@ class CrabMonitor(Thread):
             for event in events:
                 jobid = event["jobid"]
 
-                if (event["startid"] is not None
-                        and event["startid"] > self.max_startid):
-                    self.max_startid = event["startid"]
-                if (event["warnid"] is not None
-                        and event["warnid"] > self.max_warnid):
-                    self.max_warnid = event["warnid"]
-                if (event["finishid"] is not None
-                        and event["finishid"] > self.max_finishid):
-                    self.max_finishid = event["finishid"]
+                if (event["type"] == CrabEvent.START
+                        and event["id"] > self.max_startid):
+                    self.max_startid = event["id"]
+                if (event["type"] == CrabEvent.WARN
+                        and event["id"] > self.max_warnid):
+                    self.max_warnid = event["id"]
+                if (event["type"] == CrabEvent.FINISH
+                        and event["id"] > self.max_finishid):
+                    self.max_finishid = event["id"]
 
                 # Needs to not apply less-important events.
                 # Also needs to recompute reliability.
                 if event["status"] is not None:
                     self.status[jobid]["status"] = event["status"]
 
-                if event["startid"] is not None:
+                if event["type"] == CrabEvent.START:
                     self.status[jobid]["running"] = True
 
-                if (event["finishid"] is not None
+                if (event["type"] == CrabEvent.FINISH
                         or event["status"] == CrabStatus.TIMEOUT):
                     self.status[jobid]["running"] = False
 

@@ -16,3 +16,8 @@ class CrabStatus:
     LATE = -1
     MISSED = -2
     TIMEOUT = -3
+
+class CrabEvent:
+    START = 1
+    WARN = 2
+    FINISH = 3

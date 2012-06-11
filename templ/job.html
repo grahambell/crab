@@ -63,18 +63,25 @@
         <th>Tools</th>
     </tr>
 % for event in events:
-% if event["startid"] is not None:
-    <tr id="row_start_${event["startid"] | h}">
+% if event["type"] == 1:
+    <tr id="row_start_${event["id"] | h}">
         <td>Started</td>
-% elif event["finishid"] is not None:
-    <tr id="row_finish_${event["finishid"] | h}">
+% elif event["type"] == 2:
+    <tr id="row_warning_${event["id"] | h}">
+        <td>Warning</td>
+% elif event["type"] == 3:
+    <tr id="row_finish_${event["id"] | h}">
         <td>Finished</td>
 % else:
     <tr>
         <td>Unknown event</td>
 % endif
         <td>${event["datetime"] | h}</td>
+% if event["command"] is not None:
         <td>${event["command"] | h}</td>
+% else:
+        <td>&nbsp;</td>
+% endif
 % if event["status"] is None:
         <td>&nbsp;</td>
 % elif event["status"] == 0:
@@ -85,12 +92,18 @@
         <td class="status_warn">Unknown</td>
 % elif event["status"] == 3:
         <td class="status_fail">Could not start</td>
+% elif event["status"] == -1:
+        <td class="status_ok">Late</td>
+% elif event["status"] == -2:
+        <td class="status_warn">Missed</td>
+% elif event["status"] == -3:
+        <td class="status_fail">Timed out</td>
 % else:
         <td class="status_warn">Status ${event["status"] | h}</td>
 % endif
         <td>
-% if event["finishid"] is not None:
-            <a href="/job/${jobid | h}/output/${event["finishid"] | h}">Output</a>
+% if event["type"] == 3:
+            <a href="/job/${jobid | h}/output/${event["id"] | h}">Output</a>
 % else:
             &nbsp;
 % endif

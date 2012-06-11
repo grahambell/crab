@@ -349,21 +349,18 @@ class CrabDB:
     def get_job_events(self, id_, limit=100):
         return self._query_to_dict_list(
                 'SELECT ' +
-                    'id AS startid, NULL AS finishid, ' +
-                    'NULL AS warnid, 1 AS eventtype, ' +
+                    'id, 1 AS type, ' +
                     'datetime, command, NULL AS status FROM jobstart ' +
                         'WHERE jobid = ? ' +
                 'UNION SELECT ' +
-                    'NULL AS startid, NULL AS finishid, ' +
-                    'id AS warnid, 2 AS eventtype, ' +
+                    'id, 2 AS type, ' +
                         'datetime, NULL AS command, status FROM jobwarn ' +
                         'WHERE jobid = ? ' +
                 'UNION SELECT ' +
-                    'NULL AS startid, id AS finishid, ' +
-                    'NULL AS warnid, 3 AS eventtype, ' +
+                    'id, 3 AS type, ' +
                         'datetime, command, status FROM jobfinish ' +
                         'WHERE jobid = ? ' +
-                'ORDER BY datetime DESC, eventtype DESC LIMIT ?',
+                'ORDER BY datetime DESC, type DESC LIMIT ?',
                 [id_, id_, id_, limit])
 
     # Extract minimal summary information for events on all jobs
@@ -371,21 +368,18 @@ class CrabDB:
     def get_events_since(self, startid, warnid, finishid):
         return self._query_to_dict_list(
                 "SELECT " +
-                    "jobid, id AS startid, NULL AS finishid, " +
-                    "NULL AS warnid, 1 AS eventtype, " +
+                    "jobid, id, 1 AS type, " +
                     "datetime, NULL AS status FROM jobstart " +
-                    "WHERE startid > ? " +
+                    "WHERE id > ? " +
                 "UNION SELECT " +
-                    "jobid, NULL AS startid, NULL AS finishid, " +
-                    "id AS warnid, 2 AS eventtype, " +
+                    "jobid, id, 2 AS type, " +
                     "datetime, status FROM jobwarn " +
-                    "WHERE warnid > ? " +
+                    "WHERE id > ? " +
                 "UNION SELECT " +
-                    "jobid, NULL AS startid, id AS finishid, " +
-                    "NULL AS warnid, 3 AS eventtype, " +
+                    "jobid, id, 3 AS type, " +
                     "datetime, status FROM jobfinish " +
-                    "WHERE finishid > ? " +
-                "ORDER BY datetime ASC, eventtype ASC",
+                    "WHERE id > ? " +
+                "ORDER BY datetime ASC, type ASC",
                 [startid, warnid, finishid])
 
     def _query_to_dict(self, sql, param = []):
