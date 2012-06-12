@@ -29,6 +29,10 @@ function updateStatusBox(id, status_, running) {
             box.text('Timed out');
             box.removeClass().addClass('status_fail');
             break;
+        case null:
+            box.text('Unknown');
+            box.removeClass().addClass('status_unknown');
+            break;
         default:
             box.text('Status ' + status_);
             box.removeClass().addClass('status_warn');
