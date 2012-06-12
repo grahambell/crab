@@ -17,42 +17,42 @@ Commands:
   fail, couldnotstart    - report problems with cron job
   import                 - send crontab to server
   fetch                  - display cron jobs from server""")
-    parser.add_option("-c",
-        type = "string", dest = "command",
-        help = "specify the cron COMMAND being reported", metavar = "COMMAND")
-    parser.add_option("--id",
-        type = "string", dest = "id",
-        help = "specify the cron job ID to report", metavar = "ID")
+    parser.add_option('-c',
+        type='string', dest='command',
+        help='specify the cron COMMAND being reported', metavar='COMMAND')
+    parser.add_option('--id',
+        type='string', dest='id',
+        help='specify the cron job ID to report', metavar='ID')
 
     (options, args) = parser.parse_args()
 
-    status_commands = ["finish", "fail", "unknown", "couldnotstart"]
+    status_commands = ['finish', 'fail', 'unknown', 'couldnotstart']
 
     if len(args) == 0:
-        parser.error("no command specified")
+        parser.error('no command specified')
 
-    elif args[0] == "start" or args[0] in status_commands:
-        if options.command == None:
-            parser.error("no command specified")
+    elif args[0] == 'start' or args[0] in status_commands:
+        if options.command is None:
+            parser.error('no command specified')
         else:
             try:
-                client = CrabClient(options.command, id = options.id)
+                client = CrabClient(options.command, id=options.id)
 
-                if args[0] == "start":
+                if args[0] == 'start':
                     client.start()
                 else:
-                    client.finish(status = status_commands.index(args[0]))
+                    client.finish(status=status_commands.index(args[0]))
             except CrabError as err:
-                print sys.argv[0], ":", str(err)
+                print sys.argv[0], ':', str(err)
 
-    elif args[0] == "import":
+    elif args[0] == 'import':
         try:
-            p = subprocess.Popen("crontab -l",
-                shell = True, stdout = subprocess.PIPE)
+            p = subprocess.Popen('crontab -l',
+                                 shell=True, stdout=subprocess.PIPE)
             (stdoutdata, stderrdata) = p.communicate()
 
             if p.returncode:
-                print sys.argv[0], ": failed to read crontab"
+                print sys.argv[0], ': failed to read crontab'
             else:
                 # Try to figure out the system's local timezone.
                 # This might not always be the timezone cron uses
@@ -60,8 +60,8 @@ Commands:
                 # so if in doubt, environment variable TZ should be set.
                 tz = None
 
-                if os.environ.has_key("TZ"):
-                    tz = os.environ["TZ"]
+                if os.environ.has_key('TZ'):
+                    tz = os.environ['TZ']
                 else:
                     tz = guess_timezone()
 
@@ -69,23 +69,23 @@ Commands:
                 client.send_crontab(stdoutdata, timezone = tz)
 
         except OSError as err:
-            print sys.argv[0], ": could not execute crontab command"
+            print sys.argv[0], ': could not execute crontab command'
 
         except CrabError as err:
-            print sys.argv[0], ": failed to send crontab :", str(err)
+            print sys.argv[0], ': failed to send crontab :', str(err)
 
-    elif args[0] == "fetch":
+    elif args[0] == 'fetch':
         try:
             client = CrabClient()
             crontab = client.fetch_crontab()
             print crontab
         except CrabError as err:
-            print sys.argv[0], ": failed to fetch crontab :", str(err)
+            print sys.argv[0], ': failed to fetch crontab :', str(err)
 
-    elif args[0] == "help":
+    elif args[0] == 'help':
         parser.print_help()
     else:
-        parser.error("command not recognised")
+        parser.error('command not recognised')
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

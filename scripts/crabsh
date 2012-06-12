@@ -11,24 +11,24 @@ from crab.util import split_quoted_word
 
 def main():
     parser = OptionParser()
-    parser.add_option("-c",
-        type = "string", dest = "command",
-        help = "specify the COMMAND to execute", metavar = "COMMAND")
-    parser.add_option("--id",
-        type = "string", dest = "id",
-        help = "set job ID", metavar = "ID")
-    parser.add_option("--shell",
-        type = "string", dest = "shell",
-        help = "use SHELL to execute COMMAND", metavar = "SHELL")
+    parser.add_option('-c',
+        type='string', dest='command',
+        help='specify the COMMAND to execute', metavar='COMMAND')
+    parser.add_option('--id',
+        type='string', dest='id',
+        help='set job ID', metavar='ID')
+    parser.add_option('--shell',
+        type='string', dest='shell',
+        help='use SHELL to execute COMMAND', metavar='SHELL')
 
     (options, args) = parser.parse_args()
 
     # Determine command to execute
 
     if len(args) != 0:
-        parser.error("no arguments required")
-    if options.command == None:
-        parser.error("COMMAND not specified")
+        parser.error('no arguments required')
+    if options.command is None:
+        parser.error('COMMAND not specified')
 
     command = options.command
 
@@ -36,13 +36,13 @@ def main():
     #
     # Note that cron defaults to sh regardless of the user's shell.
 
-    shell = "/bin/sh"
+    shell = '/bin/sh'
     env = os.environ
 
     if options.shell:
         shell = options.shell
-    elif env.has_key("CRABSHELL"):
-        shell = env["CRABSHELL"]
+    elif env.has_key('CRABSHELL'):
+        shell = env['CRABSHELL']
 
     # Look for cron job ID
 
@@ -50,33 +50,33 @@ def main():
 
     if options.id:
         id = options.id
-    elif command.startswith("CRABID="):
+    elif command.startswith('CRABID='):
         (id, command) = split_quoted_word(command[7:])
 
         # We could leave the CRABID in the command for the shell to
         # extract, but doing it this way makes sure the command matches
         # that in the database and allows for shells which cannot handle
         # variables given at the start of a command
-        env["CRABID"] = id
-    elif env.has_key("CRABID"):
-        id = env["CRABID"]
+        env['CRABID'] = id
+    elif env.has_key('CRABID'):
+        id = env['CRABID']
 
     # Attempt to execute the command
 
-    client = CrabClient(command, id = id)
+    client = CrabClient(command, id=id)
 
     try:
         client.start()
     except CrabError as err:
-        print "crabsh:", command
-        print "Failed to notify job start."
-        print "ERROR:", str(err), "\n"
+        print 'crabsh:', command
+        print 'Failed to notify job start.'
+        print 'ERROR:', str(err), '\n'
 
     try:
-        p = subprocess.Popen([shell, "-c", command],
-                          stdout = subprocess.PIPE,
-                          stderr = subprocess.PIPE,
-                          env = env)
+        p = subprocess.Popen([shell, '-c', command],
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             env=env)
 
         (stdoutdata, stderrdata) = p.communicate()
         returncode = CrabStatus.SUCCESS
@@ -90,20 +90,20 @@ def main():
         try:
             client.fail(CrabStatus.COULDNOTSTART, str(err))
         except CrabError:
-            print "crabsh:", command
-            print "Failed to notify that job could not start."
-            print "ERROR:", str(err)
+            print 'crabsh:', command
+            print 'Failed to notify that job could not start.'
+            print 'ERROR:', str(err)
 
     except CrabError as err:
         # Print fall-back message for cron to send by email (to the
         # crontab owner or address set its MAILTO variable.
-        print "crabsh:", command
-        print "Failed to notify job finish."
-        print "ERROR:", str(err)
-        print "\nRETURN CODE:", returncode
-        print "\nSTDOUT:"
+        print 'crabsh:', command
+        print 'Failed to notify job finish.'
+        print 'ERROR:', str(err)
+        print '\nRETURN CODE:', returncode
+        print '\nSTDOUT:'
         print stdoutdata
-        print "\nSTDERR:"
+        print '\nSTDERR:'
         print stderrdata
 
 if __name__ == "__main__":

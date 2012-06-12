@@ -13,72 +13,63 @@ class CrabServer:
 
     @cherrypy.expose
     def crontab(self, host, user):
-        if cherrypy.request.method == "GET":
+        if cherrypy.request.method == 'GET':
             try:
                 crontab = self.store.get_crontab(host, user)
-                return json.dumps({"crontab": crontab})
+                return json.dumps({'crontab': crontab})
             except CrabError as err:
-                raise HTTPError(message="read error : " + str(err))
+                raise HTTPError(message='read error : ' + str(err))
 
-        elif cherrypy.request.method == "PUT":
+        elif cherrypy.request.method == 'PUT':
             try:
                 data = self.read_json()
-                crontab = data.get("crontab")
+                crontab = data.get('crontab')
 
-                if crontab == None:
-                    raise CrabError("no crontab received")
+                if crontab is None:
+                    raise CrabError('no crontab received')
 
-                self.store.save_crontab(host, user,
-                        crontab, timezone = data.get("timezone"))
+                self.store.save_crontab(host, user, crontab,
+                                        timezone=data.get('timezone'))
 
             except CrabError as err:
-                raise HTTPError(message="write error : " + str(err))
+                raise HTTPError(message='write error : ' + str(err))
 
     @cherrypy.expose
     def start(self, host, user, id=None):
         try:
             data = self.read_json()
-            command = data.get("command")
+            command = data.get('command')
 
             if command is None:
-                raise CrabError("cron command not specified")
+                raise CrabError('cron command not specified')
 
             self.store.log_start(host, user, id, command)
 
         except CrabError as err:
-            raise HTTPError(message="log error : " + str(err))
+            raise HTTPError(message='log error : ' + str(err))
 
     @cherrypy.expose
     def finish(self, host, user, id=None):
         try:
             data = self.read_json()
-            command = data.get("command")
-            status  = data.get("status")
+            command = data.get('command')
+            status = data.get('status')
 
-            # TODO: does this use == or is ?
-            if None in (command, status):
-                raise CrabError("insufficient information to log finish")
+            if command is None or status is None:
+                raise CrabError('insufficient information to log finish')
 
             if status not in CrabStatus.VALUES:
-                raise CrabError("invalid finish status")
+                raise CrabError('invalid finish status')
 
-            self.store.log_finish(host, user, id, command,
-                    status, data.get("stdout"), data.get("stderr"))
+            self.store.log_finish(host, user, id, command, status,
+                                  data.get('stdout'), data.get('stderr'))
 
         except CrabError as err:
-            raise HTTPError(message="log error : " + str(err))
-
-#    def get_host(self):
-#        (host, port) = self.client_address
-#        try:
-#            (hostname, alias, ipaddrlist) = socket.gethostbyaddr(host)
-#            return hostname
-#        except socket.herror:
-#            return host
+            raise HTTPError(message='log error : ' + str(err))
 
     def read_json(self):
         try:
             return json.load(cherrypy.request.body)
         except ValueError:
-            raise HTTPError("Did not understand JSON")
+            raise HTTPError('Did not understand JSON')
 

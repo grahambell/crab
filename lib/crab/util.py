@@ -6,7 +6,7 @@ def remove_quotes(value):
       return value
 
 def quote_multiword(value):
-    if value.find(" ") != -1:
+    if value.find(' ') != -1:
         return '"' + value + '"'
     else:
         return value

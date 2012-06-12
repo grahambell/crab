@@ -14,8 +14,11 @@ def guess_timezone():
         f = open('/etc/localtime')
         localtime = f.read()
         f.close()
+    except:
+        return None
 
-        for zone in pytz.common_timezones:
+    for zone in pytz.common_timezones:
+        try:
             f = open('/usr/share/zoneinfo/' + zone)
             timezone = f.read()
             f.close()
@@ -23,7 +26,7 @@ def guess_timezone():
             if timezone == localtime:
                 return zone
 
-    except:
-        pass
+        except:
+            pass
 
     return None

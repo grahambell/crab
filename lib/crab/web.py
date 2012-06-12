@@ -13,8 +13,8 @@ from mako.template import Template
 from crab import CrabError
 
 class CrabWebResources:
-    _cp_config = {"tools.staticdir.on": True,
-                  "tools.staticdir.dir": os.getcwd() + "/res"}
+    _cp_config = {'tools.staticdir.on': True,
+                  'tools.staticdir.dir': os.getcwd() + '/res'}
 
 class CrabWebQuery:
     def __init__(self, monitor):
@@ -27,7 +27,7 @@ class CrabWebQuery:
 class CrabWeb:
     def __init__(self, store, monitor):
         self.store = store
-        self.templ = TemplateLookup(directories = ['templ'])
+        self.templ = TemplateLookup(directories=['templ'])
         self.query = CrabWebQuery(monitor)
 
     class SomeClassOrOther:
@@ -39,46 +39,46 @@ class CrabWeb:
     def index(self):
         try:
             jobs = self.store.get_jobs()
-            return self.write_template('index.html', {"jobs": jobs})
+            return self.write_template('index.html', {'jobs': jobs})
 
         except CrabError as err:
             raise HTTPError(message=str(err))
 
     @cherrypy.expose
     def job(self, jobid, command=None, finishid=None):
-        if not re.match("^\d+$", jobid):
-                raise HTTPError(404, "Not a number")
+        if not re.match('^\d+$', jobid):
+            raise HTTPError(404, 'Not a number')
 
         if command is None:
             info = self.store.get_job_info(jobid)
             if info is None:
-                raise HTTPError(404, "Job not found")
+                raise HTTPError(404, 'Job not found')
 
             events = self.store.get_job_events(jobid)
             return self.write_template('job.html',
-                    {"jobid": jobid, "info": info, "events": events})
+                       {'jobid': jobid, 'info': info, 'events': events})
 
-        elif command == "output":
+        elif command == 'output':
             if finishid is None:
                 finishes = self.store.get_job_finishes(jobid, limit=1)
 
                 if len(finishes) == 0:
-                    raise HTTPError(404, "No job output found")
+                    raise HTTPError(404, 'No job output found')
 
-                finishid = finishes[0]["id"]
+                finishid = finishes[0]['id']
 
-            elif not re.match("^\d+$", finishid):
-                raise HTTPError(404, "Not a number")
+            elif not re.match('^\d+$', finishid):
+                raise HTTPError(404, 'Not a number')
 
             # TODO: check that the given finishid is for the correct jobid.
             (stdout, stderr) = self.store.get_job_output(finishid)
-            return self.write_template('joboutput.html', {"jobid": jobid,
-                            "stdout": stdout, "stderr": stderr})
+            return self.write_template('joboutput.html',
+                       {'jobid': jobid, 'stdout': stdout, 'stderr': stderr})
 
         else:
             raise HTTPError(404)
 
-    def write_template(self, name, dict = {}):
+    def write_template(self, name, dict={}):
         try:
             template = self.templ.get_template(name)
             return template.render(**dict)
