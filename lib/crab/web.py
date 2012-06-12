@@ -17,18 +17,31 @@ class CrabWebResources:
                   'tools.staticdir.dir': os.getcwd() + '/res'}
 
 class CrabWebQuery:
-    def __init__(self, monitor):
+    def __init__(self, store, monitor):
+        self.store = store
         self.monitor = monitor
 
     @cherrypy.expose
-    def index(self):
+    def jobstatus(self):
         return json.dumps(self.monitor.get_job_status())
+
+    @cherrypy.expose
+    def jobinfo(self, jobid):
+        try:
+            info = self.store.get_job_info(int(jobid))
+        except ValueError:
+            raise HTTPError(404, 'Job ID not a number')
+        if info is None:
+            raise HTTPError(404, 'Job not found')
+
+        info["id"] = jobid
+        return json.dumps(info)
 
 class CrabWeb:
     def __init__(self, store, monitor):
         self.store = store
         self.templ = TemplateLookup(directories=['templ'])
-        self.query = CrabWebQuery(monitor)
+        self.query = CrabWebQuery(store, monitor)
 
     class SomeClassOrOther:
         pass

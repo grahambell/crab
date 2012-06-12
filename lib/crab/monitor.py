@@ -6,6 +6,9 @@ from crab import CrabError, CrabEvent, CrabStatus
 
 HISTORY_COUNT = 10
 
+class JobDeleted(Exception):
+    pass
+
 class CrabMonitor(Thread):
     def __init__(self, store):
         Thread.__init__(self)
@@ -49,14 +52,23 @@ class CrabMonitor(Thread):
             for event in events:
                 jobid = event['jobid']
 
-                if jobid not in self.status:
-                    self._initialize_job(jobid)
+                try:
+                    if jobid not in self.status:
+                        self._initialize_job(jobid)
 
-                self._process_event(jobid, event)
-                self._compute_reliability(jobid)
+                    self._process_event(jobid, event)
+                    self._compute_reliability(jobid)
+
+                # If the monitor is loaded when a job has just been
+                # deleted, then it may have events more recent
+                # than those of the events that still exist.
+                except JobDeleted:
+                    pass
 
     def _initialize_job(self, jobid):
         jobinfo = self.store.get_job_info(jobid)
+        if jobinfo['deleted'] is not None:
+            raise JobDeleted
 
         # Write empty record in self.status
 

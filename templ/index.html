@@ -1,11 +1,54 @@
 <%!
     scripts = ["joblist"]
+
+    def mergelines(text):
+        output = ''
+        for line in text.split('\n'):
+            output = output + line.strip()
+        return output
 %>
 <%inherit file="base.html"/>
 
 <p>
     <a href="#" id="command_refresh">Refresh</a>
 </p>
+
+<%def name="joblistrow(job)" filter="mergelines">
+    <tr id="row_${job["id"] | h}">
+        <td id="status_${job["id"] | h}" class="status_unknown">Loading</td>
+        <td id="host_${job["id"] | h}">
+% if job.get("host") is not None:
+            ${job["host"] | h}
+% else:
+            &nbsp;
+% endif
+        </td>
+        <td id="user_${job["id"] | h}">
+% if job.get('user') is not None:
+            ${job['user'] | h}
+% else:
+            &nbsp;
+% endif
+        </td>
+        <td id="command_${job["id"] | h}">
+% if job.get('command') is not None:
+            ${job["command"] | h}
+% else:
+            &nbsp;
+% endif
+        </td>
+% if job.get('jobid') is not None:
+        <td id="jobid_${job["id"] | h}">${job["jobid"] | h}</td>
+% else:
+        <td id="jobid_${job["id"] | h}" class="status_unknown">Unspecified</td>
+% endif
+        <td id="reliability_${job["id"] | h}" class="status_unknown">Loading</td>
+        <td>
+            <a href="/job/${job["id"] | h}">Info</a>&#32;
+            <a href="/job/${job["id"] | h}/output">Output</a>
+        </td>
+    </tr>
+</%def>
 
 <table id="joblist">
     <tr>
@@ -18,21 +61,11 @@
         <th>Tools</th>
     </tr>
 % for job in jobs:
-    <tr id="row_${job["id"] | h}">
-        <td id="status_${job["id"] | h}" class="status_unknown">Loading</td>
-        <td>${job["host"] | h}</td>
-        <td>${job["user"] | h}</td>
-        <td>${job["command"] | h}</td>
-% if job["jobid"] == None:
-        <td class="status_unknown">Unspecified</td>
-% else:
-        <td>${job["jobid"] | h}</td>
-% endif
-        <td id="reliability_${job["id"] | h}" class="status_unknown">Loading</td>
-        <td>
-            <a href="/job/${job["id"] | h}">Info</a>
-            <a href="/job/${job["id"] | h}/output">Output</a>
-        </td>
-    </tr>
+    ${joblistrow(job)}
 % endfor
 </table>
+
+<script>
+<% job = {'id': 'XXX'} %>
+var joblistrowtemplate = '${joblistrow(job) | mergelines}';
+</script>

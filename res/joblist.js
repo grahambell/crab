@@ -64,16 +64,35 @@ function updateReliabilityBox(id, reliability) {
     box.removeClass().addClass('status_normal');
 }
 
+function updateInfo(data) {
+    id = data['id']
+    $('#host_' + id).text(data['host']);
+    $('#user_' + id).text(data['user']);
+    $('#command_' + id).text(data['command']);
+    if (data['jobid'] !== null) {
+        $('#jobid_' + id).text(data['jobid']);
+    }
+}
+
 function updateStatus(data) {
     for (var id in data) {
         var job = data[id];
+
+        if ($('#row_'+id).length == 0) {
+            $('table#joblist').append(joblistrowtemplate.replace('XXX', id, 'g'));
+            $.ajax('/query/jobinfo/' + id, {
+                dataType: 'json',
+                success: updateInfo
+            });
+        }
+
         updateStatusBox(id, job['status'], job['running']);
         updateReliabilityBox(id, job['reliability']);
     }
 }
 
 function refreshStatus() {
-    $.ajax('/query/', {
+    $.ajax('/query/jobstatus', {
         dataType: 'json',
         success: updateStatus
     });
