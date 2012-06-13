@@ -100,8 +100,8 @@ function refreshStatus() {
 
 $(document).ready(function () {
         refreshStatus();
-        $('#command_refresh').click(function () {
+        $('#command_refresh').click(function (event) {
             refreshStatus();
-            return false;
+            event.preventDefault();
         });
     });
