@@ -6,6 +6,7 @@ import cherrypy
 
 from crab.db import CrabDB
 from crab.monitor import CrabMonitor
+from crab.rss import CrabRSS
 from crab.server import CrabServer
 from crab.web import CrabWeb
 
@@ -24,6 +25,7 @@ def main():
                             'server.socket_host': '0.0.0.0'})
     cherrypy.tree.mount(CrabWeb(store, monitor), '/', {})
     cherrypy.tree.mount(CrabServer(store), '/api/0', {})
+    cherrypy.tree.mount(CrabRSS(store), '/rss', {})
 
     # From the CherryPy documentation:
     if hasattr(cherrypy.engine, 'block'):

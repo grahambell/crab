@@ -1,7 +1,10 @@
+import datetime
 import json
 import mimetypes
 import os
+import pytz
 import re
+import time
 import urllib
 
 import cherrypy
@@ -10,7 +13,16 @@ from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
 
-from crab import CrabError
+from crab import CrabError, CrabStatus
+
+# Convert UTC datetime string as output by SQLite to an equivalent string
+# in the specified timezone, including the zone code to indicate that
+# the conversion has been performed.
+def utc_to_timezone(datetime_, zoneinfo):
+    if datetime_ is None:
+        return None
+    return datetime.datetime.strptime(datetime_, '%Y-%m-%d %H:%M:%S').replace(
+        tzinfo=pytz.UTC).astimezone(zoneinfo).strftime('%Y-%m-%d %H:%M:%S %Z')
 
 class CrabWebResources:
     _cp_config = {'tools.staticdir.on': True,
@@ -68,8 +80,25 @@ class CrabWeb:
                 raise HTTPError(404, 'Job not found')
 
             events = self.store.get_job_events(jobid)
+
+            # Try to convert the times to the timezone shown on the page.
+            if info['timezone'] is not None:
+                try:
+                    tz = pytz.timezone(info['timezone'])
+                    info['installed'] = utc_to_timezone(info['installed'], tz)
+                    info['deleted'] = utc_to_timezone(info['deleted'], tz)
+                    for event in events:
+                        event['datetime'] = utc_to_timezone(event['datetime'],
+                                                            tz)
+                except pytz.UnknownTimeZoneError:
+                    pass
+
+            # Filter out LATE events as they are not important, and if
+            # shown in green, might make a failing cron job look better
+            # than it is because each job will be marked LATE before MISSED.
             return self.write_template('job.html',
-                       {'jobid': jobid, 'info': info, 'events': events})
+                       {'jobid': jobid, 'info': info, 'events':
+                        [e for e in events if e['status'] != CrabStatus.LATE]})
 
         elif command == 'output':
             if finishid is None:

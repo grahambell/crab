@@ -2,7 +2,7 @@ import re
 
 from sqlite3 import DatabaseError
 
-from crab import CrabError
+from crab import CrabError, CrabStatus
 from crab.util import remove_quotes, quote_multiword, split_quoted_word
 
 class CrabDB:
@@ -390,6 +390,24 @@ class CrabDB:
                     'WHERE id > ? ' +
                 'ORDER BY datetime ASC, type ASC',
                 [startid, warnid, finishid])
+
+    def get_fail_events(self, limit=40):
+        return self._query_to_dict_list(
+                'SELECT ' +
+                    'job.id AS id, status, datetime, host, user, ' +
+                    'job.jobid AS jobid, job.command AS command, ' +
+                    'jobfinish.id AS finishid ' +
+                    'FROM jobfinish JOIN job ON jobfinish.jobid = job.id ' +
+                    'WHERE status NOT IN (?, ?) ' +
+                'UNION SELECT ' +
+                    'job.id AS id, status, datetime, host, user, ' +
+                    'job.jobid AS jobid, job.command AS command, ' +
+                    'NULL as finishid ' +
+                    'FROM jobwarn JOIN job ON jobwarn.jobid = job.id ' +
+                    'WHERE status NOT IN (?, ?) ' +
+                'ORDER BY datetime DESC, status DESC LIMIT ?',
+                [CrabStatus.SUCCESS, CrabStatus.LATE,
+                 CrabStatus.SUCCESS, CrabStatus.LATE, limit])
 
     def _query_to_dict(self, sql, param=[]):
         result = self._query_to_dict_list(sql, param)

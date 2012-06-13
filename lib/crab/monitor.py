@@ -1,6 +1,6 @@
 import datetime
-import time
 import pytz
+import time
 from threading import Event, Thread
 
 from crab import CrabError, CrabEvent, CrabStatus

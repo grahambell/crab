@@ -17,6 +17,19 @@ class CrabStatus:
     MISSED = -2
     TIMEOUT = -3
 
+    @staticmethod
+    def get_name(status):
+        error_names = ['OK', 'Failed', 'Unknown', 'Could not start']
+        warning_names = ['Late', 'Missed', 'Timed out']
+
+        try:
+            if status >= 0:
+                return error_names[status]
+            else:
+                return warning_names[(-1) - status]
+        except IndexError:
+            return 'Status ' + int(status)
+
 class CrabEvent:
     START = 1
     WARN = 2
