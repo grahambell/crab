@@ -316,6 +316,22 @@ class CrabDB:
         finally:
             c.close()
 
+    def log_warning(self, id, status):
+
+        c = self.conn.cursor()
+
+        try:
+            c.execute('INSERT INTO jobwarn (jobid, status) VALUES (?, ?)',
+                      [id, status])
+
+            self.conn.commit()
+
+        except DatabaseError as err:
+            raise CrabError('database error : ' + str(err))
+
+        finally:
+            c.close()
+
     def get_job_info(self, id_):
         return self._query_to_dict(
                 'SELECT host, user, command, jobid, time, timezone, ' +

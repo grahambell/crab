@@ -1,8 +1,10 @@
-import pytz
+import datetime
 import time
+import pytz
 from threading import Event, Thread
 
 from crab import CrabError, CrabEvent, CrabStatus
+from crab.schedule import CrabSchedule
 
 HISTORY_COUNT = 10
 
@@ -17,9 +19,14 @@ class CrabMonitor(Thread):
         self.sched = {}
         self.status = {}
         self.status_ready = Event()
+        self.config = {}
+        self.last_start = {}
+        self.timeout = {}
+        self.miss_timeout = {}
         self.max_startid = 0
         self.max_warnid = 0
         self.max_finishid = 0
+        self.last_time = None
 
     def run(self):
         jobs = self.store.get_jobs()
@@ -43,6 +50,7 @@ class CrabMonitor(Thread):
 
         while True:
             time.sleep(10)
+            datetime_ = datetime.datetime.now(pytz.UTC)
 
             # TODO: monitor needs to check for new jobs occasionally.
             # For now it can notice them if it sees an associated event.
@@ -65,28 +73,56 @@ class CrabMonitor(Thread):
                 except JobDeleted:
                     pass
 
+            # Hour and minute should be sufficient to check
+            # that the minute has changed.
+            # TODO: check we didn't somehow miss a minute?
+            time_stamp = datetime_.strftime('%H%M')
+
+            if self.last_time is None or time_stamp != self.last_time:
+                for id in self.sched:
+                    if self.sched[id].match(datetime_):
+                        if ((not self.last_start.has_key(id)) or
+                                (self.last_start[id] + self.config[id]['graceperiod'] < datetime_)):
+                            self._write_warning(id, CrabStatus.LATE)
+                            self.miss_timeout[id] = (datetime_ +
+                                    self.config[id]['graceperiod'])
+
+            self.last_time = time_stamp
+
+            # Check status of timeouts - need to get a list of keys
+            # so that we can delete from the dict while iterating.
+
+            for id in self.miss_timeout.keys():
+                if self.miss_timeout[id] < datetime_:
+                    self._write_warning(id, CrabStatus.MISSED)
+                    del self.miss_timeout[id]
+
+            for id in self.timeout.keys():
+                if self.timeout[id] < datetime_:
+                    self._write_warning(id, CrabStatus.TIMEOUT)
+                    del self.timeout[id]
+
     def _initialize_job(self, jobid):
         jobinfo = self.store.get_job_info(jobid)
-        if jobinfo['deleted'] is not None:
+        if jobinfo is not None and jobinfo['deleted'] is not None:
             raise JobDeleted
 
         # Write empty record in self.status
 
         self.status[jobid] = {'status': None, 'running': False, 'history': []}
 
+        # TODO: read these from the jobsettings table
+        self.config[jobid] = {'graceperiod': datetime.timedelta(minutes=2),
+                              'timeout': datetime.timedelta(minutes=5)}
+
         # Write record in self.sched
 
         if jobinfo is not None and jobinfo['time'] is not None:
-            self.sched[jobid] = {'time': jobinfo['time'], 'timezone': None}
-            if jobinfo['timezone'] is not None:
-                try:
-                    # pytz returns the same object if called twice
-                    # with the same timezone, so we don't need to cache
-                    # the timezone objects by zone name.
-                    timezone = pytz.timezone(jobinfo['timezone'])
-                    self.sched[jobid]['timezone'] = timezone
-                except pytz.UnknownTimeZoneError:
-                    print 'Warning: unknown time zone', jobinfo['timezone']
+            try:
+                self.sched[jobid] = CrabSchedule(jobinfo['time'],
+                                                 jobinfo['timezone'])
+            except CrabError as err:
+                print 'Warning: could not add schedule: ' + str(err)
 
     def _process_event(self, jobid, event):
         if (event['type'] == CrabEvent.START and
@@ -98,6 +134,10 @@ class CrabMonitor(Thread):
         if (event['type'] == CrabEvent.FINISH and
                 event['id'] > self.max_finishid):
             self.max_finishid = event['id']
+
+        # Parse date from SQLite format, which is always UTC.
+        datetime_ = datetime.datetime.strptime(event['datetime'],
+                        '%Y-%m-%d %H:%M:%S').replace(tzinfo=pytz.UTC);
 
         # Needs to not apply less-important events.
         # Also needs to recompute reliability.
@@ -135,10 +175,16 @@ class CrabMonitor(Thread):
 
         if event['type'] == CrabEvent.START:
             self.status[jobid]['running'] = True
+            self.last_start[jobid] = datetime_
+            self.timeout[jobid] = datetime_ + self.config[jobid]['timeout']
+            if self.miss_timeout.has_key(jobid):
+                del self.miss_timeout[jobid]
 
         if (event['type'] == CrabEvent.FINISH
                 or event['status'] == CrabStatus.TIMEOUT):
             self.status[jobid]['running'] = False
+            if self.timeout.has_key(jobid):
+                del self.timeout[jobid]
 
     def _compute_reliability(self, jobid):
         history = self.status[jobid]['history']
@@ -148,6 +194,12 @@ class CrabMonitor(Thread):
             self.status[jobid]['reliability'] = int(100 *
                 len(filter(lambda x: x == CrabStatus.SUCCESS, history)) /
                 len(history))
+
+    def _write_warning(self, id, status):
+        try:
+            self.store.log_warning(id, status)
+        except CrabError as err:
+            print 'Could not record warning : ' + str(err)
 
     # For efficiency returns our job status dict.  Callers should not
     # modify it.
