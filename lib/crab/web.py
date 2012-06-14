@@ -38,6 +38,15 @@ class CrabWebQuery:
         return json.dumps(self.monitor.get_job_status())
 
     @cherrypy.expose
+    def jobstatuscomet(self, startid, warnid, finishid):
+        try:
+            return json.dumps(self.monitor.wait_for_event_since(int(startid),
+                                                   int(warnid), int(finishid)))
+        except ValueError:
+            raise HTTPError(404, 'Query parameter not an integer')
+
+
+    @cherrypy.expose
     def jobinfo(self, jobid):
         try:
             info = self.store.get_job_info(int(jobid))

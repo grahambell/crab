@@ -1,7 +1,7 @@
 import datetime
 import pytz
 import time
-from threading import Event, Thread
+from threading import Condition, Event, Thread
 
 from crab import CrabError, CrabEvent, CrabStatus
 from crab.schedule import CrabSchedule
@@ -27,6 +27,7 @@ class CrabMonitor(Thread):
         self.max_warnid = 0
         self.max_finishid = 0
         self.last_time = None
+        self.new_event = Condition()
 
     def run(self):
         jobs = self.store.get_jobs()
@@ -49,7 +50,7 @@ class CrabMonitor(Thread):
         self.status_ready.set()
 
         while True:
-            time.sleep(10)
+            time.sleep(2)
             datetime_ = datetime.datetime.now(pytz.UTC)
 
             # TODO: monitor needs to check for new jobs occasionally.
@@ -72,6 +73,10 @@ class CrabMonitor(Thread):
                 # than those of the events that still exist.
                 except JobDeleted:
                     pass
+
+            if events:
+                with self.new_event:
+                    self.new_event.notify_all()
 
             # Hour and minute should be sufficient to check
             # that the minute has changed.
@@ -206,3 +211,15 @@ class CrabMonitor(Thread):
     def get_job_status(self):
         self.status_ready.wait()
         return self.status
+
+    # Function which waits for new result.
+    def wait_for_event_since(self, startid, warnid, finishid, timeout=120):
+        if (self.max_startid > startid or self.max_warnid > warnid or
+                                          self.max_finishid > finishid):
+            pass
+        else:
+            with self.new_event:
+                self.new_event.wait(timeout)
+
+        return {'startid': self.max_startid, 'warnid': self.max_warnid,
+                'finishid': self.max_finishid, 'status': self.status}

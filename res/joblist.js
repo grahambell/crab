@@ -98,8 +98,28 @@ function refreshStatus() {
     });
 }
 
+function refreshStatusCometSuccess(data, text, xhr) {
+    updateStatus(data['status']);
+    refreshStatusCometLoop(data['startid'], data['warnid'], data['finishid']);
+}
+
+function refreshStatusCometFail(xhr, text, error) {
+    $('table#joblist').fadeTo(500, 0.5)
+}
+
+function refreshStatusCometLoop(startid, warnid, finishid) {
+    $.ajax('/query/jobstatuscomet?startid=' + startid + '&warnid=' + warnid + '&finishid=' + finishid, {
+        dataType: 'json',
+        success: refreshStatusCometSuccess,
+        error: refreshStatusCometFail,
+        timeout: 150000
+    });
+}
+
 $(document).ready(function () {
-        refreshStatus();
+        //refreshStatus();
+        refreshStatusCometLoop(0, 0, 0);
+
         $('#command_refresh').click(function (event) {
             refreshStatus();
             event.preventDefault();
