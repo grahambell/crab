@@ -110,6 +110,25 @@ class CrabMonitor(Thread):
                             self.miss_timeout[id] = (datetime_ +
                                     self.config[id]['graceperiod'])
 
+                # Look for new or deleted jobs.
+                currentjobs = set(self.status.keys())
+                jobs = self.store.get_jobs()
+                for job in jobs:
+                    jobid = job['id']
+                    if jobid in currentjobs:
+                        currentjobs.discard(jobid)
+                    else:
+                        # No need to check event history: if there were any
+                        # events, we would have added the job when they
+                        # occurred (unless a job was just un-deleted or the
+                        # an event happend during the schedule check.
+                        self._initialize_job(jobid)
+
+                # Remove (presumably deleted) jobs.
+                for jobid in currentjobs:
+                    print 'Removing job' + str(jobid)
+                    self._remove_job(jobid)
+
             self.last_time = time_stamp
 
             # Check status of timeouts - need to get a list of keys
@@ -146,6 +165,22 @@ class CrabMonitor(Thread):
                                                  jobinfo['timezone'])
             except CrabError as err:
                 print 'Warning: could not add schedule: ' + str(err)
+
+    def _remove_job(self, jobid):
+        try:
+            del self.status[jobid]
+            if self.config.has_key(jobid):
+                del self.config[jobid]
+            if self.sched.has_key(jobid):
+                del self.sched[jobid]
+            if self.last_start.has_key(jobid):
+                del self.last_start[jobid]
+            if self.timeout.has_key(jobid):
+                del self.timeout[jobid]
+            if self.miss_timeout.has_key(jobid):
+                del self.miss_timeout[jobid]
+        except KeyError:
+            print 'Warning: stopping monitoring job but it is not in monitor.'
 
     def _update_max_id_values(self, event):
         if (event['type'] == CrabEvent.START and
