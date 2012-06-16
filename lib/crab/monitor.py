@@ -28,6 +28,8 @@ class CrabMonitor(Thread):
         self.max_finishid = 0
         self.last_time = None
         self.new_event = Condition()
+        self.num_warning = 0
+        self.num_error = 0
 
     def run(self):
         jobs = self.store.get_jobs()
@@ -43,6 +45,7 @@ class CrabMonitor(Thread):
             # Events are returned newest-first but we need to work
             # through them in order.
             for event in reversed(events):
+                self._update_max_id_values(event)
                 self._process_event(jobid, event)
 
             self._compute_reliability(jobid)
@@ -50,7 +53,7 @@ class CrabMonitor(Thread):
         self.status_ready.set()
 
         while True:
-            time.sleep(2)
+            time.sleep(5)
             datetime_ = datetime.datetime.now(pytz.UTC)
 
             # TODO: monitor needs to check for new jobs occasionally.
@@ -60,6 +63,7 @@ class CrabMonitor(Thread):
                                 self.max_warnid, self.max_finishid)
             for event in events:
                 jobid = event['jobid']
+                self._update_max_id_values(event)
 
                 try:
                     if jobid not in self.status:
@@ -73,6 +77,20 @@ class CrabMonitor(Thread):
                 # than those of the events that still exist.
                 except JobDeleted:
                     pass
+
+            self.num_error = 0;
+            self.num_warning = 0;
+            for id in self.status:
+                jobstatus = self.status[id]['status']
+                if (jobstatus is None or
+                        jobstatus == CrabStatus.SUCCESS or
+                        jobstatus == CrabStatus.LATE):
+                    pass
+                elif (jobstatus == CrabStatus.UNKNOWN or
+                        jobstatus == CrabStatus.MISSED):
+                    self.num_warning += 1;
+                else:
+                    self.num_error += 1;
 
             if events:
                 with self.new_event:
@@ -129,7 +147,7 @@ class CrabMonitor(Thread):
             except CrabError as err:
                 print 'Warning: could not add schedule: ' + str(err)
 
-    def _process_event(self, jobid, event):
+    def _update_max_id_values(self, event):
         if (event['type'] == CrabEvent.START and
                 event['id'] > self.max_startid):
             self.max_startid = event['id']
@@ -140,6 +158,7 @@ class CrabMonitor(Thread):
                 event['id'] > self.max_finishid):
             self.max_finishid = event['id']
 
+    def _process_event(self, jobid, event):
         # Parse date from SQLite format, which is always UTC.
         datetime_ = datetime.datetime.strptime(event['datetime'],
                         '%Y-%m-%d %H:%M:%S').replace(tzinfo=pytz.UTC);
@@ -222,4 +241,5 @@ class CrabMonitor(Thread):
                 self.new_event.wait(timeout)
 
         return {'startid': self.max_startid, 'warnid': self.max_warnid,
-                'finishid': self.max_finishid, 'status': self.status}
+                'finishid': self.max_finishid, 'status': self.status,
+                'numwarning': self.num_warning, 'numerror': self.num_error}

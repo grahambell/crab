@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+PIDFILE=/tmp/crabd-$UID.pid
+LOGFILE=/tmp/crabd-$UID.log
+
+if [ -e $PIDFILE ] && (ps -p $(< $PIDFILE) > /dev/null)
+then
+    exit 0
+fi
+
+crabd >> $LOGFILE 2>&1 &
+echo $! > $PIDFILE
+

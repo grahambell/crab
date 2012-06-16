@@ -24,10 +24,6 @@ def utc_to_timezone(datetime_, zoneinfo):
     return datetime.datetime.strptime(datetime_, '%Y-%m-%d %H:%M:%S').replace(
         tzinfo=pytz.UTC).astimezone(zoneinfo).strftime('%Y-%m-%d %H:%M:%S %Z')
 
-class CrabWebResources:
-    _cp_config = {'tools.staticdir.on': True,
-                  'tools.staticdir.dir': os.getcwd() + '/res'}
-
 class CrabWebQuery:
     def __init__(self, store, monitor):
         self.store = store
@@ -59,15 +55,14 @@ class CrabWebQuery:
         return json.dumps(info)
 
 class CrabWeb:
-    def __init__(self, store, monitor):
+    def __init__(self, config, store, monitor):
         self.store = store
-        self.templ = TemplateLookup(directories=['templ'])
+        home = config['crab']['home']
+        self.templ = TemplateLookup(directories=[home + '/templ'])
         self.query = CrabWebQuery(store, monitor)
 
     class SomeClassOrOther:
         pass
-
-    res = CrabWebResources()
 
     @cherrypy.expose
     def index(self):

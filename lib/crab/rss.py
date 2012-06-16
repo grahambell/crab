@@ -1,3 +1,4 @@
+import calendar
 import datetime
 import socket
 
@@ -10,12 +11,14 @@ from crab import CrabStatus
 class CrabRSS:
     def __init__(self, store):
         self.store = store
+        self.fqdn = socket.getfqdn()
         # TODO: make this configurable
-        self.base = 'http://' + socket.getfqdn() + ':8000';
+        self.base = 'http://' + self.fqdn + ':8000';
 
     @cherrypy.expose
     def failures(self):
-        events = self.store.get_fail_events()
+        # TODO: make limit configurable (in CherryPy App .ini file)
+        events = self.store.get_fail_events(limit=20)
 
         # Attach output
         for fail in events:
@@ -29,9 +32,10 @@ class CrabRSS:
 
         rssitems = map(lambda e: self.event_to_rssitem(e), events)
 
-        rss = RSS2('crab failures', self.base + '/',
+        rss = RSS2('Crab failures', self.base + '/',
                    'List of recent cron job failures.',
                    lastBuildDate=datetime.datetime.now(),
+                   ttl = 30,
                    items = rssitems)
         return rss.to_xml()
 
@@ -44,18 +48,27 @@ class CrabRSS:
         if event['finishid'] is not None:
             link += '/output/' + str(event['finishid'])
         output = ''
-        if event['stdout'] is not None:
-            output += 'STDOUT:\n' + event['stdout'] + '\n\n'
-        if event['stderr'] is not None:
-            output += 'STDERR:\n' + event['stderr'] + '\n\n'
+        if event['stdout'] is not None and event['stdout'] != '':
+            output += event['stdout']
+        if event['stderr'] is not None and event['stderr'] != '':
+            if event['stdout'] is not None and event['stdout'] != '':
+                output += '\n\nStandard Error:\n\n'
+            output += event['stderr']
 
-        guid = ':'.join(['crab', socket.getfqdn(), str(event['id']),
-                        event['datetime'], str(event['status'])])
+        date = datetime.datetime.strptime(event['datetime'],
+                                          '%Y-%m-%d %H:%M:%S')
+
+        guid = ':'.join(['crab', self.fqdn, str(event['id']),
+               str(calendar.timegm(date.timetuple())), str(event['status'])])
+
+        info = {}
+
+        if output != '':
+            info['description'] = '<pre>' + output + '</pre>'
 
         return RSSItem(title=title,
                        link=link,
-                       description='<pre>' + output + '</pre>',
-                       pubDate=datetime.datetime.strptime(event['datetime'],
-                                                          '%Y-%m-%d %H:%M:%S'),
-                       guid=Guid(guid, isPermaLink = False))
+                       pubDate=date,
+                       guid=Guid(guid, isPermaLink = False),
+                       **info)
 

@@ -103,8 +103,20 @@ def main():
         print '\nRETURN CODE:', returncode
         print '\nSTDOUT:'
         print stdoutdata
-        print '\nSTDERR:'
+        print '\n\nSTDERR:'
         print stderrdata
+
+    else:
+        # Echo the output only if we didn't already print it due
+        # to an exception occurring.
+        if (env.has_key('CRABECHO') and env['CRABECHO'].lower() not in
+                    ('', '0', 'no', 'false', 'off')):
+            if stdoutdata != '':
+                print stdoutdata
+            if stderrdata != '':
+                if stdoutdata != '':
+                    print '\n\nStandard Error:\n'
+                print stderrdata
 
 if __name__ == "__main__":
     main()
