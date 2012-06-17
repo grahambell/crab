@@ -120,7 +120,7 @@ function refreshStatusOnceError(xhr, text, error) {
 }
 
 function refreshStatusOnce() {
-    $.ajax('/query/jobstatuscomet?startid=0&warnid=0&finishid=0', {
+    $.ajax('/query/jobstatus?startid=0&warnid=0&finishid=0', {
         dataType: 'json',
         success: refreshStatusOnceSuccess,
         error: refreshStatusOnceError,
@@ -144,11 +144,11 @@ function refreshStatusCometError(xhr, text, error) {
 }
 
 function refreshStatusCometLoop(startid, warnid, finishid) {
-    $.ajax('/query/jobstatuscomet?startid=' + startid + '&warnid=' + warnid + '&finishid=' + finishid, {
+    $.ajax('/query/jobstatus?startid=' + startid + '&warnid=' + warnid + '&finishid=' + finishid, {
         dataType: 'json',
         success: refreshStatusCometSuccess,
         error: refreshStatusCometError,
-        timeout: 150000
+        timeout: 160000
     });
 }
 

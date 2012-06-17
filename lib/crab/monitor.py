@@ -1,6 +1,7 @@
 import datetime
 import pytz
 import time
+from random import Random
 from threading import Condition, Event, Thread
 
 from crab import CrabError, CrabEvent, CrabStatus
@@ -30,6 +31,7 @@ class CrabMonitor(Thread):
         self.new_event = Condition()
         self.num_warning = 0
         self.num_error = 0
+        self.random = Random()
 
     def run(self):
         jobs = self.store.get_jobs()
@@ -266,14 +268,15 @@ class CrabMonitor(Thread):
         self.status_ready.wait()
         return self.status
 
-    # Function which waits for new result.
+    # Function which waits for new result.  A random time up to 20s is added
+    # to the timeout to stagger requests.
     def wait_for_event_since(self, startid, warnid, finishid, timeout=120):
         if (self.max_startid > startid or self.max_warnid > warnid or
                                           self.max_finishid > finishid):
             pass
         else:
             with self.new_event:
-                self.new_event.wait(timeout)
+                self.new_event.wait(timeout + self.random.randint(0,20))
 
         return {'startid': self.max_startid, 'warnid': self.max_warnid,
                 'finishid': self.max_finishid, 'status': self.status,

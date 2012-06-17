@@ -30,11 +30,7 @@ class CrabWebQuery:
         self.monitor = monitor
 
     @cherrypy.expose
-    def jobstatus(self):
-        return json.dumps(self.monitor.get_job_status())
-
-    @cherrypy.expose
-    def jobstatuscomet(self, startid, warnid, finishid):
+    def jobstatus(self, startid, warnid, finishid):
         try:
             return json.dumps(self.monitor.wait_for_event_since(int(startid),
                                                    int(warnid), int(finishid)))
@@ -68,7 +64,7 @@ class CrabWeb:
     def index(self):
         try:
             jobs = self.store.get_jobs()
-            return self.write_template('index.html', {'jobs': jobs})
+            return self.write_template('joblist.html', {'jobs': jobs})
 
         except CrabError as err:
             raise HTTPError(message=str(err))
