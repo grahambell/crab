@@ -1,7 +1,32 @@
 #!/usr/bin/env bash
 
-PIDFILE=/tmp/crabd-$UID.pid
-LOGFILE=/tmp/crabd-$UID.log
+if [ -w /var/run ]
+then
+    RUNDIR=/var/run
+else
+    RUNDIR=/tmp
+fi
+
+if [ -w /var/log/crab ]
+then
+    LOGDIR=/var/log/crab
+elif [[ -w /var/log && ! -e /var/log/crab ]]
+then
+    LOGDIR=/var/log/crab
+    mkdir $LOGDIR
+elif [ -w /var/tmp/crab ]
+then
+    LOGDIR=/var/tmp/crab
+elif [[ -w /var/tmp && ! -e /var/tmp/crab ]]
+then
+    LOGDIR=/var/tmp/crab
+    mkdir $LOGDIR
+else
+    LOGDIR=/tmp
+fi
+
+PIDFILE=$RUNDIR/crabd-$UID.pid
+LOGFILE=$LOGDIR/crabd-$UID.log
 
 if [ -e $PIDFILE ] && (ps -p $(< $PIDFILE) > /dev/null)
 then

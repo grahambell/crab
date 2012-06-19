@@ -156,30 +156,35 @@ class CrabMonitor(Thread):
                     self._write_warning(id, CrabStatus.TIMEOUT)
                     del self.timeout[id]
 
-    def _initialize_job(self, jobid):
-        jobinfo = self.store.get_job_info(jobid)
+    def _initialize_job(self, id_):
+        jobinfo = self.store.get_job_info(id_)
         if jobinfo is None or jobinfo['deleted'] is not None:
             raise JobDeleted
 
-        self.status[jobid] = {'status': None, 'running': False, 'history': [],
-                              'installed': jobinfo['installed']}
+        self.status[id_] = {'status': None, 'running': False, 'history': [],
+                            'installed': jobinfo['installed']}
 
-        self._schedule_job(jobid, jobinfo)
+        self._schedule_job(id_, jobinfo)
 
         # TODO: read these from the jobsettings table
-        self.config[jobid] = {'graceperiod': datetime.timedelta(minutes=2),
-                              'timeout': datetime.timedelta(minutes=5)}
+        self.config[id_] = {'graceperiod': datetime.timedelta(minutes=2),
+                            'timeout': datetime.timedelta(minutes=5)}
 
-    def _schedule_job(self, jobid, jobinfo=None):
+    def _schedule_job(self, id_, jobinfo=None):
         if jobinfo is None:
-            jobinfo = self.store.get_job_info(jobid)
+            jobinfo = self.store.get_job_info(id_)
+
+        self.status[id_]['scheduled'] = False
 
         if jobinfo is not None and jobinfo['time'] is not None:
             try:
-                self.sched[jobid] = CrabSchedule(jobinfo['time'],
-                                                 jobinfo['timezone'])
+                self.sched[id_] = CrabSchedule(jobinfo['time'],
+                                               jobinfo['timezone'])
             except CrabError as err:
                 print 'Warning: could not add schedule: ' + str(err)
+
+            else:
+                self.status[id_]['scheduled'] = True
 
     def _remove_job(self, jobid):
         try:

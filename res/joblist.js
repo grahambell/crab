@@ -95,6 +95,10 @@ function updateStatus(data) {
 
         updateStatusBox(id, job['status'], job['running']);
         updateReliabilityBox(id, job['reliability']);
+
+        if (! job['scheduled']) {
+            $('#reliability_' + id).append('<span title="The schedule for this job is unknown.">&#x26A0;</span>');
+        }
     }
 
     var current_time = new Date();
