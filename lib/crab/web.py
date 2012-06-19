@@ -71,14 +71,16 @@ class CrabWeb:
 
     @cherrypy.expose
     def job(self, jobid, command=None, finishid=None):
-        if not re.match('^\d+$', jobid):
-            raise HTTPError(404, 'Not a number')
+        try:
+            jobid = int(jobid)
+        except ValueError:
+            raise HTTPError(404, 'Job number not a number')
+
+        info = self.store.get_job_info(jobid)
+        if info is None:
+            raise HTTPError(404, 'Job not found')
 
         if command is None:
-            info = self.store.get_job_info(jobid)
-            if info is None:
-                raise HTTPError(404, 'Job not found')
-
             events = self.store.get_job_events(jobid)
 
             # Try to convert the times to the timezone shown on the page.
@@ -98,10 +100,12 @@ class CrabWeb:
             # than it is because each job will be marked LATE before MISSED.
             return self.write_template('job.html',
                        {'jobid': jobid, 'info': info, 'events':
-                        [e for e in events if e['status'] != CrabStatus.LATE]})
+                        [e for e in events if not CrabStatus.is_trivial(e['status'])]})
 
         elif command == 'output':
             if finishid is None:
+                # If finishid is not specified, select the most recent
+                # for this job.
                 finishes = self.store.get_job_finishes(jobid, limit=1)
 
                 if len(finishes) == 0:
@@ -109,11 +113,17 @@ class CrabWeb:
 
                 finishid = finishes[0]['id']
 
-            elif not re.match('^\d+$', finishid):
-                raise HTTPError(404, 'Not a number')
+            else:
+                try:
+                    finishid = int(finishid)
+                except ValueError:
+                    raise HTTPError(404, 'finish ID is not a number')
+
 
             # TODO: check that the given finishid is for the correct jobid.
-            (stdout, stderr) = self.store.get_job_output(finishid)
+            (stdout, stderr) = self.store.get_job_output(finishid,
+                    info['host'], info['user'], jobid)
+
             return self.write_template('joboutput.html',
                        {'jobid': jobid, 'stdout': stdout, 'stderr': stderr})
 

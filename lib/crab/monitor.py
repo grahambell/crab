@@ -38,19 +38,23 @@ class CrabMonitor(Thread):
 
         for job in jobs:
             jobid = job['id']
-            self._initialize_job(jobid)
+            try:
+                self._initialize_job(jobid)
 
-            # Allow a margin of events over HISTORY_COUNT to allow
-            # for start events and warnings.
-            events = self.store.get_job_events(jobid, 4 * HISTORY_COUNT)
+                # Allow a margin of events over HISTORY_COUNT to allow
+                # for start events and warnings.
+                events = self.store.get_job_events(jobid, 4 * HISTORY_COUNT)
 
-            # Events are returned newest-first but we need to work
-            # through them in order.
-            for event in reversed(events):
-                self._update_max_id_values(event)
-                self._process_event(jobid, event)
+                # Events are returned newest-first but we need to work
+                # through them in order.
+                for event in reversed(events):
+                    self._update_max_id_values(event)
+                    self._process_event(jobid, event)
 
-            self._compute_reliability(jobid)
+                self._compute_reliability(jobid)
+
+            except JobDeleted:
+                print 'Warning: job', jobid, 'has vanished'
 
         self.status_ready.set()
 
@@ -84,12 +88,9 @@ class CrabMonitor(Thread):
             self.num_warning = 0;
             for id in self.status:
                 jobstatus = self.status[id]['status']
-                if (jobstatus is None or
-                        jobstatus == CrabStatus.SUCCESS or
-                        jobstatus == CrabStatus.LATE):
+                if (jobstatus is None or CrabStatus.is_ok(jobstatus)):
                     pass
-                elif (jobstatus == CrabStatus.UNKNOWN or
-                        jobstatus == CrabStatus.MISSED):
+                elif (CrabStatus.is_warning(jobstatus)):
                     self.num_warning += 1;
                 else:
                     self.num_error += 1;
@@ -119,16 +120,25 @@ class CrabMonitor(Thread):
                     jobid = job['id']
                     if jobid in currentjobs:
                         currentjobs.discard(jobid)
+
+                        # Compare installed timestamp is case we need to
+                        # reload the schedule.  NOTE: assumes database
+                        # datetimes compare in the correct order.
+                        if job['installed'] > self.status[jobid]['installed']:
+                            self._schedule_job(jobid)
+                            self.status[jobid]['installed'] = job['installed']
                     else:
                         # No need to check event history: if there were any
                         # events, we would have added the job when they
                         # occurred (unless a job was just un-deleted or the
                         # an event happend during the schedule check.
-                        self._initialize_job(jobid)
+                        try:
+                            self._initialize_job(jobid)
+                        except JobDeleted:
+                            print 'Warning: job', jobid, 'has vanished'
 
                 # Remove (presumably deleted) jobs.
                 for jobid in currentjobs:
-                    print 'Removing job' + str(jobid)
                     self._remove_job(jobid)
 
             self.last_time = time_stamp
@@ -148,18 +158,21 @@ class CrabMonitor(Thread):
 
     def _initialize_job(self, jobid):
         jobinfo = self.store.get_job_info(jobid)
-        if jobinfo is not None and jobinfo['deleted'] is not None:
+        if jobinfo is None or jobinfo['deleted'] is not None:
             raise JobDeleted
 
-        # Write empty record in self.status
+        self.status[jobid] = {'status': None, 'running': False, 'history': [],
+                              'installed': jobinfo['installed']}
 
-        self.status[jobid] = {'status': None, 'running': False, 'history': []}
+        self._schedule_job(jobid, jobinfo)
 
         # TODO: read these from the jobsettings table
         self.config[jobid] = {'graceperiod': datetime.timedelta(minutes=2),
                               'timeout': datetime.timedelta(minutes=5)}
 
-        # Write record in self.sched
+    def _schedule_job(self, jobid, jobinfo=None):
+        if jobinfo is None:
+            jobinfo = self.store.get_job_info(jobid)
 
         if jobinfo is not None and jobinfo['time'] is not None:
             try:
@@ -200,35 +213,26 @@ class CrabMonitor(Thread):
         datetime_ = datetime.datetime.strptime(event['datetime'],
                         '%Y-%m-%d %H:%M:%S').replace(tzinfo=pytz.UTC);
 
-        # Needs to not apply less-important events.
-        # Also needs to recompute reliability.
         if event['status'] is not None:
             status = event['status']
             prevstatus = self.status[jobid]['status']
 
-            # If we need to decide the status precedence anywhere else,
-            # then these rules should be made into functions in CrabStatus.
-            # (Other than the Javascript which decides what color to use.)
+            # Avoid overwriting a status with a less important one.
 
-            # LATE should only replace SUCCESS
-            if status == CrabStatus.LATE:
-                if prevstatus == CrabStatus.SUCCESS or prevstatus is None:
+            if CrabStatus.is_trivial(status):
+                if prevstatus is None or CrabStatus.is_ok(prevstatus):
                     self.status[jobid]['status'] = status
 
-            # MISSED should not replace TIMEOUT, FAIL or COULDNOTSTART
-            elif status == CrabStatus.MISSED:
-                if not (prevstatus == CrabStatus.FAIL or
-                        prevstatus == CrabStatus.COULDNOTSTART or
-                        prevstatus == CrabStatus.TIMEOUT):
+            elif CrabStatus.is_warning(status):
+                if prevstatus is None or not CrabStatus.is_error(prevstatus):
                     self.status[jobid]['status'] = status
 
-            # Other events can be set immediately
+            # Always set success / failure status (the remaining options).
+
             else:
                 self.status[jobid]['status'] = status
 
-            # Don't include LATE in the history because it should happen
-            # quite often and we don't want it to count as a failure.
-            if status != CrabStatus.LATE:
+            if not CrabStatus.is_trivial(status):
                 history = self.status[jobid]['history']
                 if len(history) >= HISTORY_COUNT:
                     del history[0]

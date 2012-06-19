@@ -5,7 +5,7 @@ import socket
 import cherrypy
 from PyRSS2Gen import RSS2, RSSItem, Guid
 
-from crab import CrabStatus
+from crab import CrabError, CrabStatus
 
 
 class CrabRSS:
@@ -22,13 +22,18 @@ class CrabRSS:
 
         # Attach output
         for fail in events:
+            fail['stdout'] = None
+            fail['stderr'] = None
+
             if fail['finishid'] is not None:
-                (stdout, stderr) = self.store.get_job_output(fail['finishid'])
-                fail['stdout'] = stdout
-                fail['stderr'] = stderr
-            else:
-                fail['stdout'] = None
-                fail['stderr'] = None
+                try:
+                    (stdout, stderr) = self.store.get_job_output(
+                            fail['finishid'], fail['host'], fail['user'],
+                            fail['id'])
+                    fail['stdout'] = stdout
+                    fail['stderr'] = stderr
+                except CrabError:
+                    pass
 
         rssitems = map(lambda e: self.event_to_rssitem(e), events)
 

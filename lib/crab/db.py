@@ -9,37 +9,17 @@ class CrabDB:
     def __init__(self, conn, outputstore=None):
         self.conn = conn
 
-        # An outputstore should implement write_output and read_output,
+        # An outputstore should implement write_job_output and get_job_output,
         # and if provided will be used instead of writing the stdout
         # and stderr from the cron jobs to the database.  The outputstore
         # should only raise instances of CrabError.
         self.outputstore = outputstore
 
     def get_jobs(self):
-        c = self.conn.cursor()
-        jobs = []
-
-        try:
-            c.execute('SELECT id, host, user, jobid, command ' +
-                      'FROM job WHERE deleted IS NULL ' +
-                      'ORDER BY host ASC, user ASC, installed ASC')
-
-            while True:
-                row = c.fetchone()
-                if row is None:
-                    break
-
-                (id, host, user, jobid, command) = row
-                jobs.append({'id': id, 'host': host, 'user': user,
-                             'jobid': jobid, 'command': command})
-
-        except DatabaseError as err:
-            raise CrabError('database error : ' + str(err))
-
-        finally:
-            c.close()
-
-        return jobs
+        return self._query_to_dict_list(
+                'SELECT id, host, user, jobid, command, installed ' +
+                'FROM job WHERE deleted IS NULL ' +
+                'ORDER BY host ASC, user ASC, installed ASC', [])
 
     def get_crontab(self, host, user):
         c = self.conn.cursor()
@@ -301,8 +281,8 @@ class CrabDB:
             finishid = c.lastrowid
 
             if self.outputstore is not None:
-                self.outputstore.write_output(host, user, jobid, command,
-                                              finishid, stdout, stderr)
+                self.outputstore.write_job_output(finishid, host, user, id,
+                                                  stdout, stderr)
             else:
                 c.execute('INSERT INTO joboutput (finishid, stdout, stderr) ' +
                           'VALUES (?, ?, ?)',
@@ -395,7 +375,7 @@ class CrabDB:
         return self._query_to_dict_list(
                 'SELECT ' +
                     'job.id AS id, status, datetime, host, user, ' +
-                    'job.jobid AS jobid, job.command AS command, ' +
+                    'job.jobid AS jobid, jobfinish.command AS command, ' +
                     'jobfinish.id AS finishid ' +
                     'FROM jobfinish JOIN job ON jobfinish.jobid = job.id ' +
                     'WHERE status NOT IN (?, ?) ' +
@@ -443,17 +423,15 @@ class CrabDB:
 
         return output
 
-    def get_job_output(self, id):
+    def get_job_output(self, finishid, host, user, id_):
         if self.outputstore is not None:
-            # TODO: really need to provide: host, user, jobid, command
-            # in case the storage method used these to organise its files.
-            return self.outputstore.read_output(finishid)
+            return self.outputstore.get_job_output(finishid, host, user, id_)
         else:
             c = self.conn.cursor()
 
             try:
                 c.execute('SELECT stdout, stderr FROM joboutput ' +
-                          'WHERE finishid=?', [id])
+                          'WHERE finishid=?', [finishid])
 
                 row = c.fetchone()
 
