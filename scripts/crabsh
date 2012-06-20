@@ -67,7 +67,8 @@ def main():
 
     try:
         client.start()
-    except CrabError as err:
+    #except CrabError as err:
+    except CrabError, err:
         print 'crabsh:', command
         print 'Failed to notify job start.'
         print 'ERROR:', str(err), '\n'
@@ -86,7 +87,8 @@ def main():
 
         client.finish(returncode, stdoutdata, stderrdata)
 
-    except OSError as err:
+    #except OSError as err:
+    except OSError, err:
         try:
             client.fail(CrabStatus.COULDNOTSTART, str(err))
         except CrabError:
@@ -94,7 +96,8 @@ def main():
             print 'Failed to notify that job could not start.'
             print 'ERROR:', str(err)
 
-    except CrabError as err:
+    #except CrabError as err:
+    except CrabError, err:
         # Print fall-back message for cron to send by email (to the
         # crontab owner or address set its MAILTO variable.
         print 'crabsh:', command

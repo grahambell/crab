@@ -1,5 +1,9 @@
 import ConfigParser
-import json
+# Workaround lack of JSON in Python 2.4
+try:
+    import json
+except ImportError:
+    import simplejson as json
 import os
 import socket
 import urllib
@@ -103,13 +107,16 @@ class CrabClient:
 
             return json.load(res)
 
-        except HTTPException as err:
+        #except HTTPException as err:
+        except HTTPException, err:
             raise CrabError('HTTP error : ' + str(err))
 
-        except socket.error as err:
+        #except socket.error as err:
+        except socket.error, err:
             raise CrabError('socket error : ' + str(err))
 
-        except ValueError as err:
+        #except ValueError as err:
+        except ValueError, err:
             raise CrabError('did not understand response : ' + str(err))
 
     def _write_json(self, url, obj):
@@ -125,9 +132,11 @@ class CrabClient:
             if res.status != 200:
                 raise CrabError('server error : ' + res.reason)
 
-        except HTTPException as err:
+        #except HTTPException as err:
+        except HTTPException, err:
             raise CrabError('HTTP error : ' + str(err))
 
-        except socket.error as err:
+        #except socket.error as err:
+        except socket.error, err:
             raise CrabError('socket error : ' + str(err))
 

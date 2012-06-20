@@ -43,7 +43,8 @@ Commands:
                     client.start()
                 else:
                     client.finish(status=status_commands.index(args[0]))
-            except CrabError as err:
+            #except CrabError as err:
+            except CrabError, err:
                 print sys.argv[0], ':', str(err)
 
     elif args[0] == 'import':
@@ -69,10 +70,12 @@ Commands:
                 client = CrabClient()
                 client.send_crontab(stdoutdata, timezone = tz)
 
-        except OSError as err:
+        #except OSError as err:
+        except OSError, err:
             print sys.argv[0], ': could not execute crontab command'
 
-        except CrabError as err:
+        #except CrabError as err:
+        except CrabError, err:
             print sys.argv[0], ': failed to send crontab :', str(err)
 
     elif args[0] == 'fetch':
@@ -80,7 +83,8 @@ Commands:
             client = CrabClient()
             crontab = client.fetch_crontab()
             print crontab
-        except CrabError as err:
+        #except CrabError as err:
+        except CrabError, err:
             print sys.argv[0], ': failed to fetch crontab :', str(err)
 
     elif args[0] == 'help':
