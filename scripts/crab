@@ -17,6 +17,7 @@ Commands:
   fail, couldnotstart    - report problems with cron job
   import                 - send crontab to server
   fetch                  - display cron jobs from server""")
+
     parser.add_option('-c',
         type='string', dest='command',
         help='specify the cron COMMAND being reported', metavar='COMMAND')
@@ -36,7 +37,7 @@ Commands:
             parser.error('no command specified')
         else:
             try:
-                client = CrabClient(options.command, id=options.id)
+                client = CrabClient(options.command, jobid=options.id)
 
                 if args[0] == 'start':
                     client.start()

@@ -1,11 +1,28 @@
 #!/usr/bin/env bash
 
+# Automatic start script for crabd, designed to be run from cron.
+# For example, to check that the server is running every 10 minutes:
+#
+#   PATH=/path/to/crab/scripts:/bin:/usr/bin
+#   PYTHONPATH=/path/to/crab/lib
+#   5-55/10 * * * * crabd-check
+#
+# It keeps track of the server's PID and restarts it if that process
+# is not running.  It also redirects the output from crabd into
+# a log file.
+
+# Select directory for PID file.
+# Try /var/run otherwise use /tmp.
+
 if [ -w /var/run ]
 then
     RUNDIR=/var/run
 else
     RUNDIR=/tmp
 fi
+
+# Select directory for log file.
+# Try /var/log/crab otherwise /var/tmp/crab or /tmp.
 
 if [ -w /var/log/crab ]
 then
@@ -25,13 +42,19 @@ else
     LOGDIR=/tmp
 fi
 
+# Set file names.
+
 PIDFILE=$RUNDIR/crabd-$UID.pid
 LOGFILE=$LOGDIR/crabd-$UID.log
+
+# Check if crabd is already running.
 
 if [ -e $PIDFILE ] && (ps -p $(< $PIDFILE) > /dev/null)
 then
     exit 0
 fi
+
+# Launch crabd and record the PID.
 
 crabd >> $LOGFILE 2>&1 &
 echo $! > $PIDFILE

@@ -63,7 +63,7 @@ def main():
 
     # Attempt to execute the command
 
-    client = CrabClient(command, id=id)
+    client = CrabClient(command, jobid=id)
 
     try:
         client.start()

@@ -7,9 +7,15 @@ import pytz
 # be used instead of calling this.
 #
 # The Perl module DateTime::TimeZone::Local::Unix uses this method, among
-# others.
+# others.  TODO: implement some of the other methods.
 
 def guess_timezone():
+    """Function to try to determine the operating system's timezone setting.
+
+    Currently this reads /etc/localtime and tries to find the file in
+    /usr/share/zoneinfo which matches.  It uses pytz to get a list of
+    common timezones to try."""
+
     try:
         f = open('/etc/localtime')
         localtime = f.read()

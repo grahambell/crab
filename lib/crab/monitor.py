@@ -10,10 +10,17 @@ from crab.schedule import CrabSchedule
 HISTORY_COUNT = 10
 
 class JobDeleted(Exception):
+    """Exception raised by _initialize_job if the job can not be found."""
     pass
 
 class CrabMonitor(Thread):
+    """A class implementing the crab monitor thread."""
+
     def __init__(self, store):
+        """Constructor.
+
+        Saves the given storage backend and prepares the instance
+        data."""
         Thread.__init__(self)
 
         self.store = store
@@ -34,6 +41,21 @@ class CrabMonitor(Thread):
         self.random = Random()
 
     def run(self):
+        """Monitor thread main run function.
+
+        When the thread is started, this function will run.  It begins
+        by fetching a list of jobs and using them to populate its
+        data structures.  When this is complete, the Event status_ready
+        is fired.
+
+        It then goes into a loop, and every few seconds it checks
+        for new events, processing any which are found.  The new_event
+        Condition is fired if there were any new events.
+
+        If the minute has changes snice the last time round the loop,
+        the job scheduling is checked.  At this stage we also check
+        for new / deleted / updated jobs."""
+
         jobs = self.store.get_jobs()
 
         for job in jobs:
@@ -101,7 +123,9 @@ class CrabMonitor(Thread):
 
             # Hour and minute should be sufficient to check
             # that the minute has changed.
+
             # TODO: check we didn't somehow miss a minute?
+
             time_stamp = datetime_.strftime('%H%M')
 
             if self.last_time is None or time_stamp != self.last_time:
@@ -157,6 +181,9 @@ class CrabMonitor(Thread):
                     del self.timeout[id]
 
     def _initialize_job(self, id_):
+        """Fetches information about the specified job and records it
+        in the instance data structures.  Includes a call to _schedule_job."""
+
         jobinfo = self.store.get_job_info(id_)
         if jobinfo is None or jobinfo['deleted'] is not None:
             raise JobDeleted
@@ -171,6 +198,13 @@ class CrabMonitor(Thread):
                             'timeout': datetime.timedelta(minutes=5)}
 
     def _schedule_job(self, id_, jobinfo=None):
+        """Sets or updates job scheduling information.
+
+        The job information can either be passed in as a dict, or it
+        will be fetched from the storage backend.  If scheduling information
+        (i.e. a "time" string, and optionally a timezone) is present,
+        a CrabSchedule object is constructed and stored in the sched dict."""
+
         if jobinfo is None:
             jobinfo = self.store.get_job_info(id_)
 
@@ -187,6 +221,8 @@ class CrabMonitor(Thread):
                 self.status[id_]['scheduled'] = True
 
     def _remove_job(self, jobid):
+        """Removes a job from the instance data structures."""
+
         try:
             del self.status[jobid]
             if self.config.has_key(jobid):
@@ -203,6 +239,9 @@ class CrabMonitor(Thread):
             print 'Warning: stopping monitoring job but it is not in monitor.'
 
     def _update_max_id_values(self, event):
+        """Updates the instance max_startid, max_warnid and max_finishid
+        values if they are outdate by the event, which is passed as a dict."""
+
         if (event['type'] == CrabEvent.START and
                 event['id'] > self.max_startid):
             self.max_startid = event['id']
@@ -214,7 +253,13 @@ class CrabMonitor(Thread):
             self.max_finishid = event['id']
 
     def _process_event(self, jobid, event):
+        """Processes the given event, updating the instance data
+        structures accordingly."""
+
         # Parse date from SQLite format, which is always UTC.
+        # TODO:  move the date format (or the parsing) into the db module,
+        # and have it be a function so that it could change depending on
+        # database type.
         datetime_ = datetime.datetime.strptime(event['datetime'],
                         '%Y-%m-%d %H:%M:%S').replace(tzinfo=pytz.UTC);
 
@@ -257,6 +302,10 @@ class CrabMonitor(Thread):
                 del self.timeout[jobid]
 
     def _compute_reliability(self, jobid):
+        """Uses the history list of the specified job to recalculate its
+        reliability percentage and store it in the 'reliability'
+        entry of the status dict."""
+
         history = self.status[jobid]['history']
         if len(history) == 0:
             self.status[jobid]['reliability'] = 0
@@ -265,21 +314,31 @@ class CrabMonitor(Thread):
                 len(filter(lambda x: x == CrabStatus.SUCCESS, history)) /
                 len(history))
 
-    def _write_warning(self, id, status):
+    def _write_warning(self, id_, status):
+        """Inserts a warning into the storage backend."""
         try:
-            self.store.log_warning(id, status)
+            self.store.log_warning(id_, status)
         except CrabError as err:
             print 'Could not record warning : ' + str(err)
 
-    # For efficiency returns our job status dict.  Callers should not
-    # modify it.
     def get_job_status(self):
+        """Fetches the status of all jobs as a dict.
+
+        For efficiency this returns a reference to our job status dict.
+        Callers should not modify it."""
+
         self.status_ready.wait()
         return self.status
 
-    # Function which waits for new result.  A random time up to 20s is added
-    # to the timeout to stagger requests.
     def wait_for_event_since(self, startid, warnid, finishid, timeout=120):
+        """Function which waits for new events.
+
+        It does this by comparing the IDs with our maximum values seen so
+        far.  If no new events have already be seen, wait for the new_event
+        Condition to fire.
+
+        A random time up to 20s is added to the timeout to stagger requests."""
+
         if (self.max_startid > startid or self.max_warnid > warnid or
                                           self.max_finishid > finishid):
             pass
