@@ -65,15 +65,8 @@ def main():
     cherrypy.tree.mount(CrabServer(store), '/api/0', {})
     cherrypy.tree.mount(CrabRSS(store), '/rss', {})
 
-    # From the CherryPy documentation:
-    if hasattr(cherrypy.engine, 'block'):
-        # 3.1 syntax
-        cherrypy.engine.start()
-        cherrypy.engine.block()
-    else:
-        # 3.0 syntax
-        cherrypy.server.quickstart()
-        cherrypy.engine.start()
+    cherrypy.engine.start()
+    cherrypy.engine.block()
 
 if __name__ == "__main__":
     main()
