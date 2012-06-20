@@ -18,9 +18,12 @@ class CrabClient:
         """Constructor for CrabClient.
 
         This causes the client to configure itself,
-        by looking for the crab.ini file.  If the client has
-        been started to report on the status of a job, then
-        the command must be supplied, and the jobid should
+        by looking for the crab.ini file.  If the environment
+        variables CRABHOST or CRABPORT exist, these override
+        settings from the configuration files.
+
+        If the client has been started to report on the status of a
+        job, then the command must be supplied, and the jobid should
         be given if known.
         """
         self.command = command
@@ -36,6 +39,11 @@ class CrabClient:
 
         self.config.read(['/etc/crab/crab.ini',
                           os.path.expanduser('~/.crab/crab.ini')])
+
+        if os.environ.has_key('CRABHOST'):
+            self.config.set('server', 'host', os.environ['CRABHOST'])
+        if os.environ.has_key('CRABPORT'):
+            self.config.set('server', 'port', os.environ['CRABPORT'])
 
     def start(self):
         """Notify the server that the job is starting."""
