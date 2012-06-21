@@ -22,7 +22,7 @@ Commands:
         type='string', dest='command',
         help='specify the cron COMMAND being reported', metavar='COMMAND')
     parser.add_option('--id',
-        type='string', dest='id',
+        type='string', dest='jobid',
         help='specify the cron job ID to report', metavar='ID')
 
     (options, args) = parser.parse_args()
@@ -37,7 +37,7 @@ Commands:
             parser.error('no command specified')
         else:
             try:
-                client = CrabClient(options.command, jobid=options.id)
+                client = CrabClient(options.command, jobid=options.jobid)
 
                 if args[0] == 'start':
                     client.start()

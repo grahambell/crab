@@ -15,7 +15,7 @@ def main():
         type='string', dest='command',
         help='specify the COMMAND to execute', metavar='COMMAND')
     parser.add_option('--id',
-        type='string', dest='id',
+        type='string', dest='jobid',
         help='set job ID', metavar='ID')
     parser.add_option('--shell',
         type='string', dest='shell',
@@ -46,24 +46,24 @@ def main():
 
     # Look for cron job ID
 
-    id = None
+    jobid = None
 
-    if options.id:
-        id = options.id
+    if options.jobid:
+        jobid = options.jobid
     elif command.startswith('CRABID='):
-        (id, command) = split_quoted_word(command[7:])
+        (jobid, command) = split_quoted_word(command[7:])
 
         # We could leave the CRABID in the command for the shell to
         # extract, but doing it this way makes sure the command matches
         # that in the database and allows for shells which cannot handle
         # variables given at the start of a command
-        env['CRABID'] = id
+        env['CRABID'] = jobid
     elif env.has_key('CRABID'):
-        id = env['CRABID']
+        jobid = env['CRABID']
 
     # Attempt to execute the command
 
-    client = CrabClient(command, jobid=id)
+    client = CrabClient(command, jobid=jobid)
 
     try:
         client.start()

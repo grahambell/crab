@@ -103,7 +103,7 @@
 % endif
         <td>
 % if event["type"] == 3:
-            <a href="/job/${jobid | h}/output/${event["id"] | h}">Output</a>
+            <a href="/job/${id | h}/output/${event["id"] | h}">Output</a>
 % else:
             &nbsp;
 % endif

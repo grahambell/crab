@@ -58,7 +58,7 @@ class CrabDB:
                 row = c.fetchone()
                 if row is None:
                     break
-                (time, command, id, dbtz) = row
+                (time, command, jobid, dbtz) = row
 
                 if time is None:
                     time = '### CRAB: UNKNOWN SCHEDULE ###'
@@ -71,8 +71,8 @@ class CrabDB:
                     crontab.append('### CRAB: UNKNOWN TIMEZONE ###')
                     timezone = None
 
-                if id is not None:
-                    command = 'CRABID=' + quote_multiword(id) + ' ' + command
+                if jobid is not None:
+                    command = 'CRABID=' + quote_multiword(jobid) + ' ' + command
 
                 crontab.append(time + ' ' + command)
 
@@ -145,10 +145,10 @@ class CrabDB:
 
                     command = command.rstrip()
 
-                    id = self.check_job(c, host, user, jobid,
-                                        command, time, timezone)
+                    id_ = self.check_job(c, host, user, jobid,
+                                         command, time, timezone)
 
-                    rowid.discard(id)
+                    rowid.discard(id_)
                     jobid = None
                     continue
 
@@ -158,10 +158,10 @@ class CrabDB:
             # Set any jobs remaining in the rowid set to deleted
             # because we did not see them in the current crontab
 
-            for id in rowid:
+            for id_ in rowid:
                 c.execute('UPDATE job SET deleted=CURRENT_TIMESTAMP ' +
                           'WHERE id=?',
-                          [id]);
+                          [id_]);
 
             self.conn.commit()
 
@@ -191,7 +191,7 @@ class CrabDB:
             row = c.fetchone()
 
             if row is not None:
-                (id, dbcommand, dbtime, dbtz, deleted) = row
+                (id_, dbcommand, dbtime, dbtz, deleted) = row
 
                 if (deleted is None and
                         command == dbcommand and
@@ -208,9 +208,9 @@ class CrabDB:
                     c.execute('UPDATE job SET command=?, time=?, ' +
                               'timezone=?, installed=CURRENT_TIMESTAMP, ' +
                               'deleted=NULL WHERE id=?',
-                              [command, time, timezone, id])
+                              [command, time, timezone, id_])
 
-                return id
+                return id_
 
             else:
                 # Need to check if the job already existed without
@@ -224,7 +224,7 @@ class CrabDB:
                 row = c.fetchone()
 
                 if row is not None:
-                    (id, dbtime, dbtz, deleted) = row
+                    (id_, dbtime, dbtz, deleted) = row
 
                     if time is None:
                         time = dbtime
@@ -235,9 +235,9 @@ class CrabDB:
                                   'jobid=?, '
                                   'installed=CURRENT_TIMESTAMP, deleted=NULL '
                               'WHERE id=?',
-                              [time, timezone, jobid, id])
+                              [time, timezone, jobid, id_])
 
-                    return id
+                    return id_
 
                 else:
                   self._insert_job(c, host, user, jobid, time,
@@ -259,7 +259,7 @@ class CrabDB:
             row = c.fetchone()
 
             if row is not None:
-                (id, dbtime, dbtz, deleted) = row
+                (id_, dbtime, dbtz, deleted) = row
 
                 if (deleted is None and
                         (time is None or time == dbtime) and
@@ -275,9 +275,9 @@ class CrabDB:
                     c.execute('UPDATE job SET time=?, timezone=?, ' +
                               'installed=CURRENT_TIMESTAMP, deleted=NULL ' +
                               'WHERE id=?',
-                              [time, timezone, id])
+                              [time, timezone, id_])
 
-                return id
+                return id_
 
             else:
                 self._insert_job(c, host, user, jobid, time, command, timezone)
@@ -298,10 +298,10 @@ class CrabDB:
         c = self.conn.cursor()
 
         try:
-            id = self.check_job(c, host, user, jobid, command)
+            id_ = self.check_job(c, host, user, jobid, command)
 
             c.execute('INSERT INTO jobstart (jobid, command) VALUES (?, ?)',
-                      [id, command])
+                      [id_, command])
             self.conn.commit()
 
         except DatabaseError as err:

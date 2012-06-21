@@ -51,16 +51,16 @@ class CrabWebQuery:
 
 
     @cherrypy.expose
-    def jobinfo(self, jobid):
+    def jobinfo(self, id_):
         """CherryPy handler returning the job information for the given job."""
         try:
-            info = self.store.get_job_info(int(jobid))
+            info = self.store.get_job_info(int(id_))
         except ValueError:
             raise HTTPError(404, 'Job ID not a number')
         if info is None:
             raise HTTPError(404, 'Job not found')
 
-        info["id"] = jobid
+        info["id"] = id_
         return json.dumps(info)
 
 class CrabWeb:
@@ -90,7 +90,7 @@ class CrabWeb:
             raise HTTPError(message=str(err))
 
     @cherrypy.expose
-    def job(self, jobid, command=None, finishid=None):
+    def job(self, id_, command=None, finishid=None):
         """Displays information about a current job.
 
         Currently also supports showing the job output.
@@ -98,16 +98,16 @@ class CrabWeb:
         it will find the most recent output for the given job."""
 
         try:
-            jobid = int(jobid)
+            id_ = int(id_)
         except ValueError:
             raise HTTPError(404, 'Job number not a number')
 
-        info = self.store.get_job_info(jobid)
+        info = self.store.get_job_info(id_)
         if info is None:
             raise HTTPError(404, 'Job not found')
 
         if command is None:
-            events = self.store.get_job_events(jobid)
+            events = self.store.get_job_events(id_)
 
             # Try to convert the times to the timezone shown on the page.
             if info['timezone'] is not None:
@@ -125,14 +125,14 @@ class CrabWeb:
             # shown in green, might make a failing cron job look better
             # than it is because each job will be marked LATE before MISSED.
             return self._write_template('job.html',
-                       {'jobid': jobid, 'info': info, 'events':
+                       {'id': id_, 'info': info, 'events':
                         [e for e in events if not CrabStatus.is_trivial(e['status'])]})
 
         elif command == 'output':
             if finishid is None:
                 # If finishid is not specified, select the most recent
                 # for this job.
-                finishes = self.store.get_job_finishes(jobid, limit=1)
+                finishes = self.store.get_job_finishes(id_, limit=1)
 
                 if len(finishes) == 0:
                     raise HTTPError(404, 'No job output found')
@@ -146,12 +146,12 @@ class CrabWeb:
                     raise HTTPError(404, 'finish ID is not a number')
 
 
-            # TODO: check that the given finishid is for the correct jobid.
+            # TODO: check that the given finishid is for the correct job.id.
             (stdout, stderr) = self.store.get_job_output(finishid,
-                    info['host'], info['user'], jobid)
+                    info['host'], info['user'], id_)
 
             return self._write_template('joboutput.html',
-                       {'jobid': jobid, 'stdout': stdout, 'stderr': stderr})
+                       {'id': id_, 'stdout': stdout, 'stderr': stderr})
 
         else:
             raise HTTPError(404)

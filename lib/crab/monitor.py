@@ -59,24 +59,24 @@ class CrabMonitor(Thread):
         jobs = self.store.get_jobs()
 
         for job in jobs:
-            jobid = job['id']
+            id_ = job['id']
             try:
-                self._initialize_job(jobid)
+                self._initialize_job(id_)
 
                 # Allow a margin of events over HISTORY_COUNT to allow
                 # for start events and warnings.
-                events = self.store.get_job_events(jobid, 4 * HISTORY_COUNT)
+                events = self.store.get_job_events(id_, 4 * HISTORY_COUNT)
 
                 # Events are returned newest-first but we need to work
                 # through them in order.
                 for event in reversed(events):
                     self._update_max_id_values(event)
-                    self._process_event(jobid, event)
+                    self._process_event(id_, event)
 
-                self._compute_reliability(jobid)
+                self._compute_reliability(id_)
 
             except JobDeleted:
-                print 'Warning: job', jobid, 'has vanished'
+                print 'Warning: job', id_, 'has vanished'
 
         self.status_ready.set()
 
@@ -90,15 +90,15 @@ class CrabMonitor(Thread):
             events = self.store.get_events_since(self.max_startid,
                                 self.max_warnid, self.max_finishid)
             for event in events:
-                jobid = event['jobid']
+                id_ = event['jobid']
                 self._update_max_id_values(event)
 
                 try:
-                    if jobid not in self.status:
-                        self._initialize_job(jobid)
+                    if id_ not in self.status:
+                        self._initialize_job(id_)
 
-                    self._process_event(jobid, event)
-                    self._compute_reliability(jobid)
+                    self._process_event(id_, event)
+                    self._compute_reliability(id_)
 
                 # If the monitor is loaded when a job has just been
                 # deleted, then it may have events more recent
@@ -108,8 +108,8 @@ class CrabMonitor(Thread):
 
             self.num_error = 0;
             self.num_warning = 0;
-            for id in self.status:
-                jobstatus = self.status[id]['status']
+            for id_ in self.status:
+                jobstatus = self.status[id_]['status']
                 if (jobstatus is None or CrabStatus.is_ok(jobstatus)):
                     pass
                 elif (CrabStatus.is_warning(jobstatus)):
@@ -129,56 +129,57 @@ class CrabMonitor(Thread):
             time_stamp = datetime_.strftime('%H%M')
 
             if self.last_time is None or time_stamp != self.last_time:
-                for id in self.sched:
-                    if self.sched[id].match(datetime_):
-                        if ((not self.last_start.has_key(id)) or
-                                (self.last_start[id] + self.config[id]['graceperiod'] < datetime_)):
-                            self._write_warning(id, CrabStatus.LATE)
-                            self.miss_timeout[id] = (datetime_ +
-                                    self.config[id]['graceperiod'])
+                for id_ in self.sched:
+                    if self.sched[id_].match(datetime_):
+                        if ((not self.last_start.has_key(id_)) or
+                                (self.last_start[id_] +
+                                 self.config[id_]['graceperiod'] < datetime_)):
+                            self._write_warning(id_, CrabStatus.LATE)
+                            self.miss_timeout[id_] = (datetime_ +
+                                    self.config[id_]['graceperiod'])
 
                 # Look for new or deleted jobs.
                 currentjobs = set(self.status.keys())
                 jobs = self.store.get_jobs()
                 for job in jobs:
-                    jobid = job['id']
-                    if jobid in currentjobs:
-                        currentjobs.discard(jobid)
+                    id_ = job['id']
+                    if id_ in currentjobs:
+                        currentjobs.discard(id_)
 
                         # Compare installed timestamp is case we need to
                         # reload the schedule.  NOTE: assumes database
                         # datetimes compare in the correct order.
-                        if job['installed'] > self.status[jobid]['installed']:
-                            self._schedule_job(jobid)
-                            self.status[jobid]['installed'] = job['installed']
+                        if job['installed'] > self.status[id_]['installed']:
+                            self._schedule_job(id_)
+                            self.status[id_]['installed'] = job['installed']
                     else:
                         # No need to check event history: if there were any
                         # events, we would have added the job when they
                         # occurred (unless a job was just un-deleted or the
                         # an event happend during the schedule check.
                         try:
-                            self._initialize_job(jobid)
+                            self._initialize_job(id_)
                         except JobDeleted:
-                            print 'Warning: job', jobid, 'has vanished'
+                            print 'Warning: job', id_, 'has vanished'
 
                 # Remove (presumably deleted) jobs.
-                for jobid in currentjobs:
-                    self._remove_job(jobid)
+                for id_ in currentjobs:
+                    self._remove_job(id_)
 
             self.last_time = time_stamp
 
             # Check status of timeouts - need to get a list of keys
             # so that we can delete from the dict while iterating.
 
-            for id in self.miss_timeout.keys():
-                if self.miss_timeout[id] < datetime_:
-                    self._write_warning(id, CrabStatus.MISSED)
-                    del self.miss_timeout[id]
+            for id_ in self.miss_timeout.keys():
+                if self.miss_timeout[id_] < datetime_:
+                    self._write_warning(id_, CrabStatus.MISSED)
+                    del self.miss_timeout[id_]
 
-            for id in self.timeout.keys():
-                if self.timeout[id] < datetime_:
-                    self._write_warning(id, CrabStatus.TIMEOUT)
-                    del self.timeout[id]
+            for id_ in self.timeout.keys():
+                if self.timeout[id_] < datetime_:
+                    self._write_warning(id_, CrabStatus.TIMEOUT)
+                    del self.timeout[id_]
 
     def _initialize_job(self, id_):
         """Fetches information about the specified job and records it
@@ -220,21 +221,21 @@ class CrabMonitor(Thread):
             else:
                 self.status[id_]['scheduled'] = True
 
-    def _remove_job(self, jobid):
+    def _remove_job(self, id_):
         """Removes a job from the instance data structures."""
 
         try:
-            del self.status[jobid]
-            if self.config.has_key(jobid):
-                del self.config[jobid]
-            if self.sched.has_key(jobid):
-                del self.sched[jobid]
-            if self.last_start.has_key(jobid):
-                del self.last_start[jobid]
-            if self.timeout.has_key(jobid):
-                del self.timeout[jobid]
-            if self.miss_timeout.has_key(jobid):
-                del self.miss_timeout[jobid]
+            del self.status[id_]
+            if self.config.has_key(id_):
+                del self.config[id_]
+            if self.sched.has_key(id_):
+                del self.sched[id_]
+            if self.last_start.has_key(id_):
+                del self.last_start[id_]
+            if self.timeout.has_key(id_):
+                del self.timeout[id_]
+            if self.miss_timeout.has_key(id_):
+                del self.miss_timeout[id_]
         except KeyError:
             print 'Warning: stopping monitoring job but it is not in monitor.'
 
@@ -252,7 +253,7 @@ class CrabMonitor(Thread):
                 event['id'] > self.max_finishid):
             self.max_finishid = event['id']
 
-    def _process_event(self, jobid, event):
+    def _process_event(self, id_, event):
         """Processes the given event, updating the instance data
         structures accordingly."""
 
@@ -265,52 +266,52 @@ class CrabMonitor(Thread):
 
         if event['status'] is not None:
             status = event['status']
-            prevstatus = self.status[jobid]['status']
+            prevstatus = self.status[id_]['status']
 
             # Avoid overwriting a status with a less important one.
 
             if CrabStatus.is_trivial(status):
                 if prevstatus is None or CrabStatus.is_ok(prevstatus):
-                    self.status[jobid]['status'] = status
+                    self.status[id_]['status'] = status
 
             elif CrabStatus.is_warning(status):
                 if prevstatus is None or not CrabStatus.is_error(prevstatus):
-                    self.status[jobid]['status'] = status
+                    self.status[id_]['status'] = status
 
             # Always set success / failure status (the remaining options).
 
             else:
-                self.status[jobid]['status'] = status
+                self.status[id_]['status'] = status
 
             if not CrabStatus.is_trivial(status):
-                history = self.status[jobid]['history']
+                history = self.status[id_]['history']
                 if len(history) >= HISTORY_COUNT:
                     del history[0]
                 history.append(status)
 
         if event['type'] == CrabEvent.START:
-            self.status[jobid]['running'] = True
-            self.last_start[jobid] = datetime_
-            self.timeout[jobid] = datetime_ + self.config[jobid]['timeout']
-            if self.miss_timeout.has_key(jobid):
-                del self.miss_timeout[jobid]
+            self.status[id_]['running'] = True
+            self.last_start[id_] = datetime_
+            self.timeout[id_] = datetime_ + self.config[id_]['timeout']
+            if self.miss_timeout.has_key(id_):
+                del self.miss_timeout[id_]
 
         if (event['type'] == CrabEvent.FINISH
                 or event['status'] == CrabStatus.TIMEOUT):
-            self.status[jobid]['running'] = False
-            if self.timeout.has_key(jobid):
-                del self.timeout[jobid]
+            self.status[id_]['running'] = False
+            if self.timeout.has_key(id_):
+                del self.timeout[id_]
 
-    def _compute_reliability(self, jobid):
+    def _compute_reliability(self, id_):
         """Uses the history list of the specified job to recalculate its
         reliability percentage and store it in the 'reliability'
         entry of the status dict."""
 
-        history = self.status[jobid]['history']
+        history = self.status[id_]['history']
         if len(history) == 0:
-            self.status[jobid]['reliability'] = 0
+            self.status[id_]['reliability'] = 0
         else:
-            self.status[jobid]['reliability'] = int(100 *
+            self.status[id_]['reliability'] = int(100 *
                 len(filter(lambda x: x == CrabStatus.SUCCESS, history)) /
                 len(history))
 

@@ -47,7 +47,7 @@ class CrabServer:
                 raise HTTPError(message='write error : ' + str(err))
 
     @cherrypy.expose
-    def start(self, host, user, id=None):
+    def start(self, host, user, jobid=None):
         """CherryPy handler allowing clients to report jobs starting."""
 
         try:
@@ -57,13 +57,13 @@ class CrabServer:
             if command is None:
                 raise CrabError('cron command not specified')
 
-            self.store.log_start(host, user, id, command)
+            self.store.log_start(host, user, jobid, command)
 
         except CrabError as err:
             raise HTTPError(message='log error : ' + str(err))
 
     @cherrypy.expose
-    def finish(self, host, user, id=None):
+    def finish(self, host, user, jobid=None):
         """CherryPy handler allowing clients to report jobs finishing."""
 
         try:
@@ -77,7 +77,7 @@ class CrabServer:
             if status not in CrabStatus.VALUES:
                 raise CrabError('invalid finish status')
 
-            self.store.log_finish(host, user, id, command, status,
+            self.store.log_finish(host, user, jobid, command, status,
                                   data.get('stdout'), data.get('stderr'))
 
         except CrabError as err:
