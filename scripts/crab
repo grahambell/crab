@@ -7,7 +7,7 @@ from optparse import OptionParser
 
 from crab import CrabError, CrabStatus
 from crab.client import CrabClient
-from crab.guesstimezone import guess_timezone
+from crab.util.guesstimezone import guess_timezone
 
 def main():
     parser = OptionParser(usage = """Usage: %prog [options] [command]

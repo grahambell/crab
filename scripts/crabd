@@ -6,11 +6,11 @@ import sqlite3
 import cherrypy
 from cherrypy.lib.reprconf import Config
 
-from crab.db import CrabDB
-from crab.monitor import CrabMonitor
-from crab.rss import CrabRSS
+from crab.service.monitor import CrabMonitor
+from crab.web.rss import CrabRSS
 from crab.server import CrabServer
-from crab.web import CrabWeb
+from crab.store.db import CrabDB
+from crab.web.web import CrabWeb
 
 def main():
     config = Config()

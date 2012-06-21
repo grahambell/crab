@@ -5,7 +5,7 @@ from random import Random
 from threading import Condition, Event, Thread
 
 from crab import CrabError, CrabEvent, CrabStatus
-from crab.schedule import CrabSchedule
+from crab.util.schedule import CrabSchedule
 
 HISTORY_COUNT = 10
 

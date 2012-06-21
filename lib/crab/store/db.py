@@ -3,7 +3,7 @@ import re
 from sqlite3 import DatabaseError
 
 from crab import CrabError, CrabStatus
-from crab.util import remove_quotes, quote_multiword, split_quoted_word
+from crab.util.string import remove_quotes, quote_multiword, split_quoted_word
 
 class CrabDB:
     """Crab storage backend using a database.

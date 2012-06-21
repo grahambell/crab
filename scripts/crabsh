@@ -5,9 +5,9 @@ import sys
 import subprocess
 from optparse import OptionParser
 
-from crab import CrabError
-from crab.client import CrabClient, CrabStatus
-from crab.util import split_quoted_word
+from crab import CrabError, CrabStatus
+from crab.client import CrabClient
+from crab.util.string import split_quoted_word
 
 def main():
     parser = OptionParser()
