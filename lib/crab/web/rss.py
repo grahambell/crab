@@ -11,18 +11,17 @@ from crab import CrabError, CrabStatus
 class CrabRSS:
     """Class providing a RSS feed."""
 
-    def __init__(self, store):
+    def __init__(self, store, base_url):
         """Constructor for CrabRSS class.
 
         Stores the given storage backend, and caches the
         host's domain name for use in constructing GUIDs.
-        Also prepares the URL base for links."""
+        Links includes in the RSS feed will use the given
+        base URL."""
 
         self.store = store
+        self.base = base_url
         self.fqdn = socket.getfqdn()
-        # TODO: make this configurable -- it should at least get the
-        # port number from the configuration file!
-        self.base = 'http://' + self.fqdn + ':8000';
 
     @cherrypy.expose
     def failures(self):
@@ -73,8 +72,7 @@ class CrabRSS:
                 output += '\n\nStandard Error:\n\n'
             output += event['stderr']
 
-        date = datetime.datetime.strptime(event['datetime'],
-                                          '%Y-%m-%d %H:%M:%S')
+        date = self.store.parse_datetime(event['datetime'])
 
         guid = ':'.join(['crab', self.fqdn, str(event['id']),
                str(calendar.timegm(date.timetuple())), str(event['status'])])

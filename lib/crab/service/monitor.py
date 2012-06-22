@@ -257,12 +257,7 @@ class CrabMonitor(Thread):
         """Processes the given event, updating the instance data
         structures accordingly."""
 
-        # Parse date from SQLite format, which is always UTC.
-        # TODO:  move the date format (or the parsing) into the db module,
-        # and have it be a function so that it could change depending on
-        # database type.
-        datetime_ = datetime.datetime.strptime(event['datetime'],
-                        '%Y-%m-%d %H:%M:%S').replace(tzinfo=pytz.UTC);
+        datetime_ = self.store.parse_datetime(event['datetime'])
 
         if event['status'] is not None:
             status = event['status']

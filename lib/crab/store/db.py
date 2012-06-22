@@ -1,3 +1,5 @@
+import datetime
+import pytz
 import re
 
 from sqlite3 import DatabaseError
@@ -575,3 +577,18 @@ class CrabDB:
         finally:
             c.close()
 
+    def parse_datetime(self, timestamp):
+        """Parses the timestamp strings used by the database.
+
+        This is a method in this class so that it could potentially
+        adapt to different databases.
+
+        The returned datetime object will include the correct timezone:
+        for SQLite this is always UTC.
+
+        An alternative thing to do would be to have _query_to_dict_list
+        guess which fields are timestamps and automatically run this
+        method on them."""
+
+        return datetime.datetime.strptime(timestamp,
+                        '%Y-%m-%d %H:%M:%S').replace(tzinfo=pytz.UTC)

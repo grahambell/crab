@@ -1,6 +1,7 @@
 #!/usr/bin/env python2
 
 import os
+import socket
 import sqlite3
 
 import cherrypy
@@ -55,6 +56,8 @@ def main():
     else:
         raise Exception('Unknown store type')
 
+    base_url = ('http://' + socket.getfqdn() + ':' +
+               str(config['global']['server.socket_port']))
 
     monitor = CrabMonitor(store)
     monitor.daemon = True
@@ -63,7 +66,7 @@ def main():
     cherrypy.config.update(config)
     cherrypy.tree.mount(CrabWeb(config, store, monitor), '/', config)
     cherrypy.tree.mount(CrabServer(store), '/api/0', {})
-    cherrypy.tree.mount(CrabRSS(store), '/rss', {})
+    cherrypy.tree.mount(CrabRSS(store, base_url), '/rss', {})
 
     cherrypy.engine.start()
     cherrypy.engine.block()

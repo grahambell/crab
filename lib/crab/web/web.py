@@ -15,18 +15,6 @@ from mako.template import Template
 
 from crab import CrabError, CrabStatus
 
-def utc_to_timezone(datetime_, zoneinfo):
-    """Convert UTC datetime string as output by SQLite to an equivalent string
-    in the specified timezone.
-
-    Includes the zone code to indicate that the conversion has been
-    performed."""
-
-    if datetime_ is None:
-        return None
-    return datetime.datetime.strptime(datetime_, '%Y-%m-%d %H:%M:%S').replace(
-        tzinfo=pytz.UTC).astimezone(zoneinfo).strftime('%Y-%m-%d %H:%M:%S %Z')
-
 class CrabWebQuery:
     """CherryPy handler class for the JSON query part of the crab web
     interface."""
@@ -113,10 +101,10 @@ class CrabWeb:
             if info['timezone'] is not None:
                 try:
                     tz = pytz.timezone(info['timezone'])
-                    info['installed'] = utc_to_timezone(info['installed'], tz)
-                    info['deleted'] = utc_to_timezone(info['deleted'], tz)
+                    info['installed'] = self._to_timezone(info['installed'], tz)
+                    info['deleted'] = self._to_timezone(info['deleted'], tz)
                     for event in events:
-                        event['datetime'] = utc_to_timezone(event['datetime'],
+                        event['datetime'] = self._to_timezone(event['datetime'],
                                                             tz)
                 except pytz.UnknownTimeZoneError:
                     pass
@@ -168,3 +156,14 @@ class CrabWeb:
         except:
             return exceptions.html_error_template().render()
 
+    def _to_timezone(self, datetime_, zoneinfo):
+        """Convert the datetime string as output by the database
+        to a string in the specified timezone.
+
+        Includes the zone code to indicate that the conversion has been
+        performed."""
+
+        if datetime_ is None:
+            return None
+        return self.store.parse_datetime(datetime_).astimezone(
+                   zoneinfo).strftime('%Y-%m-%d %H:%M:%S %Z')
