@@ -68,7 +68,7 @@ Commands:
                     tz = guess_timezone()
 
                 client = CrabClient()
-                client.send_crontab(stdoutdata, timezone = tz)
+                client.send_crontab(stdoutdata, timezone=tz)
 
         #except OSError as err:
         except OSError, err:
