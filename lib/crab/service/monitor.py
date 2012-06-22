@@ -84,9 +84,6 @@ class CrabMonitor(Thread):
             time.sleep(5)
             datetime_ = datetime.datetime.now(pytz.UTC)
 
-            # TODO: monitor needs to check for new jobs occasionally.
-            # For now it can notice them if it sees an associated event.
-
             events = self.store.get_events_since(self.max_startid,
                                 self.max_warnid, self.max_finishid)
             for event in events:
