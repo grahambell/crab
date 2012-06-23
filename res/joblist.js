@@ -127,7 +127,7 @@ function refreshStatusOnce() {
     $.ajax('/query/jobstatus?startid=0&warnid=0&finishid=0', {
         dataType: 'json',
         success: refreshStatusOnceSuccess,
-        error: refreshStatusOnceError,
+        error: refreshStatusOnceError
     });
 }
 
@@ -168,14 +168,42 @@ $(document).ready(function () {
     // Need to load the disconnected icon now because if the
     // server vanishes we will not be able to load it when
     // needed.
-    image = new Image();
+    var image = new Image();
     image.onload = function () {
         var canvas = document.createElement('canvas');
         canvas.width = 16;
         canvas.height = 16;
-        context = canvas.getContext('2d');
+        var context = canvas.getContext('2d');
         context.drawImage(image, 0, 0);
         disconnectFavicon = canvas.toDataURL('image/png');
     };
-    image.src = '/res/favicon-disconnect.png'
+    image.src = '/res/favicon-disconnect.png';
+
+    var runningRule = null;
+    var runningRuleOn = false;
+
+    // Find the status_running CSS rule.
+    for (var i = 0; i < document.styleSheets.length; i ++) {
+        var sheet = document.styleSheets[i];
+        for (var j = 0; j < sheet.cssRules.length; j++) {
+            var rule = sheet.cssRules[j];
+            if (rule.selectorText === '.status_running') {
+                runningRule = rule;
+            }
+        }
+    }
+
+    // If we found it, make it flash.
+    if (runningRule !== null) {
+        setInterval(function () {
+            runningRuleOn = ! runningRuleOn;
+            if (runningRuleOn) {
+                runningRule.style.cssText = 'opacity: 0.25;';
+            }
+            else {
+                runningRule.style.cssText = 'opacity: 1.0;';
+            }
+        }, 500);
+    }
+
 });
