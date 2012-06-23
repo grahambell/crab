@@ -544,3 +544,45 @@ class CrabDB:
 
         return datetime.datetime.strptime(timestamp,
                         '%Y-%m-%d %H:%M:%S').replace(tzinfo=pytz.UTC)
+
+    def write_raw_crontab(self, host, user, crontab):
+        if self.outputstore is not None and hasattr(self.outputstore,
+                                                    'write_raw_crontab'):
+            return self.outputstore.write_raw_crontab(host, user, crontab)
+
+        entry = self._query_to_dict('SELECT id FROM rawcrontab ' +
+                                    'WHERE host = ? AND user = ?',
+                                    [host, user])
+
+        c = self.conn.cursor()
+
+        try:
+            if entry is None:
+                c.execute('INSERT INTO rawcrontab (host, user, crontab) ' +
+                          'VALUES (?, ?, ?)', [host, user, '\n'.join(crontab)])
+            else:
+                c.execute('UPDATE rawcrontab SET crontab = ? WHERE id = ?',
+                          ['\n'.join(crontab), entry['id']])
+
+            self.conn.commit()
+
+        except DatabaseError as err:
+            self.conn.rollback()
+            raise CrabError('database error : ' + str(err))
+
+        finally:
+            c.close()
+
+    def get_raw_crontab(self, host, user):
+        if self.outputstore is not None and hasattr(self.outputstore,
+                                                    'get_raw_crontab'):
+            return self.outputstore.get_raw_crontab(host, user)
+
+        entry = self._query_to_dict('SELECT crontab FROM rawcrontab ' +
+                                    'WHERE host = ? AND user = ?',
+                                    [host, user])
+
+        if entry is None:
+            return None
+        else:
+            return entry['crontab'].split('\n')

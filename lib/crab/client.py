@@ -76,11 +76,14 @@ class CrabClient:
                         {'crontab': crontab.split('\n'),
                          'timezone': timezone})
 
-    def fetch_crontab(self):
+    def fetch_crontab(self, raw=False):
         """Retrieves crontab lines from the server, and returns
         them as a single string."""
 
-        data = self._read_json(self._get_url('crontab'))
+        url = self._get_url('crontab')
+        if raw:
+            url = url + '?raw=true'
+        data = self._read_json(url)
         return '\n'.join(data['crontab'])
 
     def _get_url(self, action):

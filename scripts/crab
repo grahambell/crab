@@ -16,7 +16,7 @@ Commands:
   start, finish, unknown - report cron job progress
   fail, couldnotstart    - report problems with cron job
   import                 - send crontab to server
-  fetch                  - display cron jobs from server""")
+  export                 - display cron jobs from server""")
 
     parser.add_option('-c',
         type='string', dest='command',
@@ -24,6 +24,9 @@ Commands:
     parser.add_option('--id',
         type='string', dest='jobid',
         help='specify the cron job ID to report', metavar='ID')
+    parser.add_option('--raw',
+        action="store_true", dest="raw", default=False,
+        help="fetch crontab from server exactly as last imported")
 
     (options, args) = parser.parse_args()
 
@@ -78,10 +81,10 @@ Commands:
         except CrabError, err:
             print sys.argv[0], ': failed to send crontab :', str(err)
 
-    elif args[0] == 'fetch':
+    elif args[0] == 'export':
         try:
             client = CrabClient()
-            crontab = client.fetch_crontab()
+            crontab = client.fetch_crontab(raw=options.raw)
             print crontab
         #except CrabError as err:
         except CrabError, err:

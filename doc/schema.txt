@@ -13,6 +13,7 @@ CREATE TABLE job (
 
 CREATE INDEX job_jobid ON job (jobid);
 CREATE INDEX job_host ON job (host);
+CREATE INDEX job_user ON job (user);
 CREATE INDEX job_command ON job (command);
 CREATE INDEX job_installed ON job (installed);
 CREATE INDEX job_deleted ON job (deleted);
@@ -65,3 +66,14 @@ CREATE TABLE jobconfig (
     graceperiod INTEGER,
     timeout INTEGER
 );
+
+CREATE TABLE rawcrontab (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    host VARCHAR(255) NOT NULL,
+    user VARCHAR(255) NOT NULL,
+    crontab TEXT NOT NULL,
+    UNIQUE (host, user)
+);
+
+CREATE INDEX rawcrontab_host ON rawcrontab (host);
+CREATE INDEX rawcrontab_user ON rawcrontab (user);

@@ -19,7 +19,7 @@ class CrabServer:
         self.store = store
 
     @cherrypy.expose
-    def crontab(self, host, user):
+    def crontab(self, host, user, raw=False):
         """CherryPy handler for the crontab action.
 
         Allows the client to PUT a new crontab, or use a GET
@@ -28,7 +28,10 @@ class CrabServer:
 
         if cherrypy.request.method == 'GET':
             try:
-                crontab = get_crontab(self.store, host, user)
+                if raw:
+                    crontab = self.store.get_raw_crontab(host, user)
+                else:
+                    crontab = get_crontab(self.store, host, user)
                 return json.dumps({'crontab': crontab})
             except CrabError as err:
                 raise HTTPError(message='read error : ' + str(err))

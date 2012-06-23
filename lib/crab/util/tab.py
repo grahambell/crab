@@ -50,6 +50,9 @@ def save_crontab(store, host, user, crontab, timezone=None):
     starting with a CRABID= definition, but otherwise inserts them
     into the database as is."""
 
+    # Save the raw crontab.
+    store.write_raw_crontab(host, user, crontab)
+
     # These patterns do not deal with quoting or trailing spaces,
     # so these must be dealt with in the code below.
     blankline = re.compile('^\s*$')
@@ -85,8 +88,13 @@ def save_crontab(store, host, user, crontab, timezone=None):
             if m is not None:
                 (time, command) = m.groups()
 
+                if command.startswith('CRABIGNORE='):
+                    (ignore, command) = command[11:].split(None, 1)
+                    if ignore.lower() not in ['0', 'no', 'false', 'off']:
+                        continue
+
                 if command.startswith('CRABID='):
-                    (jobid, command) = split_quoted_word(command[7:].rstrip())
+                    (jobid, command) = split_quoted_word(command[7:])
 
                 command = command.rstrip()
 
