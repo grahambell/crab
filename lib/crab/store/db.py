@@ -4,8 +4,9 @@ import pytz
 from sqlite3 import DatabaseError
 
 from crab import CrabError, CrabStatus
+from crab.store import CrabStore
 
-class CrabDB:
+class CrabDB(CrabStore):
     """Crab storage backend using a database.
 
     Currently written for SQLite but since it uses the Python DB API
@@ -32,7 +33,7 @@ class CrabDB:
     # them both when one completes.  One way would be to have the database
     # opened with check_same_thread turned off and route all updates
     # through a Queue.  These methods should be used internally by this
-    # class, but for now they are just used by crab.util.tab.
+    # class, but for now they are just used by CrabStore.
     # Would be nice to allow for the 'with' command to be used.
 
     def _begin_transaction(self):

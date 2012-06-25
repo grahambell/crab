@@ -6,7 +6,6 @@ import cherrypy
 from cherrypy import HTTPError
 
 from crab import CrabError, CrabStatus
-from crab.util.tab import get_crontab, save_crontab
 
 class CrabServer:
     """Crab server class, used for interaction with the client."""
@@ -31,7 +30,7 @@ class CrabServer:
                 if raw:
                     crontab = self.store.get_raw_crontab(host, user)
                 else:
-                    crontab = get_crontab(self.store, host, user)
+                    crontab = self.store.get_crontab(host, user)
                 return json.dumps({'crontab': crontab})
             except CrabError as err:
                 raise HTTPError(message='read error : ' + str(err))
@@ -44,7 +43,7 @@ class CrabServer:
                 if crontab is None:
                     raise CrabError('no crontab received')
 
-                save_crontab(self.store, host, user, crontab,
+                self.store.save_crontab(host, user, crontab,
                              timezone=data.get('timezone'))
 
             except CrabError as err:
