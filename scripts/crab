@@ -65,7 +65,7 @@ Commands:
                 # so if in doubt, environment variable TZ should be set.
                 tz = None
 
-                if os.environ.has_key('TZ'):
+                if 'TZ' in os.environ:
                     tz = os.environ['TZ']
                 else:
                     tz = guess_timezone()

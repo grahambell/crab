@@ -128,7 +128,7 @@ class CrabMonitor(Thread):
             if self.last_time is None or time_stamp != self.last_time:
                 for id_ in self.sched:
                     if self.sched[id_].match(datetime_):
-                        if ((not self.last_start.has_key(id_)) or
+                        if ((id_ not in self.last_start) or
                                 (self.last_start[id_] +
                                  self.config[id_]['graceperiod'] < datetime_)):
                             self._write_warning(id_, CrabStatus.LATE)
@@ -223,15 +223,15 @@ class CrabMonitor(Thread):
 
         try:
             del self.status[id_]
-            if self.config.has_key(id_):
+            if id_ in self.config:
                 del self.config[id_]
-            if self.sched.has_key(id_):
+            if id_ in self.sched:
                 del self.sched[id_]
-            if self.last_start.has_key(id_):
+            if id_ in self.last_start:
                 del self.last_start[id_]
-            if self.timeout.has_key(id_):
+            if id_ in self.timeout:
                 del self.timeout[id_]
-            if self.miss_timeout.has_key(id_):
+            if id_ in self.miss_timeout:
                 del self.miss_timeout[id_]
         except KeyError:
             print 'Warning: stopping monitoring job but it is not in monitor.'
@@ -285,13 +285,13 @@ class CrabMonitor(Thread):
             self.status[id_]['running'] = True
             self.last_start[id_] = datetime_
             self.timeout[id_] = datetime_ + self.config[id_]['timeout']
-            if self.miss_timeout.has_key(id_):
+            if id_ in self.miss_timeout:
                 del self.miss_timeout[id_]
 
         if (event['type'] == CrabEvent.FINISH
                 or event['status'] == CrabStatus.TIMEOUT):
             self.status[id_]['running'] = False
-            if self.timeout.has_key(id_):
+            if id_ in self.timeout:
                 del self.timeout[id_]
 
     def _compute_reliability(self, id_):

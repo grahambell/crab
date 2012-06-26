@@ -34,7 +34,7 @@ def main():
         pass
 
     env = os.environ
-    if env.has_key('CRABHOME'):
+    if 'CRABHOME' in env:
         config['crab']['home'] = env['CRABHOME']
 
     config['/res'] = {'tools.staticdir.on': True,

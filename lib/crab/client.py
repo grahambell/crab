@@ -40,9 +40,9 @@ class CrabClient:
         self.config.read(['/etc/crab/crab.ini',
                           os.path.expanduser('~/.crab/crab.ini')])
 
-        if os.environ.has_key('CRABHOST'):
+        if 'CRABHOST' in os.environ:
             self.config.set('server', 'host', os.environ['CRABHOST'])
-        if os.environ.has_key('CRABPORT'):
+        if 'CRABPORT' in os.environ:
             self.config.set('server', 'port', os.environ['CRABPORT'])
 
     def start(self):

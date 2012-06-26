@@ -41,7 +41,7 @@ def main():
 
     if options.shell:
         shell = options.shell
-    elif env.has_key('CRABSHELL'):
+    elif 'CRABSHELL' in env:
         shell = env['CRABSHELL']
 
     # Look for cron job ID
@@ -58,7 +58,7 @@ def main():
         # that in the database and allows for shells which cannot handle
         # variables given at the start of a command
         env['CRABID'] = jobid
-    elif env.has_key('CRABID'):
+    elif 'CRABID' in env:
         jobid = env['CRABID']
 
     # Attempt to execute the command
@@ -112,8 +112,8 @@ def main():
     else:
         # Echo the output only if we didn't already print it due
         # to an exception occurring.
-        if (env.has_key('CRABECHO') and env['CRABECHO'].lower() not in
-                    ('', '0', 'no', 'false', 'off')):
+        if (('CRABECHO' in env) and (env['CRABECHO'].lower() not in
+                    ('', '0', 'no', 'false', 'off'))):
             if stdoutdata != '':
                 print stdoutdata
             if stderrdata != '':
