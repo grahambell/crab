@@ -84,7 +84,11 @@ class CrabClient:
         if raw:
             url = url + '?raw=true'
         data = self._read_json(url)
-        return '\n'.join(data['crontab'])
+
+        if data['crontab'] is None:
+            return  ''
+        else:
+            return '\n'.join(data['crontab'])
 
     def _get_url(self, action):
         """Creates the URL to be used to perform the given server action."""
