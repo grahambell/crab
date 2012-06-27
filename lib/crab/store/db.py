@@ -331,6 +331,13 @@ class CrabDB(CrabStore):
                     'installed, deleted ' +
                     'FROM job WHERE id = ?', [id_])
 
+    def get_job_config(self, id_):
+        """Retrieve configuration data for a job by ID number."""
+
+        return self._query_to_dict(
+                'SELECT graceperiod, timeout ' +
+                'FROM jobconfig WHERE jobid = ?', [id_])
+
     def get_job_starts(self, id_, limit=100):
         """Retrieves a list of recent job starts for the given job,
         most recent first."""

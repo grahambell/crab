@@ -149,6 +149,10 @@ class CrabMonitor(Thread):
                         if job['installed'] > self.status[id_]['installed']:
                             self._schedule_job(id_)
                             self.status[id_]['installed'] = job['installed']
+
+                        # TODO: is there a quick way to check whether we
+                        # need to do this?
+                        self._configure_job(id_)
                     else:
                         # No need to check event history: if there were any
                         # events, we would have added the job when they
@@ -163,7 +167,7 @@ class CrabMonitor(Thread):
                 for id_ in currentjobs:
                     self._remove_job(id_)
 
-            self.last_time = time_stamp
+                self.last_time = time_stamp
 
             # Check status of timeouts - need to get a list of keys
             # so that we can delete from the dict while iterating.
@@ -190,10 +194,7 @@ class CrabMonitor(Thread):
                             'installed': jobinfo['installed']}
 
         self._schedule_job(id_, jobinfo)
-
-        # TODO: read these from the jobsettings table
-        self.config[id_] = {'graceperiod': datetime.timedelta(minutes=2),
-                            'timeout': datetime.timedelta(minutes=5)}
+        self._configure_job(id_)
 
     def _schedule_job(self, id_, jobinfo=None):
         """Sets or updates job scheduling information.
@@ -217,6 +218,27 @@ class CrabMonitor(Thread):
 
             else:
                 self.status[id_]['scheduled'] = True
+
+    def _configure_job(self, id_):
+        """Sets the job configuration.
+
+        The configuration will be fetched from the storage backend
+        and stored in the config dict."""
+
+        default_time = {'graceperiod': 2, 'timeout': 5}
+
+        if id_ not in self.config:
+            self.config[id_] = {}
+
+        dbconfig = self.store.get_job_config(id_)
+
+        for parameter in default_time:
+            if dbconfig is not None and dbconfig[parameter] is not None:
+                self.config[id_][parameter] = datetime.timedelta(
+                                              minutes=dbconfig[parameter])
+            else:
+                self.config[id_][parameter] = datetime.timedelta(
+                                              minutes=default_time[parameter])
 
     def _remove_job(self, id_):
         """Removes a job from the instance data structures."""
