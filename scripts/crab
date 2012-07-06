@@ -16,7 +16,8 @@ Commands:
   start, finish, unknown - report cron job progress
   fail, couldnotstart    - report problems with cron job
   import                 - send crontab to server
-  export                 - display cron jobs from server""")
+  export                 - display cron jobs from server
+  info                   - print current configuration""")
 
     parser.add_option('-c',
         type='string', dest='command',
@@ -92,6 +93,11 @@ Commands:
 
     elif args[0] == 'help':
         parser.print_help()
+
+    elif args[0] == 'info':
+        client = CrabClient()
+        print(client.get_info())
+
     else:
         parser.error('command not recognised')
 

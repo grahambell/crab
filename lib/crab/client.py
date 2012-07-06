@@ -37,7 +37,7 @@ class CrabClient:
         self.config.set('client', 'hostname', socket.gethostname())
         self.config.set('client', 'username', os.getlogin())
 
-        self.config.read(['/etc/crab/crab.ini',
+        self.configfiles = self.config.read(['/etc/crab/crab.ini',
                           os.path.expanduser('~/.crab/crab.ini')])
 
         if 'CRABHOST' in os.environ:
@@ -89,6 +89,15 @@ class CrabClient:
             return  ''
         else:
             return '\n'.join(data['crontab'])
+
+    def get_info(self):
+        info = []
+        info.append('Server: ' + self.config.get('server', 'host')
+                         + ':' + self.config.get('server', 'port'))
+        info.append('Client: ' + self.config.get('client', 'username')
+                         + '@' + self.config.get('client', 'hostname'))
+        info.append('Files: '  + ', '.join(self.configfiles))
+        return '\n'.join(info)
 
     def _get_url(self, action):
         """Creates the URL to be used to perform the given server action."""
