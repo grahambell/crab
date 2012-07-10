@@ -1,0 +1,64 @@
+<%!
+    scripts = ['crontabs']
+%>
+<%inherit file="base.html"/>
+
+<%block name="links">
+% if user is not None:
+<span>${user | h}</span>
+% elif host is not None:
+<span>${host | h}</span>
+% endif
+</%block>
+
+% for (key, joblist) in jobs.items():
+<h2>
+% if user is None:
+<a href="/user/${key | h}">
+% else:
+<a href="/host/${key | h}">
+% endif
+${key | h}
+</a></h2>
+
+<table id="table_${key | h}">
+    <tr>
+        <th>Time</th>
+        <th>Job ID</th>
+        <th>Command</th>
+    </tr>
+% for job in joblist:
+% if job['deleted'] is None:
+    <tr>
+% else:
+    <tr class="deleted_${key | h}">
+% endif
+        <td>${job['time'] | h}</td>
+% if job.get('jobid') is not None:
+        <td class="linkcell"><a href="/job/${job['id'] | h}" id="jobid_${job["id"] | h}">${job["jobid"] | h}</a></td>
+% else:
+        <td>&nbsp;</td>
+% endif
+        <td class="linkcell"><a href="/job/${job['id'] | h}">${job['command'] | h}</a></td>
+    </tr>
+% endfor
+</table>
+
+<p>
+<a href="#" id="show_deleted_${key | h}">Show deleted.</a>
+<a href="#" id="hide_deleted_${key | h}" class="hidden">Hide deleted.</a>
+% if raw[key] is not None:
+<a href="#" id="show_raw_${key | h}">Show raw crontab.</a>
+<a href="#" id="hide_raw_${key | h}" class="hidden">Hide raw crontab.</a>
+% endif
+</p>
+
+% if raw[key] is not None:
+<pre id="raw_${key | h}" class="hidden">
+% for line in raw[key]:
+${line | h}
+% endfor
+</pre>
+% endif
+
+% endfor

@@ -144,6 +144,48 @@ class CrabWeb:
         else:
             raise HTTPError(404)
 
+    @cherrypy.expose
+    def user(self, user):
+        """Displays crontabs belonging to a particular user."""
+        return self._user_host_crontabs(user=user)
+
+    @cherrypy.expose
+    def host(self, host):
+        """Displays crontabs belonging to a particular user."""
+        return self._user_host_crontabs(host=host)
+
+    def _user_host_crontabs(self, host=None, user=None):
+        """Displays crontab listing, either by host or user."""
+
+        jobs = {}
+        raw = {}
+        info = {'jobs': jobs, 'raw': raw}
+
+        if host is None and user is not None:
+            by_user = False
+            info['user'] = user
+            info['host'] = None
+        elif host is not None and user is None:
+            by_user = True
+            info['host'] = host
+            info['user'] = None
+        else:
+            raise HTTPError(500)
+
+        for job in self.store.get_jobs(host, user, include_deleted=True):
+            if by_user:
+                key = job['user']
+            else:
+                key = job['host']
+
+            if key in jobs:
+                jobs[key].append(job)
+            else:
+                jobs[key] = [job]
+                raw[key] = self.store.get_raw_crontab(job['host'], job['user'])
+
+        return self._write_template('crontabs.html', info)
+
     def _write_template(self, name, dict={}):
         """Returns the output from the named template when rendered
         with the given dict.

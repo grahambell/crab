@@ -39,3 +39,12 @@ td, th {
 .status_running {
     opacity: 0.5;
 }
+
+.hidden {
+    display: none;
+}
+
+[class^=deleted] {
+    display: none;
+    opacity: 0.5;
+}

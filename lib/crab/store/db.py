@@ -45,15 +45,40 @@ class CrabDB(CrabStore):
     def _rollback_transaction(self):
         self.conn.rollback()
 
-    def get_jobs(self):
+    def get_jobs(self, host=None, user=None, include_deleted=False):
         """Fetches a list of all of the cron jobs stored in the database,
-        excluding deleted jobs."""
+        excluding deleted jobs by default.
+
+        Optionally filters by host or username if these parameters are
+        supplied."""
+
+        params = []
+        conditions = []
+
+        if not include_deleted:
+            conditions.append('deleted IS NULL')
+
+        if host is not None:
+            conditions.append('host=?')
+            params.append(host)
+
+        if user is not None:
+            conditions.append('user=?')
+            params.append(user)
+
+        if conditions:
+            where_clause = 'WHERE ' + ' AND '.join(conditions)
+        else:
+            where_clause = ''
 
         return self._query_to_dict_list(
-                'SELECT id, host, user, jobid, command, installed ' +
-                'FROM job WHERE deleted IS NULL ' +
-                'ORDER BY host ASC, user ASC, installed ASC', [])
+                'SELECT id, host, user, jobid, command, time, ' +
+                    'installed, deleted ' +
+                'FROM job ' + where_clause + ' ' +
+                'ORDER BY host ASC, user ASC, installed ASC', params)
 
+    # TODO merge this with the above function now that it
+    # supports parameters.
     def get_user_jobs(self, host, user):
         """Reads cron job information corresponding to a particular
         host and user.

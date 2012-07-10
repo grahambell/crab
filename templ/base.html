@@ -8,9 +8,9 @@
 <link rel="stylesheet" href="/res/crab.css">
 <link rel="icon" href="/res/favicon.png" sizes="16x16" type="image/png">
 % if self.attr.scripts:
-<script type="text/javascript" src="res/jquery.js"></script>
+<script type="text/javascript" src="/res/jquery.js"></script>
 % for script in self.attr.scripts:
-<script type="text/javascript" src="res/${script | h}.js"></script>
+<script type="text/javascript" src="/res/${script | h}.js"></script>
 % endfor
 % endif
 </head>
