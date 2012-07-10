@@ -1,15 +1,106 @@
-h1 {
-    color: red;
+body {
+    background: silver;
+    font-family: sans-serif;
+    font-size: 12pt;
+    text-align: center;
+    margin: 0px;
+    padding: 0px;
+}
+
+div#content {
+    display: inline-block;
+    text-align: left;
+    min-width: 400px;
+    margin-top: 40px;
+    margin-bottom: 40px;
+    margin-left: auto;
+    margin-right: auto;
+    background: white;
+    box-shadow: 0px 0px 30px #002;
+    border-radius: 10px;
+    padding: 20px;
+    border: 2px solid #00A;
+    clear: both;
+}
+
+div#headerbar {
+    background: grey;
+    margin: 0px;
+    padding: 0px;
+    border-bottom: 2px solid #00A;
+    box-shadow: 0px 0px 30px #002;
+    text-align: left;
+    width: 100%;
+    float: left;
+}
+
+div#headerbar div {
+    margin: 0px;
+    padding: 10px;
+    float: right;
+    text-align: right;
+}
+
+div#headerbar div:before {
+    content: ".";
+    font-size: 24pt;
+    color: grey;
+}
+
+div#headerbar h1 {
+    color: white;
+    font-size: 24pt;
+    text-shadow: 0px 0px 10px black;
+    margin: 0px;
+    padding: 10px;
+    display: inline-block;
+    text-align: left;
+}
+
+div#headerbar > a {
+    font-size: 16pt;
+    text-shadow: 0px 0px 5px black;
+    color: white;
+    margin: 0px;
+    padding: 10px;
+    display: inline-block;
+}
+
+
+div#headerbar span {
+    font-size: 16pt;
+    text-shadow: 0px 0px 5px white;
+    color: black;
+    margin: 0px;
+    padding: 10px;
+    display: inline-block;
+}
+
+h2 {
+    color: #F80;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 table {
     border-collapse: collapse;
+    width: 100%;
 }
 
 td, th {
     border: 1px solid black;
     padding: 5px;
     text-align: left;
+}
+
+th {
+    background: silver;
+    font-weight: bold;
+}
+
+pre {
+    font-family: monospace;
+    font-size: 10pt;
 }
 
 .status_normal {
@@ -40,6 +131,47 @@ td, th {
     opacity: 0.5;
 }
 
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+p a:link, p a:visited {
+    font-weight: bold;
+    color: #00F;
+}
+
+td.linkcell a:link, td.linkcell a:visited {
+    color: #00F;
+}
+
+a:link.rss, a:visited.rss {
+    background: #F80;
+    color: white;
+    border: 1px solid black;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+h1 a:link, h1 a:visited {
+    color: white;
+}
+
+div#headerbar a:active, div#headerbar a:hover {
+    text-shadow: 0px 0px 5px #FF0;
+}
+
+td.statuscell {
+    margin: 0px;
+    padding: 0px;
+}
+
+td.statuscell a {
+    display: block;
+    padding: 5px;
+    margin: 0px;
+}
+
 .hidden {
     display: none;
 }
@@ -47,4 +179,15 @@ td, th {
 [class^=deleted] {
     display: none;
     opacity: 0.5;
+}
+
+h2 a:hover, h2 a:active {
+    text-shadow: 0px 0px 5px #88F;
+}
+
+div > pre {
+    padding: 10px;
+    border: 1px solid #F80;
+    border-radius: 5px;
+    background: #FED;
 }

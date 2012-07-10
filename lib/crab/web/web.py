@@ -139,7 +139,8 @@ class CrabWeb:
                     info['host'], info['user'], id_)
 
             return self._write_template('joboutput.html',
-                       {'id': id_, 'stdout': stdout, 'stderr': stderr})
+                       {'id': id_, 'info': info,
+                        'stdout': stdout, 'stderr': stderr})
 
         else:
             raise HTTPError(404)

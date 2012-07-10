@@ -1,5 +1,17 @@
 <%inherit file="base.html"/>
 
+<%block name="links">
+<a href="/host/${info['host'] | h}">${info['host'] | h}</a>
+<a href="/user/${info['user'] | h}">${info['user'] | h}</a>
+% if info['jobid'] is not None:
+<a href="/job/${id | h}">${info['jobid'] | h}</a>
+% else:
+<a href="/job/${id | h}">${info['command'] | h}</a>
+% endif
+</%block>
+
+<h2>Job Output</h2>
+
 <table>
     <tr>
         <th>Standard output</th>

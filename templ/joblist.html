@@ -9,47 +9,36 @@
 %>
 <%inherit file="base.html"/>
 
-<p>
-    <a href="#" id="command_refresh">Refresh</a>
-    <a href="/rss/failures">RSS failures</a>
-</p>
-
 <%def name="joblistrow(job)" filter="mergelines">
     <tr id="row_${job["id"] | h}">
-        <td id="status_${job["id"] | h}" class="status_unknown">Loading</td>
-        <td id="host_${job["id"] | h}">
+        <td class="statuscell"><a href="/job/${job["id"] | h}/output" id="status_${job["id"] | h}" class="status_unknown">Loading</a></td>
 % if job.get("host") is not None:
-            ${job["host"] | h}
+        <td class="linkcell"><a href="/host/${job['host']}" id="host_${job["id"] | h}">${job["host"] | h}</a></td>
 % else:
-            &nbsp;
+        <td id="host_${job["id"] | h}">&nbsp;</td>
 % endif
-        </td>
-        <td id="user_${job["id"] | h}">
 % if job.get('user') is not None:
-            ${job['user'] | h}
+        <td class="linkcell"><a href="/user/${job['user']}" id="user_${job["id"] | h}">${job['user'] | h}</a></td>
 % else:
-            &nbsp;
+        <td id="user_${job["id"] | h}">&nbsp;</td>
 % endif
-        </td>
-        <td id="command_${job["id"] | h}">
+% if job.get('jobid') is not None:
+        <td class="linkcell"><a href="/job/${job['id'] | h}" id="jobid_${job["id"] | h}">${job["jobid"] | h}</a></td>
+% else:
+        <td class="linkcell"><a href="/job/${job['id'] | h}" id="jobid_${job["id"] | h}" class="status_unknown">Unspecified</a></td>
+% endif
+        <td class="linkcell"><a href="/job/${job["id"] | h}" id="command_${job["id"] | h}">
 % if job.get('command') is not None:
             ${job["command"] | h}
 % else:
             &nbsp;
 % endif
-        </td>
-% if job.get('jobid') is not None:
-        <td id="jobid_${job["id"] | h}">${job["jobid"] | h}</td>
-% else:
-        <td id="jobid_${job["id"] | h}" class="status_unknown">Unspecified</td>
-% endif
+        </a></td>
         <td id="reliability_${job["id"] | h}" class="status_unknown">Loading</td>
-        <td>
-            <a href="/job/${job["id"] | h}">Info</a>&#32;
-            <a href="/job/${job["id"] | h}/output">Output</a>
-        </td>
     </tr>
 </%def>
+
+<h2>Dashboard</h2>
 
 <table id="joblist">
     <tr>
@@ -59,7 +48,6 @@
         <th>Command</th>
         <th>Job ID</th>
         <th>Reliability</th>
-        <th>Tools</th>
     </tr>
 % for job in jobs:
     ${joblistrow(job)}
@@ -72,5 +60,6 @@ var joblistrowtemplate = '${joblistrow(job) | mergelines}';
 </script>
 
 <p>
-    Last refreshed: <span id="last_refresh">Never</span>
+    <a href="#" id="command_refresh">Refresh.</a>
+    Last refreshed <span id="last_refresh">Never</span>
 </p>

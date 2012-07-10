@@ -1,8 +1,20 @@
 <%inherit file="base.html"/>
 
+<%block name="links">
+<a href="/host/${info['host'] | h}">${info['host'] | h}</a>
+<a href="/user/${info['user'] | h}">${info['user'] | h}</a>
+% if info['jobid'] is not None:
+<span>${info['jobid'] | h}</span>
+% else:
+<span>${info['command'] | h}</span>
+% endif
+</%block>
+
+
 <h2>Job Information</h2>
 
 <table>
+<!--
     <tr>
         <th>Host</th>
         <td>${info["host"] | h}</td>
@@ -11,6 +23,7 @@
         <th>User</th>
         <td>${info["user"] | h}</td>
     </tr>
+-->
 % if info["jobid"] != None:
     <tr>
         <th>Job ID</th>
@@ -60,7 +73,6 @@
         <th>Date and Time</th>
         <th>Command</th>
         <th>Status</th>
-        <th>Tools</th>
     </tr>
 % for event in events:
 % if event["type"] == 1:
@@ -85,11 +97,11 @@
 % if event["status"] is None:
         <td>&nbsp;</td>
 % elif event["status"] == 0:
-        <td class="status_ok">Succeeded</td>
+        <td class="statuscell"><a class="status_ok" href="/job/${id | h}/output/${event["id"] | h}">Succeeded</a></td>
 % elif event["status"] == 1:
-        <td class="status_fail">Failed</td>
+        <td class="statuscell"><a class="status_fail" href="/job/${id | h}/output/${event["id"] | h}">Failed</a></td>
 % elif event["status"] == 2:
-        <td class="status_warn">Unknown</td>
+        <td class="statuscell"><a class="status_warn" href="/job/${id | h}/output/${event["id"] | h}">Unknown</a></td>
 % elif event["status"] == 3:
         <td class="status_fail">Could not start</td>
 % elif event["status"] == -1:
@@ -101,13 +113,6 @@
 % else:
         <td class="status_warn">Status ${event["status"] | h}</td>
 % endif
-        <td>
-% if event["type"] == 3:
-            <a href="/job/${id | h}/output/${event["id"] | h}">Output</a>
-% else:
-            &nbsp;
-% endif
-        </td>
     </tr>
 % endfor
 </table>

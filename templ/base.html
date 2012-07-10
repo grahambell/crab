@@ -4,7 +4,7 @@
 %>
 <html>
 <head>
-<title>crab</title>
+<title>Crab</title>
 <link rel="stylesheet" href="/res/crab.css">
 <link rel="icon" href="/res/favicon.png" sizes="16x16" type="image/png">
 % if self.attr.scripts:
@@ -15,9 +15,18 @@
 % endif
 </head>
 <body>
-<h1>crab</h1>
+<div id="headerbar">
+<h1><a href="/">Crab</a></h1>
+<div>
+<a class="rss" href="/rss/failures">Failures</a>
+</div>
+<%block name="links" />
+</div>
+
+<div id="content">
 
 ${self.body()}
 
+</div>
 </body>
 </html>
