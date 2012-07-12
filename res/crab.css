@@ -177,8 +177,8 @@ td.statuscell a {
 }
 
 [class^=deleted] {
-    display: none;
     opacity: 0.5;
+    text-decoration: line-through;
 }
 
 h2 a:hover, h2 a:active {
@@ -190,4 +190,8 @@ div > pre {
     border: 1px solid #F80;
     border-radius: 5px;
     background: #FED;
+}
+
+.meta_info {
+    color: grey;
 }

@@ -15,14 +15,14 @@ $(document).ready(function () {
     });
     $('[id^="show_deleted_"]').click(function (event) {
         var crontab = event.target.id.replace('show_deleted_', '');
-        $('[class^="deleted_' + crontab + '"]').show();
+        $('.deleted_' + crontab).show();
         $('#show_deleted_' + crontab).hide();
         $('#hide_deleted_' + crontab).show();
         event.preventDefault();
     });
     $('[id^="hide_deleted_"]').click(function (event) {
         var crontab = event.target.id.replace('hide_deleted_', '');
-        $('[class^="deleted_' + crontab + '"]').hide();
+        $('.deleted_' + crontab).hide();
         $('#show_deleted_' + crontab).show();
         $('#hide_deleted_' + crontab).hide();
         event.preventDefault();

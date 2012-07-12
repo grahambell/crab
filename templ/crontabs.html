@@ -31,13 +31,17 @@ ${key | h}
 % if job['deleted'] is None:
     <tr>
 % else:
-    <tr class="deleted_${key | h}">
+    <tr class="deleted_${key | h} hidden">
 % endif
+% if job.get('time') is not None:
         <td>${job['time'] | h}</td>
+% else:
+        <td class="status_unknown">Unspecified</td>
+% endif
 % if job.get('jobid') is not None:
         <td class="linkcell"><a href="/job/${job['id'] | h}" id="jobid_${job["id"] | h}">${job["jobid"] | h}</a></td>
 % else:
-        <td>&nbsp;</td>
+        <td class="status_unknown">Unspecified</td>
 % endif
         <td class="linkcell"><a href="/job/${job['id'] | h}">${job['command'] | h}</a></td>
     </tr>
