@@ -2,7 +2,6 @@ import datetime
 import json
 import mimetypes
 import os
-import pytz
 import re
 import time
 import urllib
@@ -14,6 +13,7 @@ from mako.lookup import TemplateLookup
 from mako.template import Template
 
 from crab import CrabError, CrabStatus
+from crab.util.filter import CrabEventFilter
 
 class CrabWebQuery:
     """CherryPy handler class for the JSON query part of the crab web
@@ -96,25 +96,20 @@ class CrabWeb:
 
         if command is None:
             events = self.store.get_job_events(id_)
+            filter = CrabEventFilter(self.store, info['timezone'])
 
             # Try to convert the times to the timezone shown on the page.
-            if info['timezone'] is not None:
-                try:
-                    tz = pytz.timezone(info['timezone'])
-                    info['installed'] = self._to_timezone(info['installed'], tz)
-                    info['deleted'] = self._to_timezone(info['deleted'], tz)
-                    for event in events:
-                        event['datetime'] = self._to_timezone(event['datetime'],
-                                                            tz)
-                except pytz.UnknownTimeZoneError:
-                    pass
+            info['installed'] = filter.in_timezone(info['installed'])
+            info['deleted'] = filter.in_timezone(info['deleted'])
+
+            # Filter the events.
+            events = filter(events)
 
             # Filter out LATE events as they are not important, and if
             # shown in green, might make a failing cron job look better
             # than it is because each job will be marked LATE before MISSED.
             return self._write_template('job.html',
-                       {'id': id_, 'info': info, 'events':
-                        [e for e in events if not CrabStatus.is_trivial(e['status'])]})
+                       {'id': id_, 'info': info, 'events': events})
 
         elif command == 'output':
             if finishid is None:
@@ -199,14 +194,3 @@ class CrabWeb:
         except:
             return exceptions.html_error_template().render()
 
-    def _to_timezone(self, datetime_, zoneinfo):
-        """Convert the datetime string as output by the database
-        to a string in the specified timezone.
-
-        Includes the zone code to indicate that the conversion has been
-        performed."""
-
-        if datetime_ is None:
-            return None
-        return self.store.parse_datetime(datetime_).astimezone(
-                   zoneinfo).strftime('%Y-%m-%d %H:%M:%S %Z')
