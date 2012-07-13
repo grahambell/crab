@@ -1,3 +1,6 @@
+<%!
+from crab import CrabEvent, CrabStatus
+%>
 <%inherit file="base.html"/>
 
 <%block name="links">
@@ -69,24 +72,48 @@
 
 <table>
     <tr>
-        <th>Action</th>
+        <th>Status</th>
         <th>Date and Time</th>
         <th>Command</th>
-        <th>Status</th>
+        <th>Duration</th>
     </tr>
 % for event in events:
 % if event["type"] == 1:
     <tr id="row_start_${event["id"] | h}">
-        <td>Started</td>
 % elif event["type"] == 2:
     <tr id="row_warning_${event["id"] | h}">
-        <td>Warning</td>
 % elif event["type"] == 3:
     <tr id="row_finish_${event["id"] | h}">
-        <td>Finished</td>
 % else:
     <tr>
-        <td>Unknown event</td>
+% endif
+% if event["status"] is None:
+        <td>${CrabEvent.get_name(event['type']) | h}</td>
+% else:
+<%
+     if CrabStatus.is_ok(event['status']):
+         cell_class = 'status_ok'
+     elif CrabStatus.is_warning(event['status']):
+         cell_class = 'status_warn'
+     elif CrabStatus.is_error(event['status']):
+         cell_class = 'status_fail'
+     else:
+         cell_class = 'status_warn'
+
+     if event['type'] == CrabEvent.FINISH:
+         cell_link = '/job/' + str(id) + '/output/' + str(event['id'])
+     else:
+         cell_link = None
+
+     cell_text = CrabStatus.get_name(event['status'])
+%>
+% if cell_link is None:
+        <td class="${cell_class}">${cell_text | h}</td>
+% else:
+        <td class="statuscell">
+            <a class="${cell_class}" href="${cell_link | h}">${cell_text | h}</a>
+        </td>
+% endif
 % endif
         <td>${event["datetime"] | h}</td>
 % if event["command"] is not None:
@@ -94,24 +121,10 @@
 % else:
         <td>&nbsp;</td>
 % endif
-% if event["status"] is None:
+% if event.get('duration') is None:
         <td>&nbsp;</td>
-% elif event["status"] == 0:
-        <td class="statuscell"><a class="status_ok" href="/job/${id | h}/output/${event["id"] | h}">Succeeded</a></td>
-% elif event["status"] == 1:
-        <td class="statuscell"><a class="status_fail" href="/job/${id | h}/output/${event["id"] | h}">Failed</a></td>
-% elif event["status"] == 2:
-        <td class="statuscell"><a class="status_warn" href="/job/${id | h}/output/${event["id"] | h}">Unknown</a></td>
-% elif event["status"] == 3:
-        <td class="status_fail">Could not start</td>
-% elif event["status"] == -1:
-        <td class="status_ok">Late</td>
-% elif event["status"] == -2:
-        <td class="status_warn">Missed</td>
-% elif event["status"] == -3:
-        <td class="status_fail">Timed out</td>
 % else:
-        <td class="status_warn">Status ${event["status"] | h}</td>
+        <td>${event['duration'] | h}</td>
 % endif
     </tr>
 % endfor

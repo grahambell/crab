@@ -96,7 +96,8 @@ class CrabWeb:
 
         if command is None:
             events = self.store.get_job_events(id_)
-            filter = CrabEventFilter(self.store, info['timezone'])
+            filter = CrabEventFilter(self.store, info['timezone'],
+                                     squash_start=True)
 
             # Try to convert the times to the timezone shown on the page.
             info['installed'] = filter.in_timezone(info['installed'])

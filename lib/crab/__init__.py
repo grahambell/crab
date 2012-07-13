@@ -31,7 +31,7 @@ class CrabStatus:
     MISSED = -2
     TIMEOUT = -3
 
-    _error_names = ['OK', 'Failed', 'Unknown', 'Could not start']
+    _error_names = ['Succeeded', 'Failed', 'Unknown', 'Could not start']
     _warning_names = ['Late', 'Missed', 'Timed out']
 
     @staticmethod
@@ -55,7 +55,7 @@ class CrabStatus:
     @staticmethod
     def is_ok(status):
         """Returns true if the code does not indicate any kind of problem."""
-        return status == CrabStatus.SUCCESS or status == CrabStatus.LATE
+        return status == CrabStatus.SUCCESS or CrabStatus.is_trivial(status)
 
     @staticmethod
     def is_warning(status):
@@ -75,3 +75,15 @@ class CrabEvent:
     START = 1
     WARN = 2
     FINISH = 3
+
+    _event_names = ['Started', 'Warning', 'Finished']
+
+    @staticmethod
+    def get_name(event):
+        """Returns a readable name for the given event type code."""
+
+        try:
+            return CrabEvent._event_names[event - 1]
+
+        except IndexError:
+            return 'Event ' + int(event)

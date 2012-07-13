@@ -7,17 +7,21 @@ class CrabEventFilter:
 
     def __init__(self, store, timezone=None,
                  skip_trivial=True, skip_start=False,
-                 skip_ok=False, skip_warning=False):
+                 skip_ok=False, skip_warning=False,
+                 squash_start=False):
         """Construct filter object.
 
         Just stores the given information."""
 
         self.store = store
         self.set_timezone(timezone)
+
         self.skip_trivial = skip_trivial
         self.skip_start = skip_start
         self.skip_ok = skip_ok
         self.skip_warning = skip_warning
+
+        self.squash_start = squash_start
 
     def set_timezone(self, timezone):
         """Sets the timezone used by the filter."""
@@ -34,8 +38,12 @@ class CrabEventFilter:
         """Performs filtering, and returns the altered event list."""
 
         output = []
+        squash = set()
 
-        for e in events:
+        for (i, e) in enumerate(events):
+            if i in squash:
+                continue
+
             if e['type'] == CrabEvent.START:
                 if self.skip_start:
                     continue
@@ -44,6 +52,14 @@ class CrabEventFilter:
                 or self.skip_ok and CrabStatus.is_ok(e['status'])
                 or self.skip_warning and CrabStatus.is_warning(e['status'])):
                     continue
+
+            if self.squash_start and e['type'] == CrabEvent.FINISH:
+                start = _find_previous_start(events, i)
+                if start is not None:
+                    squash.add(start)
+                    delta = (self.store.parse_datetime(e['datetime'])
+                        - self.store.parse_datetime(events[start]['datetime']))
+                    e['duration'] = str(delta)
 
             if self.zoneinfo is not None:
                 e['datetime'] = self.in_timezone(e['datetime'])
@@ -64,3 +80,24 @@ class CrabEventFilter:
         else:
             return self.store.parse_datetime(datetime_).astimezone(
                         self.zoneinfo).strftime('%Y-%m-%d %H:%M:%S %Z')
+
+
+def _find_previous_start(events, i):
+    """Looks in the event list, past position i, for the previous start.
+
+    Skips over warnings."""
+
+    i += 1
+
+    while (i < len(events)):
+        e = events[i]
+
+        if e['type'] == CrabEvent.START:
+            return i
+
+        elif e['type'] != CrabEvent.WARN:
+            return None
+
+        i += 1
+
+    return None
