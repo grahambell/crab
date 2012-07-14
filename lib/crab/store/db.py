@@ -383,13 +383,15 @@ class CrabDB(CrabStore):
                     'ORDER BY datetime DESC LIMIT ?',
                 [id_, limit])
 
-    def get_job_events(self, id_, limit=100):
+    def get_job_events(self, id_, limit=100, start=None, end=None):
         """Fetches a combined list of events relating to the specified job.
 
         Return events, newest first (with finishes first for the same
         datetime).  This ordering allows us to apply the SQL limit on
         number of result rows to find the most recent events.  It gives
         the correct ordering for the job info page."""
+
+        # TODO: implement start and end as WHERE clause.
 
         return self._query_to_dict_list(
                 'SELECT ' +

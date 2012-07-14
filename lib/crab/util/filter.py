@@ -23,6 +23,9 @@ class CrabEventFilter:
 
         self.squash_start = squash_start
 
+        self.errors = None
+        self.warnings = None
+
     def set_timezone(self, timezone):
         """Sets the timezone used by the filter."""
 
@@ -39,10 +42,14 @@ class CrabEventFilter:
 
         output = []
         squash = set()
+        self.errors = 0
+        self.warnings = 0
 
         for (i, e) in enumerate(events):
             if i in squash:
                 continue
+
+            e = e.copy()
 
             if e['type'] == CrabEvent.START:
                 if self.skip_start:
@@ -52,6 +59,11 @@ class CrabEventFilter:
                 or self.skip_ok and CrabStatus.is_ok(e['status'])
                 or self.skip_warning and CrabStatus.is_warning(e['status'])):
                     continue
+
+                if CrabStatus.is_error(e['status']):
+                    self.errors += 1
+                if CrabStatus.is_warning(e['status']):
+                    self.warnings += 1
 
             if self.squash_start and e['type'] == CrabEvent.FINISH:
                 start = _find_previous_start(events, i)
