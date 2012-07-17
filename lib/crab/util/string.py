@@ -1,3 +1,5 @@
+import re
+
 def remove_quotes(value):
   """If the given string starts and ends with matching quote marks,
   remove them from the returned value."""
@@ -38,3 +40,9 @@ def split_quoted_word(value):
         return value.split(None, 1)
 
     return (a, b.lstrip())
+
+def alphanum(value):
+    """Removes all non-alphanumeric characters from the string,
+    replacing them with underscores."""
+
+    return re.sub('[^a-zA-Z0-9]', '_', value)
