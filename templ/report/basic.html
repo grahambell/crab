@@ -1,0 +1,62 @@
+<%!
+
+    from crab import CrabEvent, CrabStatus
+
+%><html>
+    <head>
+      <title>Crab Report</title>
+    </head>
+    <body>
+        ${summary('error', 'Jobs with Errors')}
+        ${summary('warning', 'Jobs with Warnings')}
+        ${summary('ok', 'Successful Jobs')}
+
+<%def name="summary(section, title)">
+% if output[section]:
+        <h1>${title | h}</h1>
+
+        <table>
+% for id_ in output[section]:
+<%
+    job = report.get_job(id_)
+    info = job['info']
+%>
+            <tr>
+                <td>${info['host'] | h}</td>
+                <td>${info['user'] | h}</td>
+                <td><a href="#job_${id_ | h}">${info['title'] | h}</a></td>
+            </tr>
+% endfor
+        </table>
+% endif
+</%def>
+
+        <h1>Event Listing</h1>
+
+% for id_ in set.union(output['error'], output['warning'], output['ok']):
+<%
+    job = report.get_job(id_)
+    info = job['info']
+%>
+        <h2 id="job_${id_ | h}">${info['user'] | h} @
+                                ${info['host'] | h } :
+                                ${info['title'] | h}</h2>
+
+        <table>
+% for event in job['events']:
+            <tr>
+                <td>${CrabEvent.get_name(event['type']) | h}</td>
+% if event['type'] == CrabEvent.FINISH:
+                <td><a href="${base_url | h}/job/${id_ | h}/output/${event['id'] | h}">
+                    ${CrabStatus.get_name(event['status']) | h}
+                </a></td>
+% else:
+                <td>${CrabStatus.get_name(event['status']) | h}</td>
+% endif
+                <td>${event['datetime'] | h}</td>
+            </tr>
+% endfor
+        </table>
+% endfor
+    </body>
+</html>
