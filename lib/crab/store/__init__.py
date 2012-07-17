@@ -14,6 +14,7 @@ class CrabStore:
 
         crontab = []
         timezone = None
+        firstrow = True
 
         for job in self.get_jobs(host, user):
             # Check if job has a schedule attached.
@@ -27,7 +28,7 @@ class CrabStore:
                 timezone = job['timezone']
                 crontab.append('CRON_TZ=' + quote_multiword(timezone))
 
-            elif job['timezone'] is None and timezone is not None:
+            elif job['timezone'] is None and (timezone is not None or firstrow):
                 crontab.append('### CRAB: UNKNOWN TIMEZONE ###')
                 timezone = None
 
@@ -37,6 +38,8 @@ class CrabStore:
                 command = 'CRABID=' + quote_multiword(job['jobid']) + ' ' + command
 
             crontab.append(time + ' ' + command)
+
+            firstrow = False
 
         return crontab
 
