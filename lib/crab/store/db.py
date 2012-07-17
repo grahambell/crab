@@ -73,23 +73,9 @@ class CrabDB(CrabStore):
 
         return self._query_to_dict_list(
                 'SELECT id, host, user, jobid, command, time, ' +
-                    'installed, deleted ' +
+                    'timezone, installed, deleted ' +
                 'FROM job ' + where_clause + ' ' +
                 'ORDER BY host ASC, user ASC, installed ASC', params)
-
-    # TODO merge this with the above function now that it
-    # supports parameters.
-    def get_user_jobs(self, host, user):
-        """Reads cron job information corresponding to a particular
-        host and user.
-
-        Does not include deleted jobs."""
-
-        return self._query_to_dict_list(
-                'SELECT time, command, jobid, timezone ' +
-                'FROM job WHERE host=? AND user=? AND deleted IS NULL ' +
-                'ORDER BY installed ASC',
-                [host, user])
 
     # TODO: decide if this function is in its most sensible form.
     # This version added while extracting the crontab importing code
@@ -392,22 +378,41 @@ class CrabDB(CrabStore):
         the correct ordering for the job info page."""
 
         # TODO: implement start and end as WHERE clause.
+        conditions = ['jobid=?']
+        params = [id_]
+
+        if start is not None:
+            conditions.append('datetime>=?')
+            params.append(self.format_datetime(start))
+
+        if end is not None:
+            conditions.append('datetime<?')
+            params.append(self.format_datetime(end))
+
+        where_clause = 'WHERE ' + ' AND '.join(conditions)
+        params = params * 3
+
+        if limit is None:
+            limit_clause = ''
+        else:
+            limit_clause = 'LIMIT ?'
+            params.append(limit)
 
         return self._query_to_dict_list(
                 'SELECT ' +
                     'id, 1 AS type, ' +
                     'datetime, command, NULL AS status FROM jobstart ' +
-                        'WHERE jobid = ? ' +
+                        where_clause + ' ' +
                 'UNION SELECT ' +
                     'id, 2 AS type, ' +
                         'datetime, NULL AS command, status FROM jobwarn ' +
-                        'WHERE jobid = ? ' +
+                        where_clause + ' ' +
                 'UNION SELECT ' +
                     'id, 3 AS type, ' +
                         'datetime, command, status FROM jobfinish ' +
-                        'WHERE jobid = ? ' +
-                'ORDER BY datetime DESC, type DESC LIMIT ?',
-                [id_, id_, id_, limit])
+                        where_clause + ' ' +
+                'ORDER BY datetime DESC, type DESC ' + limit_clause,
+                params)
 
     def get_events_since(self, startid, warnid, finishid):
         """Extract minimal summary information for events on all jobs
@@ -579,6 +584,13 @@ class CrabDB(CrabStore):
 
         return datetime.datetime.strptime(timestamp,
                         '%Y-%m-%d %H:%M:%S').replace(tzinfo=pytz.UTC)
+
+    def format_datetime(self, datetime_):
+        """Converts a datetime into a timestamp string for the database.
+
+        Includes conversion to UTC as used by SQLite."""
+
+        return datetime_.astimezone(pytz.UTC).strftime('%Y-%m-%d %H:%M:%S')
 
     def write_raw_crontab(self, host, user, crontab):
         if self.outputstore is not None and hasattr(self.outputstore,

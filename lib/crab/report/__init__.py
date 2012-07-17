@@ -51,6 +51,8 @@ class CrabReport:
                     info = self.cache[id_]['info']
                 else:
                     info = self.store.get_job_info(id_)
+                    if info is None:
+                        continue
                     self._add_job(id_, info)
 
             if id_ in checked:
@@ -62,7 +64,7 @@ class CrabReport:
                 events = self.cache[id_]['events']
             else:
                 self.filter.set_timezone(info['timezone'])
-                events = self.filter(self.store.get_job_events(id_,
+                events = self.filter(self.store.get_job_events(id_, limit=None,
                                           start=self.start, end=self.end))
                 self.cache[id_]['events'] = events
 

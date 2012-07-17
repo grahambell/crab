@@ -15,7 +15,7 @@ class CrabStore:
         crontab = []
         timezone = None
 
-        for job in self.get_user_jobs(host, user):
+        for job in self.get_jobs(host, user):
             # Check if job has a schedule attached.
             time = job['time']
             if time is None:
