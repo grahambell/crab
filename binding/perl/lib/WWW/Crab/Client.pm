@@ -130,6 +130,14 @@ UNKNOWN will be sent.
                 stdout => $command_output,
                 stderr => $error_message);
 
+The following constants are defined in this module, and should be used
+to obtain the appropriate Crab status codes:
+
+  SUCCESS
+  FAIL
+  UNKNOWN
+  COULDNOTSTART
+
 =cut
 
 sub finish {
@@ -168,4 +176,10 @@ sub _get_url {
 
 1;
 
+__END__
+
 =back
+
+=head1 AUTHOR
+
+Graham Bell <g.bell@jach.hawaii.edu>
