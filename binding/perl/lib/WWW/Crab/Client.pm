@@ -87,10 +87,10 @@ sub new {
     my $self = {
         id       => $opt{'id'}       || undef,
         command  => $opt{'command'}  || $0,
-        server   => $opt{'server'}   || $conf->val('server', 'host',
-                                            $ENV{'CRABHOST'} || 'localhost'),
-        port     => $opt{'port'}     || $conf->val('server', 'port',
-                                            $ENV{'CRABPORT'} || 8000),
+        server   => $opt{'server'}   || $ENV{'CRABHOST'} ||
+                                     $conf->val('server', 'host', 'localhost'),
+        port     => $opt{'port'}     || $ENV{'CRABPORT'} ||
+                                     $conf->val('server', 'port', 8000),
         hostname => $opt{'hostname'} || $conf->val('client', 'hostname',
                                             hostname()),
         username => $opt{'username'} || $conf->val('client', 'username',

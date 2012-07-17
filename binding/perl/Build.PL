@@ -7,6 +7,7 @@ use Module::Build;
 
 our %require = ('Config::IniFiles' => 0,
                 'HTTP::Request' => 0,
+                'IO::Scalar' => 2.110,
                 'JSON' => 0,
                 'LWP::UserAgent' => 0,
                 'Sys::Hostname' => 0,
