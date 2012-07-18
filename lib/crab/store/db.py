@@ -633,3 +633,20 @@ class CrabDB(CrabStore):
             return None
         else:
             return entry['crontab'].split('\n')
+
+    def get_notifications(self):
+        """Fetches a list of notifications, combining those defined
+        by a config ID with those defined by user and/or host."""
+
+        return self._query_to_dict_list(
+                'SELECT jobnotify.id AS notifyid, method, address, ' +
+                        'jobid ' +
+                    'FROM jobnotify JOIN jobconfig ' +
+                        'ON jobnotify.configid = jobconfig.id ' +
+                'UNION SELECT jobnotify.id AS notifyid, method, address, ' +
+                        'job.id AS jobid ' +
+                    'FROM jobnotify JOIN job ' +
+                        'ON COALESCE(job.user = jobnotify.user, 1) ' +
+                        'AND COALESCE(job.host = jobnotify.host, 1) ' +
+                    'WHERE configid IS NULL AND job.deleted IS NULL',
+                [])

@@ -68,6 +68,19 @@ CREATE TABLE jobconfig (
     timeout INTEGER
 );
 
+CREATE TABLE jobnotify (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    configid INTEGER REFERENCES jobconfig(id)
+        ON DELETE RESTRICT ON UPDATE RESTRICT,
+    host VARCHAR(255) DEFAULT NULL,
+    user VARCHAR(255) DEFAULT NULL,
+    method VARCHAR(255) NOT NULL,
+    address VARCHAR(255) NOT NULL
+);
+
+CREATE INDEX jobnotify_host ON jobnotify (host);
+CREATE INDEX jobnotify_user ON jobnotify (user);
+
 CREATE TABLE rawcrontab (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     host VARCHAR(255) NOT NULL,
