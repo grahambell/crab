@@ -16,18 +16,19 @@ class CrabNotify:
 
         for (destinations, jobs) in self._get_notifications():
             output = report(jobs)
-            email = []
+            if output is not None:
+                email = []
 
-            for (method, address) in destinations:
-                if method == 'email':
-                    # In the case of email, we can build a list of
-                    # addresses and CC a single message to all of them.
-                    email.append(address)
-                else:
-                    print('Unknown notification method: ' + method)
+                for (method, address) in destinations:
+                    if method == 'email':
+                        # In the case of email, we can build a list of
+                        # addresses and CC a single message to all of them.
+                        email.append(address)
+                    else:
+                        print('Unknown notification method: ' + method)
 
-            if email:
-                self.send_email(report, output, email)
+                if email:
+                    self.send_email(report, output, email)
 
     def _get_notifications(self):
         """Constructs a list of notifications to be sent.
