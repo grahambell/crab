@@ -8,6 +8,7 @@ import cherrypy
 from cherrypy.lib.reprconf import Config
 
 from crab.service.monitor import CrabMonitor
+from crab.service.notify import CrabNotifyService
 from crab.web.rss import CrabRSS
 from crab.server import CrabServer
 from crab.store.db import CrabDB
@@ -19,6 +20,12 @@ def main():
                               'server.socket_host': '0.0.0.0'},
 
                    'crab': {'home': '/usr/share/crab'},
+
+                   'email': {'server': 'mailhost',
+                             'from': 'Crab Daemon'},
+
+                   'notify': {'timezone': 'UTC',
+                              'daily': '0 0 * * *'},
 
                    'store': {'type': 'sqlite',
                              'file': '/var/lib/crab/crab.db'}})
@@ -62,6 +69,10 @@ def main():
     monitor = CrabMonitor(store)
     monitor.daemon = True
     monitor.start()
+
+    notify = CrabNotifyService(config, store, base_url)
+    notify.daemon = True
+    notify.start()
 
     cherrypy.config.update(config)
     cherrypy.tree.mount(CrabWeb(config, store, monitor), '/', config)
