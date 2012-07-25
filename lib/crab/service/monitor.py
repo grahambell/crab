@@ -5,6 +5,7 @@ from random import Random
 from threading import Condition, Event, Thread
 
 from crab import CrabError, CrabEvent, CrabStatus
+from crab.service import CrabMinutely
 from crab.util.schedule import CrabSchedule
 
 HISTORY_COUNT = 10
@@ -13,7 +14,7 @@ class JobDeleted(Exception):
     """Exception raised by _initialize_job if the job can not be found."""
     pass
 
-class CrabMonitor(Thread):
+class CrabMonitor(CrabMinutely):
     """A class implementing the crab monitor thread."""
 
     def __init__(self, store):
@@ -21,7 +22,7 @@ class CrabMonitor(Thread):
 
         Saves the given storage backend and prepares the instance
         data."""
-        Thread.__init__(self)
+        CrabMinutely.__init__(self)
 
         self.store = store
         self.sched = {}
@@ -34,7 +35,6 @@ class CrabMonitor(Thread):
         self.max_startid = 0
         self.max_warnid = 0
         self.max_finishid = 0
-        self.last_time = None
         self.new_event = Condition()
         self.num_warning = 0
         self.num_error = 0
@@ -52,9 +52,8 @@ class CrabMonitor(Thread):
         for new events, processing any which are found.  The new_event
         Condition is fired if there were any new events.
 
-        If the minute has changes snice the last time round the loop,
-        the job scheduling is checked.  At this stage we also check
-        for new / deleted / updated jobs."""
+        We call _check_minute from CrabMinutely to check whether the
+        minute has changed since the last time round the loop."""
 
         jobs = self.store.get_jobs()
 
@@ -118,56 +117,9 @@ class CrabMonitor(Thread):
                 with self.new_event:
                     self.new_event.notify_all()
 
-            # Hour and minute should be sufficient to check
-            # that the minute has changed.
-
-            # TODO: check we didn't somehow miss a minute?
-
-            time_stamp = datetime_.strftime('%H%M')
-
-            if self.last_time is None or time_stamp != self.last_time:
-                for id_ in self.sched:
-                    if self.sched[id_].match(datetime_):
-                        if ((id_ not in self.last_start) or
-                                (self.last_start[id_] +
-                                 self.config[id_]['graceperiod'] < datetime_)):
-                            self._write_warning(id_, CrabStatus.LATE)
-                            self.miss_timeout[id_] = (datetime_ +
-                                    self.config[id_]['graceperiod'])
-
-                # Look for new or deleted jobs.
-                currentjobs = set(self.status.keys())
-                jobs = self.store.get_jobs()
-                for job in jobs:
-                    id_ = job['id']
-                    if id_ in currentjobs:
-                        currentjobs.discard(id_)
-
-                        # Compare installed timestamp is case we need to
-                        # reload the schedule.  NOTE: assumes database
-                        # datetimes compare in the correct order.
-                        if job['installed'] > self.status[id_]['installed']:
-                            self._schedule_job(id_)
-                            self.status[id_]['installed'] = job['installed']
-
-                        # TODO: is there a quick way to check whether we
-                        # need to do this?
-                        self._configure_job(id_)
-                    else:
-                        # No need to check event history: if there were any
-                        # events, we would have added the job when they
-                        # occurred (unless a job was just un-deleted or the
-                        # an event happend during the schedule check.
-                        try:
-                            self._initialize_job(id_)
-                        except JobDeleted:
-                            print 'Warning: job', id_, 'has vanished'
-
-                # Remove (presumably deleted) jobs.
-                for id_ in currentjobs:
-                    self._remove_job(id_)
-
-                self.last_time = time_stamp
+            # Allow superclass CrabMinutely to call our run_minutely
+            # method as required.
+            self._check_minute()
 
             # Check status of timeouts - need to get a list of keys
             # so that we can delete from the dict while iterating.
@@ -181,6 +133,52 @@ class CrabMonitor(Thread):
                 if self.timeout[id_] < datetime_:
                     self._write_warning(id_, CrabStatus.TIMEOUT)
                     del self.timeout[id_]
+
+    def run_minutely(self, datetime_):
+        """Every minute the job scheduling is checked.
+
+        At this stage we also check for new / deleted / updated jobs."""
+
+        for id_ in self.sched:
+            if self.sched[id_].match(datetime_):
+                if ((id_ not in self.last_start) or
+                        (self.last_start[id_] +
+                         self.config[id_]['graceperiod'] < datetime_)):
+                    self._write_warning(id_, CrabStatus.LATE)
+                    self.miss_timeout[id_] = (datetime_ +
+                            self.config[id_]['graceperiod'])
+
+        # Look for new or deleted jobs.
+        currentjobs = set(self.status.keys())
+        jobs = self.store.get_jobs()
+        for job in jobs:
+            id_ = job['id']
+            if id_ in currentjobs:
+                currentjobs.discard(id_)
+
+                # Compare installed timestamp is case we need to
+                # reload the schedule.  NOTE: assumes database
+                # datetimes compare in the correct order.
+                if job['installed'] > self.status[id_]['installed']:
+                    self._schedule_job(id_)
+                    self.status[id_]['installed'] = job['installed']
+
+                # TODO: is there a quick way to check whether we
+                # need to do this?
+                self._configure_job(id_)
+            else:
+                # No need to check event history: if there were any
+                # events, we would have added the job when they
+                # occurred (unless a job was just un-deleted or the
+                # an event happend during the schedule check.
+                try:
+                    self._initialize_job(id_)
+                except JobDeleted:
+                    print 'Warning: job', id_, 'has vanished'
+
+        # Remove (presumably deleted) jobs.
+        for id_ in currentjobs:
+            self._remove_job(id_)
 
     def _initialize_job(self, id_):
         """Fetches information about the specified job and records it
