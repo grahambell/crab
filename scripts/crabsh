@@ -32,6 +32,17 @@ def main():
 
     command = options.command
 
+    # Strip leading CRABIGNORE variable from command if present.
+
+    if command.startswith('CRABIGNORE='):
+        (ignore, command) = split_quoted_word(command[11:])
+        if ignore.lower() not in ['0', 'no', 'false', 'off']:
+            # Currently ignore being told to ignore the cron job as
+            # CRABIGNORE was designed to be used in crontab importing.
+            # TODO: consider whether crabsh ought to do anything
+            # in this case.
+            pass
+
     # Determine shell to use
     #
     # Note that cron defaults to sh regardless of the user's shell.

@@ -90,7 +90,7 @@ class CrabStore:
                     (time, command) = m.groups()
 
                     if command.startswith('CRABIGNORE='):
-                        (ignore, command) = command[11:].split(None, 1)
+                        (ignore, command) = split_quoted_word(command[11:])
                         if ignore.lower() not in ['0', 'no', 'false', 'off']:
                             continue
 
