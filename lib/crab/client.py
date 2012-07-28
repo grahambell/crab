@@ -10,6 +10,7 @@ try:
 except ImportError:
     import simplejson as json
 import os
+import pwd
 import socket
 import sys
 # urllib.quote moved into urllib.parse.quote in Python 3
@@ -50,7 +51,7 @@ class CrabClient:
         self.config.set('server', 'port', '8000')
         self.config.add_section('client')
         self.config.set('client', 'hostname', socket.gethostname())
-        self.config.set('client', 'username', os.getlogin())
+        self.config.set('client', 'username', pwd.getpwuid(os.getuid())[0])
 
         self.configfiles = self.config.read(['/etc/crab/crab.ini',
                           os.path.expanduser('~/.crab/crab.ini')])
@@ -137,32 +138,33 @@ class CrabClient:
         response as JSON."""
 
         try:
-            conn = self._get_conn()
-            conn.request('GET', url)
+            try:
+                conn = self._get_conn()
+                conn.request('GET', url)
 
-            res = conn.getresponse()
-            if res.status != 200:
-                raise CrabError('server error : ' + res.reason)
+                res = conn.getresponse()
+                if res.status != 200:
+                    raise CrabError('server error : ' + res.reason)
 
-            return json.loads(latin_1_decode(res.read(), 'replace')[0])
+                return json.loads(latin_1_decode(res.read(), 'replace')[0])
 
-        #except HTTPException as err:
-        #except HTTPException, err:
-        except HTTPException:
-            err = sys.exc_info()[1]
-            raise CrabError('HTTP error : ' + str(err))
+            #except HTTPException as err:
+            #except HTTPException, err:
+            except HTTPException:
+                err = sys.exc_info()[1]
+                raise CrabError('HTTP error : ' + str(err))
 
-        #except socket.error as err:
-        #except socket.error, err:
-        except socket.error:
-            err = sys.exc_info()[1]
-            raise CrabError('socket error : ' + str(err))
+            #except socket.error as err:
+            #except socket.error, err:
+            except socket.error:
+                err = sys.exc_info()[1]
+                raise CrabError('socket error : ' + str(err))
 
-        #except ValueError as err:
-        #except ValueError, err:
-        except ValueError:
-            err = sys.exc_info()[1]
-            raise CrabError('did not understand response : ' + str(err))
+            #except ValueError as err:
+            #except ValueError, err:
+            except ValueError:
+                err = sys.exc_info()[1]
+                raise CrabError('did not understand response : ' + str(err))
 
         finally:
             conn.close()
@@ -172,25 +174,26 @@ class CrabClient:
         HTTP PUT to the given URL."""
 
         try:
-            conn = self._get_conn()
-            conn.request('PUT', url, json.dumps(obj))
+            try:
+                conn = self._get_conn()
+                conn.request('PUT', url, json.dumps(obj))
 
-            res = conn.getresponse()
+                res = conn.getresponse()
 
-            if res.status != 200:
-                raise CrabError('server error : ' + res.reason)
+                if res.status != 200:
+                    raise CrabError('server error : ' + res.reason)
 
-        #except HTTPException as err:
-        #except HTTPException, err:
-        except HTTPException:
-            err = sys.exc_info()[1]
-            raise CrabError('HTTP error : ' + str(err))
+            #except HTTPException as err:
+            #except HTTPException, err:
+            except HTTPException:
+                err = sys.exc_info()[1]
+                raise CrabError('HTTP error : ' + str(err))
 
-        #except socket.error as err:
-        #except socket.error, err:
-        except socket.error:
-            err = sys.exc_info()[1]
-            raise CrabError('socket error : ' + str(err))
+            #except socket.error as err:
+            #except socket.error, err:
+            except socket.error:
+                err = sys.exc_info()[1]
+                raise CrabError('socket error : ' + str(err))
 
         finally:
             conn.close()
