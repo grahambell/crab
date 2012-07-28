@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import pytz
 
 from crontab import CronItem
@@ -77,7 +79,7 @@ class CrabSchedule():
                 # the timezone objects by zone name.
                 self.timezone = pytz.timezone(timezone)
             except pytz.UnknownTimeZoneError:
-                print 'Warning: unknown time zone', jobinfo['timezone']
+                print('Warning: unknown time zone', jobinfo['timezone'])
 
 
     def match(self, datetime):

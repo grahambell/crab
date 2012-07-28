@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import datetime
 import pytz
 import time
@@ -75,7 +77,7 @@ class CrabMonitor(CrabMinutely):
                 self._compute_reliability(id_)
 
             except JobDeleted:
-                print 'Warning: job', id_, 'has vanished'
+                print('Warning: job', id_, 'has vanished')
 
         self.status_ready.set()
 
@@ -174,7 +176,7 @@ class CrabMonitor(CrabMinutely):
                 try:
                     self._initialize_job(id_)
                 except JobDeleted:
-                    print 'Warning: job', id_, 'has vanished'
+                    print('Warning: job', id_, 'has vanished')
 
         # Remove (presumably deleted) jobs.
         for id_ in currentjobs:
@@ -212,7 +214,7 @@ class CrabMonitor(CrabMinutely):
                 self.sched[id_] = CrabSchedule(jobinfo['time'],
                                                jobinfo['timezone'])
             except CrabError as err:
-                print 'Warning: could not add schedule: ' + str(err)
+                print('Warning: could not add schedule:', str(err))
 
             else:
                 self.status[id_]['scheduled'] = True
@@ -254,7 +256,7 @@ class CrabMonitor(CrabMinutely):
             if id_ in self.miss_timeout:
                 del self.miss_timeout[id_]
         except KeyError:
-            print 'Warning: stopping monitoring job but it is not in monitor.'
+            print('Warning: stopping monitoring job but it is not in monitor.')
 
     def _update_max_id_values(self, event):
         """Updates the instance max_startid, max_warnid and max_finishid
@@ -332,7 +334,7 @@ class CrabMonitor(CrabMinutely):
         try:
             self.store.log_warning(id_, status)
         except CrabError as err:
-            print 'Could not record warning : ' + str(err)
+            print('Could not record warning :', str(err))
 
     def get_job_status(self):
         """Fetches the status of all jobs as a dict.

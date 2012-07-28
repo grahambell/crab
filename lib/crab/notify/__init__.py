@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 from crab.report import CrabReport
 from crab.notify.mail import CrabNotifyEmail
 
@@ -25,7 +27,7 @@ class CrabNotify:
                         # addresses and CC a single message to all of them.
                         email.append(address)
                     else:
-                        print('Unknown notification method: ' + method)
+                        print('Unknown notification method: ', method)
 
                 if email:
                     self.send_email(report, output, email)

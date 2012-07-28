@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import re
 
 from crab.util.string import remove_quotes, quote_multiword, split_quoted_word
@@ -106,7 +108,7 @@ class CrabStore:
                     jobid = None
                     continue
 
-                print '*** Did not recognise line:', job
+                print('*** Did not recognise line:', job)
 
 
             # Set any jobs remaining in the id set to deleted

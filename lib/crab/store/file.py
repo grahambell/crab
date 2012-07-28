@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 class CrabFileStore:
     """Store class for cron job output.
     
@@ -18,10 +20,10 @@ class CrabFileStore:
         host, user and job ID number are also provided to allow
         hierarchical storage."""
 
-        print 'Write output for finishid:', finishid, 'host:', host, \
-              'user:', user, 'id:', id_
-        print 'Stdout:', stdout
-        print 'Stderr:', stderr
+        print('Write output for finishid:', finishid, 'host:', host,
+              'user:', user, 'id:', id_)
+        print('Stdout:', stdout)
+        print('Stderr:', stderr)
 
     def get_job_output(self, finishid, host, user, id_):
         """Find the file containing the cron job output and read it.
@@ -32,7 +34,7 @@ class CrabFileStore:
         but this method can make use of the host, user and job ID number
         to read from a directory hierarchy."""
 
-        print 'Read output for finishid:', finishid, 'host:', host, \
-              'user:', user, 'id:', id_
+        print('Read output for finishid:', finishid, 'host:', host,
+              'user:', user, 'id:', id_)
         return ('Dummy stdout', 'Dummy stderr')
 
