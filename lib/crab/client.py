@@ -1,3 +1,4 @@
+from codecs import latin_1_encode, latin_1_decode
 # ConfigParser renamed in Python 3
 try:
     from configparser import SafeConfigParser
@@ -11,6 +12,11 @@ except ImportError:
 import os
 import socket
 import sys
+# urllib.quote moved into urllib.parse.quote in Python 3
+try:
+    from urllib.parse import quote as urlquote
+except:
+    from urllib import quote as urlquote
 import urllib
 # httplib renamed in Python 3
 try:
@@ -112,11 +118,11 @@ class CrabClient:
         """Creates the URL to be used to perform the given server action."""
 
         url = ('/api/0/' + action +
-               '/' + urllib.quote(self.config.get('client', 'hostname'), '') +
-               '/' + urllib.quote(self.config.get('client', 'username'), ''))
+               '/' + urlquote(self.config.get('client', 'hostname'), '') +
+               '/' + urlquote(self.config.get('client', 'username'), ''))
 
         if self.jobid is not None:
-            url = url + '/' + urllib.quote(self.jobid, '')
+            url = url + '/' + urlquote(self.jobid, '')
 
         return url
 
@@ -138,7 +144,7 @@ class CrabClient:
             if res.status != 200:
                 raise CrabError('server error : ' + res.reason)
 
-            return json.load(res)
+            return json.loads(latin_1_decode(res.read(), 'replace')[0])
 
         #except HTTPException as err:
         #except HTTPException, err:
@@ -157,6 +163,9 @@ class CrabClient:
         except ValueError:
             err = sys.exc_info()[1]
             raise CrabError('did not understand response : ' + str(err))
+
+        finally:
+            conn.close()
 
     def _write_json(self, url, obj):
         """Converts the given object to JSON and sends it with an
@@ -183,3 +192,5 @@ class CrabClient:
             err = sys.exc_info()[1]
             raise CrabError('socket error : ' + str(err))
 
+        finally:
+            conn.close()
