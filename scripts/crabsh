@@ -79,10 +79,12 @@ def main():
     try:
         client.start()
     #except CrabError as err:
-    except CrabError, err:
-        print 'crabsh:', command
-        print 'Failed to notify job start.'
-        print 'ERROR:', str(err), '\n'
+    #except CrabError, err:
+    except CrabError:
+        err = sys.exc_info()[1]
+        print('crabsh: ' + command)
+        print('Failed to notify job start.')
+        print('ERROR: ' + str(err) + '\n')
 
     try:
         p = subprocess.Popen([shell, '-c', command],
@@ -99,26 +101,30 @@ def main():
         client.finish(returncode, stdoutdata, stderrdata)
 
     #except OSError as err:
-    except OSError, err:
+    #except OSError, err:
+    except OSError:
+        err = sys.exc_info()[1]
         try:
             client.fail(CrabStatus.COULDNOTSTART, str(err))
         except CrabError:
-            print 'crabsh:', command
-            print 'Failed to notify that job could not start.'
-            print 'ERROR:', str(err)
+            print('crabsh: ' + command)
+            print('Failed to notify that job could not start.')
+            print('ERROR: ' + str(err))
 
     #except CrabError as err:
-    except CrabError, err:
+    #except CrabError, err:
+    except CrabError:
+        err = sys.exc_info()[1]
         # Print fall-back message for cron to send by email (to the
         # crontab owner or address set its MAILTO variable.
-        print 'crabsh:', command
-        print 'Failed to notify job finish.'
-        print 'ERROR:', str(err)
-        print '\nRETURN CODE:', returncode
-        print '\nSTDOUT:'
-        print stdoutdata
-        print '\n\nSTDERR:'
-        print stderrdata
+        print('crabsh: ' + command)
+        print('Failed to notify job finish.')
+        print('ERROR: ' + str(err))
+        print('\nRETURN CODE: ' + str(returncode))
+        print('\nSTDOUT:')
+        print(stdoutdata)
+        print('\n\nSTDERR:')
+        print(stderrdata)
 
     else:
         # Echo the output only if we didn't already print it due
@@ -126,11 +132,11 @@ def main():
         if (('CRABECHO' in env) and (env['CRABECHO'].lower() not in
                     ('', '0', 'no', 'false', 'off'))):
             if stdoutdata != '':
-                print stdoutdata
+                print(stdoutdata)
             if stderrdata != '':
                 if stdoutdata != '':
-                    print '\n\nStandard Error:\n'
-                print stderrdata
+                    print('\n\nStandard Error:\n')
+                print(stderrdata)
 
 if __name__ == "__main__":
     main()

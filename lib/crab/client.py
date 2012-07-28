@@ -1,4 +1,8 @@
-import ConfigParser
+# ConfigParser renamed in Python 3
+try:
+    from configparser import SafeConfigParser
+except:
+    from ConfigParser import SafeConfigParser
 # Workaround lack of JSON in Python 2.4
 try:
     import json
@@ -6,8 +10,13 @@ except ImportError:
     import simplejson as json
 import os
 import socket
+import sys
 import urllib
-from httplib import HTTPConnection, HTTPException
+# httplib renamed in Python 3
+try:
+    from http.client import HTTPConnection, HTTPException
+except:
+    from httplib import HTTPConnection, HTTPException
 
 from crab import CrabError, CrabStatus
 
@@ -29,7 +38,7 @@ class CrabClient:
         self.command = command
         self.jobid = jobid
 
-        self.config = ConfigParser.SafeConfigParser()
+        self.config = SafeConfigParser()
         self.config.add_section('server')
         self.config.set('server', 'host', 'localhost')
         self.config.set('server', 'port', '8000')
@@ -132,15 +141,21 @@ class CrabClient:
             return json.load(res)
 
         #except HTTPException as err:
-        except HTTPException, err:
+        #except HTTPException, err:
+        except HTTPException:
+            err = sys.exc_info()[1]
             raise CrabError('HTTP error : ' + str(err))
 
         #except socket.error as err:
-        except socket.error, err:
+        #except socket.error, err:
+        except socket.error:
+            err = sys.exc_info()[1]
             raise CrabError('socket error : ' + str(err))
 
         #except ValueError as err:
-        except ValueError, err:
+        #except ValueError, err:
+        except ValueError:
+            err = sys.exc_info()[1]
             raise CrabError('did not understand response : ' + str(err))
 
     def _write_json(self, url, obj):
@@ -157,10 +172,14 @@ class CrabClient:
                 raise CrabError('server error : ' + res.reason)
 
         #except HTTPException as err:
-        except HTTPException, err:
+        #except HTTPException, err:
+        except HTTPException:
+            err = sys.exc_info()[1]
             raise CrabError('HTTP error : ' + str(err))
 
         #except socket.error as err:
-        except socket.error, err:
+        #except socket.error, err:
+        except socket.error:
+            err = sys.exc_info()[1]
             raise CrabError('socket error : ' + str(err))
 

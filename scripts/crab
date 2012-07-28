@@ -48,8 +48,10 @@ Commands:
                 else:
                     client.finish(status=status_commands.index(args[0]))
             #except CrabError as err:
-            except CrabError, err:
-                print sys.argv[0], ':', str(err)
+            #except CrabError, err:
+            except CrabError:
+                err = sys.exc_info()[1]
+                print(sys.argv[0] + ': ' + str(err))
 
     elif args[0] == 'import':
         try:
@@ -58,7 +60,7 @@ Commands:
             (stdoutdata, stderrdata) = p.communicate()
 
             if p.returncode:
-                print sys.argv[0], ': failed to read crontab'
+                print(sys.argv[0] + ': failed to read crontab')
             else:
                 # Try to figure out the system's local timezone.
                 # This might not always be the timezone cron uses
@@ -75,21 +77,26 @@ Commands:
                 client.send_crontab(stdoutdata, timezone=tz)
 
         #except OSError as err:
-        except OSError, err:
-            print sys.argv[0], ': could not execute crontab command'
+        #except OSError, err:
+        except OSError:
+            print(sys.argv[0] + ': could not execute crontab command')
 
         #except CrabError as err:
-        except CrabError, err:
-            print sys.argv[0], ': failed to send crontab :', str(err)
+        #except CrabError, err:
+        except CrabError:
+            err = sys.exc_info()[1]
+            print(sys.argv[0] + ': failed to send crontab: ' + str(err))
 
     elif args[0] == 'export':
         try:
             client = CrabClient()
             crontab = client.fetch_crontab(raw=options.raw)
-            print crontab
+            print(crontab)
         #except CrabError as err:
-        except CrabError, err:
-            print sys.argv[0], ': failed to fetch crontab :', str(err)
+        #except CrabError, err:
+        except CrabError:
+            err = sys.exc_info()[1]
+            print(sys.argv[0] + ': failed to fetch crontab: ' + str(err))
 
     elif args[0] == 'help':
         parser.print_help()
