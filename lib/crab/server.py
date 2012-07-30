@@ -1,6 +1,6 @@
+from codecs import latin_1_encode, latin_1_decode
 import json
 import socket
-import urllib
 
 import cherrypy
 from cherrypy import HTTPError
@@ -96,7 +96,8 @@ class CrabServer:
         return."""
 
         try:
-            return json.load(cherrypy.request.body)
+            return json.loads(latin_1_decode(cherrypy.request.body.read(),
+                                             'replace')[0])
         except ValueError:
             raise HTTPError('Did not understand JSON')
 

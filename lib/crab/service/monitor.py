@@ -326,7 +326,7 @@ class CrabMonitor(CrabMinutely):
             self.status[id_]['reliability'] = 0
         else:
             self.status[id_]['reliability'] = int(100 *
-                len(filter(lambda x: x == CrabStatus.SUCCESS, history)) /
+                len([x for x in history if x == CrabStatus.SUCCESS]) /
                 len(history))
 
     def _write_warning(self, id_, status):

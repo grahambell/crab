@@ -45,7 +45,7 @@ class CrabRSS:
                 except CrabError:
                     pass
 
-        rssitems = map(lambda e: self.event_to_rssitem(e), events)
+        rssitems = [self.event_to_rssitem(e) for e in events]
 
         rss = RSS2('Crab failures', self.base + '/',
                    'List of recent cron job failures.',

@@ -4,7 +4,6 @@ import mimetypes
 import os
 import re
 import time
-import urllib
 
 import cherrypy
 from cherrypy import HTTPError
