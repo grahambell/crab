@@ -4,7 +4,7 @@ Crab
 Requirements
 ------------
 
-* http://pypi.python.org/pypi/python-crontab/#downloads
+* http://pypi.python.org/pypi/crontab/#downloads
 * http://pypi.python.org/pypi/Mako/0.7.0/#downloads
 * http://pypi.python.org/pypi/PyRSS2Gen/#downloads
 * http://download.cherrypy.org/cherrypy/3.2.2/
@@ -19,7 +19,7 @@ symlinked into the ``lib`` directory::
 
     lib/PyRSS2Gen.py -> ../external/PyRSS2Gen-1.0.0/PyRSS2Gen.py
     lib/cherrypy -> ../external/CherryPy-3.2.2/cherrypy/
-    lib/crontab.py -> ../external/python-crontab-0.9.6/crontab.py
+    lib/crontab -> ../external/crontab-.14/crontab/
     lib/mako -> ../external/Mako-0.7.0/mako/
 
 The jQuery JavaScript library should be symlined into

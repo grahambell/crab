@@ -26,4 +26,4 @@ class CrabNotifyService(CrabMinutely):
         end = datetime_.replace(second=0, microsecond=0)
 
         if self.schedule.match(datetime_):
-            self.notify(end - datetime.timedelta(days=1), end)
+            self.notify(self.schedule.previous_datetime(end), end)

@@ -1,76 +1,30 @@
 from __future__ import print_function
 
+import datetime
 import pytz
 
-from crontab import CronItem
+from crontab import CronTab
 
 from crab import CrabError
 
-def slice_to_set(slice):
-    """Convert a CronSlice object to a set of possible values."""
-    result = set()
-
-    # Extract parts from the CronSlice object.
-    for part in slice.parts:
-
-        # In simple cases CronSlice just stores in int.
-        if isinstance(part, int):
-            result.add(part)
-
-        else:
-            # CronRange doesn't convert seq to an int.
-            try:
-                seq = int(part.seq)
-            except ValueError:
-                raise CrabError('Step ' + part.seq + ' not an integer')
-
-            # Need to add 1 for a python-style ending because
-            # CronRange includes value_to in the series.
-            for value in range(part.value_from, part.value_to + 1, seq):
-                result.add(value)
-
-    return result
-
-class CrabSchedule():
+class CrabSchedule(CronTab):
     """Class handling the schedule of a cron job."""
 
     def __init__(self, specifier, timezone):
         """Construct a CrabSchedule object from a cron time specifier
         and the associated timezone name.
 
-        This uses the CronItem class from the python-crontab module
-        to parse the time specifier, and stores a set of possible
-        values for each component.  This will allow the schedule to be
-        checked efficiently without going through the parsing every
-        minute, and allows the rest of the system to know which jobs
-        have valid schedules attached.
-
         The timezone string, if provided, is converted into an object
         using the pytz module."""
 
         try:
-            # Need to provide crontab.CronItem with a dummy command.
-            item = CronItem(specifier + ' COMMAND')
+            item = CronTab.__init__(self, specifier)
 
-            if not item.is_valid():
-                raise CrabError('Time spcifier is not valid: ' + specifier)
-
-        except (ValueError, TypeError, AttributeError, NoneError) as err:
+        except ValueError as err:
             raise CrabError('Failed to parse cron time specifier ' +
                             specifier + ' reason: ' + str(err))
 
-        self.minute = slice_to_set(item.minute())
-        self.hour = slice_to_set(item.hour())
-        self.dom = slice_to_set(item.dom())
-        self.month = slice_to_set(item.month())
-        self.dow = slice_to_set(item.dow())
         self.timezone = None
-
-        # Sunday might have been specified as 0 or 7 - change it to 7 only
-        # to match the result from datetime.isoweekday().
-        if 0 in self.dow:
-            self.dow.add(7)
-            self.dow.discard(0)
 
         if timezone is not None:
             try:
@@ -87,16 +41,37 @@ class CrabSchedule():
         rules stored in the class instance.
 
         The datetime is converted to the stored timezone, and then the
-        components of the time are checked against the stored sets."""
+        components of the time are checked against the matchers
+        in the CronTab superclass."""
 
+        localtime = self._localtime(datetime)
+
+        return (self.matchers.minute(localtime.minute, localtime) and
+                self.matchers.hour(localtime.hour, localtime) and
+                self.matchers.day(localtime.day, localtime) and
+                self.matchers.month(localtime.month, localtime) and
+                self.matchers.weekday(localtime.isoweekday() % 7, localtime))
+
+    def next_datetime(self, datetime_):
+        """return a datetime rather than number of
+        seconds."""
+
+        localtime = self._localtime(datetime_)
+        return datetime_ + datetime.timedelta(
+                               seconds=int(self.next(localtime)))
+
+    def previous_datetime(self, datetime_):
+        """return a datetime rather than number of
+        seconds."""
+
+        localtime = self._localtime(datetime_)
+        return datetime_ + datetime.timedelta(
+                               seconds=int(self.previous(localtime)))
+
+    def _localtime(self, datetime):
         if self.timezone is not None:
-            localtime = datetime.astimezone(self.timezone)
+            return datetime.astimezone(self.timezone)
         else:
             # Currently assume UTC.
-            localtime = datetime
+            return datetime
 
-        return ((localtime.minute in self.minute) and
-                (localtime.hour in self.hour) and
-                (localtime.day in self.dom) and
-                (localtime.month in self.month) and
-                (localtime.isoweekday() in self.dow))
