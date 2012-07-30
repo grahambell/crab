@@ -1,5 +1,4 @@
-# It appears we can't call this file lib/crab/notify/email.py because
-# it would then hide the default 'email' pacakge.
+from __future__ import absolute_import
 
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText

@@ -1,7 +1,7 @@
 from __future__ import print_function
 
 from crab.report import CrabReport
-from crab.notify.mail import CrabNotifyEmail
+from crab.notify.email import CrabNotifyEmail
 
 class CrabNotify:
     """Class for sending notification messages."""
