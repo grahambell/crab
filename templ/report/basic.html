@@ -12,14 +12,16 @@
         ${summary('ok', 'Successful Jobs')}
 
 <%def name="summary(section, title)">
-% if output[section]:
+<%
+    jobs = getattr(report, section)
+%>
+% if jobs:
         <h1>${title | h}</h1>
 
         <table>
-% for id_ in output[section]:
+% for id_ in jobs:
 <%
-    job = report.get_job(id_)
-    info = job['info']
+    info = report.info[id_]
 %>
             <tr>
                 <td>${info['host'] | h}</td>
@@ -33,17 +35,16 @@
 
         <h1>Event Listing</h1>
 
-% for id_ in set.union(output['error'], output['warning'], output['ok']):
+% for id_ in set.union(report.error, report.warning, report.ok):
 <%
-    job = report.get_job(id_)
-    info = job['info']
+    info = report.info[id_]
 %>
         <h2 id="job_${id_ | h}">${info['user'] | h} @
                                 ${info['host'] | h } :
                                 ${info['title'] | h}</h2>
 
         <table>
-% for event in job['events']:
+% for event in report.events[id_]:
             <tr>
                 <td>${CrabEvent.get_name(event['type']) | h}</td>
 % if event['type'] == CrabEvent.FINISH:

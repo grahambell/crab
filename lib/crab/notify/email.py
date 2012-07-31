@@ -21,7 +21,7 @@ class CrabNotifyEmail:
         self.from_ = config['email']['from']
         self.base_url = base_url
 
-    def __call__(self, report, output, to):
+    def __call__(self, report, to):
         """Sends a report by email to the given addresses."""
 
         message = MIMEMultipart('alternative')
@@ -30,8 +30,8 @@ class CrabNotifyEmail:
         message['From'] = self.from_
         message['To'] = ', '.join(to)
 
-        message.attach(MIMEText(report_to_text(report, output), 'text'))
-        message.attach(MIMEText(report_to_html(report, output,
+        message.attach(MIMEText(report_to_text(report), 'text'))
+        message.attach(MIMEText(report_to_html(report,
                                 self.home, self.base_url), 'html'))
 
         smtp = SMTP(self.server)

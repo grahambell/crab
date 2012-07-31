@@ -1,17 +1,17 @@
 from crab import CrabEvent, CrabStatus
-from crab.report import CrabReport
 
-def report_to_text(report, output, event_list=True):
+def report_to_text(report, event_list=True):
     lines = []
     sections = ['error', 'warning', 'ok']
     titles = ['Jobs with Errors', 'Jobs with Warnings', 'Successful Jobs']
 
     for (section, title) in zip(sections, titles):
-        if output[section]:
+        jobs = getattr(report, section)
+        if jobs:
             lines.append(title)
             lines.append('=' * len(title))
             lines.append('')
-            for id_ in output[section]:
+            for id_ in jobs:
                 lines.append('    ' + _summary_line(report, id_))
             lines.append('')
 
@@ -20,15 +20,13 @@ def report_to_text(report, output, event_list=True):
         lines.append('=============')
         lines.append('')
 
-        for id_ in set.union(output['error'], output['warning'], output['ok']):
+        for id_ in set.union(report.error, report.warning, report.ok):
             subhead = _summary_line(report, id_)
             lines.append(subhead)
             lines.append('-' * len(subhead))
             lines.append('')
 
-            job = report.get_job(id_)
-
-            for e in job['events']:
+            for e in report.events[id_]:
                 lines.append('    ' + _event_line(e))
 
             lines.append('')
@@ -37,8 +35,7 @@ def report_to_text(report, output, event_list=True):
 
 
 def _summary_line(report, id_):
-    job = report.get_job(id_)
-    info = job['info']
+    info = report.info[id_]
     return '{0:10} {1:10} {2}'.format(info['host'], info['user'], info['title'])
 
 def _event_line(event):

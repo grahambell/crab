@@ -75,7 +75,9 @@ CREATE TABLE jobnotify (
     host VARCHAR(255) DEFAULT NULL,
     user VARCHAR(255) DEFAULT NULL,
     method VARCHAR(255) NOT NULL,
-    address VARCHAR(255) NOT NULL
+    address VARCHAR(255) NOT NULL,
+    time VARCHAR(255) DEFAULT NULL,
+    timezone VARCHAR(255) DEFAULT NULL
 );
 
 CREATE INDEX jobnotify_host ON jobnotify (host);

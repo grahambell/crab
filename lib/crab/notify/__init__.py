@@ -1,7 +1,11 @@
 from __future__ import print_function
 
-from crab.report import CrabReport
+from collections import namedtuple
+
+from crab.report import CrabReportGenerator, CrabReportJob
 from crab.notify.email import CrabNotifyEmail
+
+CrabNotifyJob = namedtuple('CrabNotifyJob', ['n', 'start', 'end'])
 
 class CrabNotify:
     """Class for sending notification messages."""
@@ -11,12 +15,12 @@ class CrabNotify:
 
         self.send_email = CrabNotifyEmail(config, base_url)
 
-    def __call__(self, start, end):
+    def __call__(self, notifications):
         "Sends notification messages."""
 
-        report = CrabReport(self.store, start, end)
+        report = CrabReportGenerator(self.store)
 
-        for (destinations, jobs) in self._get_notifications():
+        for (jobs, destinations) in self._group_notifications(notifications):
             output = report(jobs)
             if output is not None:
                 email = []
@@ -30,40 +34,45 @@ class CrabNotify:
                         print('Unknown notification method: ', method)
 
                 if email:
-                    self.send_email(report, output, email)
+                    self.send_email(output, email)
 
-    def _get_notifications(self):
+    def _group_notifications(self, notifications):
         """Constructs a list of notifications to be sent.
 
-        Each item in the list consists of a tuple containing a set
-        of (method, address) pairs and a set of job ID numbers.  This
-        allows each distinct report to be generated once, and then
-        sent to a number of recipients."""
+        Each item in the list consists of a tuple containing a tuple
+        of CrabReportJob tuples and a set of (method, address) pairs.
+        This allows each distinct report to be generated once, 
+        and then sent to a number of recipients."""
 
         # First build a list of jobs to report on for each destination:
         notification = {}
 
-        for entry in self.store.get_notifications():
-            key = (entry['method'], entry['address'])
+        for entry in notifications:
+            key = (entry.n['method'], entry.n['address'])
+
+            id_ = entry.n['id']
+            report_job = CrabReportJob(id_, entry.start, entry.end)
 
             if key in notification:
-                notification[key].add(entry['jobid'])
+                if id_ not in notification[key]:
+                    notification[key][id_] = report_job
+                else:
+                    notification[key][id_] = report_job._replace(
+                        start=min(notification[key][id_].start, entry.start),
+                        end=max(notification[key][id_].end, entry.end))
 
             else:
-                notification[key] = set([entry['jobid']])
+                notification[key] = {id_: report_job}
 
         # Then attempt to merge entries with the same job list:
-        merged = []
+        merged = {}
 
-        while notification:
-            (key, jobs) = notification.popitem()
-            keys = set([key])
+        for (key, jobs) in notification.items():
+            jobs = tuple(jobs.values())
 
-            for key in list(notification.keys()):
-                if notification[key] == jobs:
-                    keys.add(key)
-                    del notification[key]
+            if jobs not in merged:
+                merged[jobs] = set([key])
+            else:
+                merged[jobs].add(key)
 
-            merged.append((keys, jobs))
-
-        return merged
+        return merged.items()
