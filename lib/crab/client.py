@@ -53,7 +53,13 @@ class CrabClient:
         self.config.set('client', 'hostname', socket.gethostname())
         self.config.set('client', 'username', pwd.getpwuid(os.getuid())[0])
 
-        self.configfiles = self.config.read(['/etc/crab/crab.ini',
+        if 'CRABSYSCONFIG' in os.environ:
+            sysconfdir = os.environ['CRABSYSCONFIG']
+        else:
+            sysconfdir = '/etc/crab'
+
+        self.configfiles = self.config.read([
+                          os.path.join(sysconfdir, 'crab.ini'),
                           os.path.expanduser('~/.crab/crab.ini')])
 
         if 'CRABHOST' in os.environ:

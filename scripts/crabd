@@ -30,8 +30,15 @@ def main():
                    'store': {'type': 'sqlite',
                              'file': '/var/lib/crab/crab.db'}})
 
+    env = os.environ
+
+    if 'CRABSYSCONFIG' in env:
+        sysconfdir = env['CRABSYSCONFIG']
+    else:
+        sysconfdir = '/etc/crab'
+
     try:
-        config.update('/etc/crab/crabd.ini')
+        config.update(os.path.join(sysconfdir, 'crabd.ini'))
     except IOError:
         pass
 
@@ -40,7 +47,6 @@ def main():
     except IOError:
         pass
 
-    env = os.environ
     if 'CRABHOME' in env:
         config['crab']['home'] = env['CRABHOME']
 
