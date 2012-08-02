@@ -103,30 +103,7 @@ class CrabDB(CrabStore):
 
         return id_
 
-    # TODO: get rid of this method after updating the one below.
-
-    def _check_job_with_cursor(self, host, user, jobid, command,
-                               time, timezone):
-        """Calls the private _check_job method with a new cursor."""
-
-        c = self.conn.cursor()
-
-        try:
-            id_ = self._check_job(c, host, user, jobid, command,
-                                  time, timezone)
-
-        except DatabaseError as err:
-            raise CrabError('database error : ' + str(err))
-
-        finally:
-            c.close()
-
-        return id_
-
-    # TODO: remove requirement to pass a cursor, since transactions
-    # aren't based on cursors anyway.
-
-    def _check_job(self, c, host, user, jobid, command,
+    def _check_job(self, host, user, jobid, command,
                   time=None, timezone=None):
         """Ensure that a job exists in the database.
 
@@ -139,43 +116,82 @@ class CrabDB(CrabStore):
         This is a private method because it must be run within
         a database transaction."""
 
-        # We know the jobid, so use it to search
+        c = self.conn.cursor()
 
-        if jobid is not None:
-            c.execute('SELECT id, command, time, timezone, deleted ' +
-                      'FROM job WHERE host=? AND user=? AND jobid=?',
-                      [host, user, jobid])
-            row = c.fetchone()
+        try:
 
-            if row is not None:
-                (id_, dbcommand, dbtime, dbtz, deleted) = row
+            # We know the jobid, so use it to search
 
-                if (deleted is None and
-                        command == dbcommand and
-                        (time is None or time == dbtime) and
-                        (timezone is None or timezone == dbtz)):
-                    pass
+            if jobid is not None:
+                c.execute('SELECT id, command, time, timezone, deleted '
+                          'FROM job WHERE host=? AND user=? AND jobid=?',
+                          [host, user, jobid])
+                row = c.fetchone()
+
+                if row is not None:
+                    (id_, dbcommand, dbtime, dbtz, deleted) = row
+
+                    if (deleted is None and
+                            command == dbcommand and
+                            (time is None or time == dbtime) and
+                            (timezone is None or timezone == dbtz)):
+                        pass
+
+                    else:
+                        if time is None:
+                            time = dbtime
+                        if timezone is None:
+                            timezone = dbtz
+
+                        c.execute('UPDATE job SET command=?, time=?, '
+                                  'timezone=?, installed=CURRENT_TIMESTAMP, '
+                                  'deleted=NULL WHERE id=?',
+                                  [command, time, timezone, id_])
+
+                    return id_
 
                 else:
-                    if time is None:
-                        time = dbtime
-                    if timezone is None:
-                        timezone = dbtz
+                    # Need to check if the job already existed without
+                    # a job ID, in which case we update it to add the job ID.
 
-                    c.execute('UPDATE job SET command=?, time=?, ' +
-                              'timezone=?, installed=CURRENT_TIMESTAMP, ' +
-                              'deleted=NULL WHERE id=?',
-                              [command, time, timezone, id_])
+                    c.execute('SELECT id, time, timezone, deleted '
+                              'FROM job WHERE host=? AND user=? AND command=? '
+                              'AND jobid IS NULL',
+                              [host, user, command])
 
-                return id_
+                    row = c.fetchone()
+
+                    if row is not None:
+                        (id_, dbtime, dbtz, deleted) = row
+
+                        if time is None:
+                            time = dbtime
+                        if timezone is None:
+                            timezone = dbtz
+
+                        c.execute('UPDATE job SET time=?, timezone=?, '
+                                  'jobid=?, '
+                                  'installed=CURRENT_TIMESTAMP, deleted=NULL '
+                                  'WHERE id=?',
+                                  [time, timezone, jobid, id_])
+
+                        return id_
+
+                    else:
+                      self._insert_job(c, host, user, jobid, time,
+                                       command, timezone)
+
+                      return c.lastrowid
+
+            # We don't know the jobid, so we must search by command.
+            # In general we can't distinguish multiple copies of the same
+            # command running at different times.
+            # Such jobs should be given job IDs, or combined using
+            # time ranges / steps.
 
             else:
-                # Need to check if the job already existed without
-                # a job ID, in which case we update it to add the job ID.
-
-                c.execute('SELECT id, time, timezone, deleted ' +
-                          'FROM job WHERE host=? AND user=? AND command=? ' +
-                          'AND jobid IS NULL',
+                c.execute('SELECT id, time, timezone, deleted '
+                          'FROM job WHERE host=? AND user=? AND command=?',
                           [host, user, command])
 
                 row = c.fetchone()
@@ -183,63 +199,35 @@ class CrabDB(CrabStore):
                 if row is not None:
                     (id_, dbtime, dbtz, deleted) = row
 
-                    if time is None:
-                        time = dbtime
-                    if timezone is None:
-                        timezone = dbtz
+                    if (deleted is None and
+                            (time is None or time == dbtime) and
+                            (timezone is None or timezone == dbtz)):
+                        pass
 
-                    c.execute('UPDATE job SET time=?, timezone=?, ' +
-                                  'jobid=?, '
+                    else:
+                        if time is None:
+                            time = dbtime
+                        if timezone is None:
+                            timezone = dbtz
+
+                        c.execute('UPDATE job SET time=?, timezone=?, '
                                   'installed=CURRENT_TIMESTAMP, deleted=NULL '
-                              'WHERE id=?',
-                              [time, timezone, jobid, id_])
+                                  'WHERE id=?',
+                                  [time, timezone, id_])
 
                     return id_
 
                 else:
-                  self._insert_job(c, host, user, jobid, time,
-                                   command, timezone)
+                    self._insert_job(c, host, user, jobid,
+                                     time, command, timezone)
 
-                  return c.lastrowid
+                    return c.lastrowid
 
-        # We don't know the jobid, so we must search by command.
-        # In general we can't distinguish multiple copies of the same
-        # command running at different times.
-        # Such jobs should be given job IDs, or combined using
-        # time ranges / steps.
+        except DatabaseError as err:
+            raise CrabError('database error : ' + str(err))
 
-        else:
-            c.execute('SELECT id, time, timezone, deleted ' +
-                      'FROM job WHERE host=? AND user=? AND command=?',
-                      [host, user, command])
-
-            row = c.fetchone()
-
-            if row is not None:
-                (id_, dbtime, dbtz, deleted) = row
-
-                if (deleted is None and
-                        (time is None or time == dbtime) and
-                        (timezone is None or timezone == dbtz)):
-                    pass
-
-                else:
-                    if time is None:
-                        time = dbtime
-                    if timezone is None:
-                        timezone = dbtz
-
-                    c.execute('UPDATE job SET time=?, timezone=?, ' +
-                              'installed=CURRENT_TIMESTAMP, deleted=NULL ' +
-                              'WHERE id=?',
-                              [time, timezone, id_])
-
-                return id_
-
-            else:
-                self._insert_job(c, host, user, jobid, time, command, timezone)
-
-                return c.lastrowid
+        finally:
+            c.close()
 
     def _insert_job(self, c, host, user, jobid, time, command, timezone):
         """Inserts a job record into the database."""
@@ -271,7 +259,7 @@ class CrabDB(CrabStore):
         c = self.conn.cursor()
 
         try:
-            id_ = self._check_job(c, host, user, jobid, command)
+            id_ = self._check_job(host, user, jobid, command)
 
             c.execute('INSERT INTO jobstart (jobid, command) VALUES (?, ?)',
                       [id_, command])
@@ -293,7 +281,7 @@ class CrabDB(CrabStore):
         c = self.conn.cursor()
 
         try:
-            id_ = self._check_job(c, host, user, jobid, command)
+            id_ = self._check_job(host, user, jobid, command)
 
             c.execute('INSERT INTO jobfinish (jobid, command, status) ' +
                       'VALUES (?, ?, ?)',

@@ -101,8 +101,8 @@ class CrabStore:
 
                     command = command.rstrip()
 
-                    id_ = self._check_job_with_cursor(host, user, jobid,
-                                                       command, time, timezone)
+                    id_ = self._check_job(host, user, jobid,
+                                          command, time, timezone)
 
                     idset.discard(id_)
                     jobid = None
