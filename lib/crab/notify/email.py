@@ -30,7 +30,7 @@ class CrabNotifyEmail:
         message['From'] = self.from_
         message['To'] = ', '.join(to)
 
-        message.attach(MIMEText(report_to_text(report), 'text'))
+        message.attach(MIMEText(report_to_text(report), 'plain'))
         message.attach(MIMEText(report_to_html(report,
                                 self.home, self.base_url), 'html'))
 
