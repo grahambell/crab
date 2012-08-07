@@ -33,6 +33,7 @@ class CrabServer:
                     crontab = self.store.get_crontab(host, user)
                 return json.dumps({'crontab': crontab})
             except CrabError as err:
+                cherrypy.log.error('CrabError: read error: ' + str(err))
                 raise HTTPError(message='read error : ' + str(err))
 
         elif cherrypy.request.method == 'PUT':
@@ -47,6 +48,7 @@ class CrabServer:
                              timezone=data.get('timezone'))
 
             except CrabError as err:
+                cherrypy.log.error('CrabError: write error: ' + str(err))
                 raise HTTPError(message='write error : ' + str(err))
 
     @cherrypy.expose
@@ -63,6 +65,7 @@ class CrabServer:
             self.store.log_start(host, user, jobid, command)
 
         except CrabError as err:
+            cherrypy.log.error('CrabError: log error: ' + str(err))
             raise HTTPError(message='log error : ' + str(err))
 
     @cherrypy.expose
@@ -84,6 +87,7 @@ class CrabServer:
                                   data.get('stdout'), data.get('stderr'))
 
         except CrabError as err:
+            cherrypy.log.error('CrabError: log error: ' + str(err))
             raise HTTPError(message='log error : ' + str(err))
 
     def _read_json(self):
@@ -95,9 +99,11 @@ class CrabServer:
         and the CherryPy handler needs to pass the response back with
         return."""
 
+        message = latin_1_decode(cherrypy.request.body.read(), 'replace')[0]
+
         try:
-            return json.loads(latin_1_decode(cherrypy.request.body.read(),
-                                             'replace')[0])
+            return json.loads(message)
         except ValueError:
-            raise HTTPError('Did not understand JSON')
+            cherrypy.log.error('CrabError: Failed to read JSON: ' + message)
+            raise HTTPError(message='Did not understand JSON')
 
