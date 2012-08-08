@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from codecs import latin_1_decode
-import os
 import sys
 import subprocess
 from optparse import OptionParser
@@ -10,66 +9,68 @@ from crab import CrabError, CrabStatus
 from crab.client import CrabClient
 from crab.util.guesstimezone import guess_timezone
 
-def store_crontab(jobs):
+def send_crontab(crontab):
+    """Sends the given crontab to the server.
 
-    if jobs is None:
-        print("No jobs given to store.")
-        return
+    The crontab should be given as a unicode string.
+    This function also attempts to determine the system timezone
+    to send along with the crontab.  This might not always be the
+    timezone cron uses, for example if configured in /etc/default/cron
+    so if in doubt, the environment variable TZ should be set, or
+    the crontab should include a CRON_TZ variable."""
 
-    # Try to figure out the system's local timezone.
-    # This might not always be the timezone cron uses
-    # for example if configured in /etc/default/cron
-    # so if in doubt, environment variable TZ should be set.
-    tz = None
-
-    if 'TZ' in os.environ:
-        tz = os.environ['TZ']
-    else:
-        tz = guess_timezone()
+    tz = guess_timezone()
 
     try:
-        crontab = latin_1_decode(jobs, 'replace')[0]
-
         client = CrabClient()
         client.send_crontab(crontab, timezone=tz)
 
     #except CrabError as err:
-    #except CrabError, err:
     except CrabError:
         err = sys.exc_info()[1]
         print(sys.argv[0] + ': failed to send crontab: ' + str(err))
 
-    return
+def read_crontab():
+    """Fetches the current user's crontab file.
 
-def crontab_list():
+    The output from ``crontab -l`` is decoded to give a unicode
+    string.  Currently ISO-8859-1 encoding is assumed."""
+
     try:
         p = subprocess.Popen('crontab -l',
-                                shell=True, stdout=subprocess.PIPE)
+                             shell=True, stdout=subprocess.PIPE)
         (stdoutdata, stderrdata) = p.communicate()
 
         if p.returncode == 0:
-          return stdoutdata
+            return latin_1_decode(stdoutdata, 'replace')[0]
 
         else:
             print(sys.argv[0] + ': failed to read crontab')
-            return
 
     #except OSError as err:
-    #except OSError, err:
     except OSError:
         print(sys.argv[0] + ': could not execute crontab command')
 
-    return
-
 def read_file(path):
+    """Returns the contents of the given file.
+
+    The file is opened in text-mode read, so it should return
+    a unicode string."""
+
+    if path == '-':
+        return sys.stdin.read()
+
     try:
-        with open(path, 'r') as fh:
+        try:
+            fh = open(path, 'r')
             return fh.read()
 
-    except IOError as (num, err):
-        sys.exit("Cannot read file {0}: {1}".format(path, err))
+        except IOError:
+            err = sys.exc_info()[1]
+            print(sys.argv[0] + ': cannot read file:' + str(err))
 
-    return
+    finally:
+        fh.close()
 
 def main():
     parser = OptionParser(usage = """Usage: %prog [options] [command]
@@ -87,9 +88,9 @@ Commands:
     parser.add_option('--id',
         type='string', dest='jobid',
         help='specify the cron job ID to report', metavar='ID')
-    parser.add_option('--jobs',
-        type='string', dest='jobsfile',
-        help='specify file name containing cron jobs to import')
+    parser.add_option('--file',
+        type='string', dest='crontabfile',
+        help='specify file name containing crontab to import')
     parser.add_option('--raw',
         action="store_true", dest="raw", default=False,
         help="fetch crontab from server exactly as last imported")
@@ -113,17 +114,18 @@ Commands:
                 else:
                     client.finish(status=status_commands.index(args[0]))
             #except CrabError as err:
-            #except CrabError, err:
             except CrabError:
                 err = sys.exc_info()[1]
                 print(sys.argv[0] + ': ' + str(err))
 
     elif args[0] == 'import':
-        if options.jobsfile is None:
-            store_crontab(crontab_list())
-
+        if options.crontabfile is None:
+            crontab = read_crontab()
         else:
-            store_crontab(read_file(options.jobsfile))
+            crontab = read_file(options.crontabfile)
+
+        if crontab is not None:
+            send_crontab(crontab)
 
     elif args[0] == 'export':
         try:
@@ -131,7 +133,6 @@ Commands:
             crontab = client.fetch_crontab(raw=options.raw)
             print(crontab)
         #except CrabError as err:
-        #except CrabError, err:
         except CrabError:
             err = sys.exc_info()[1]
             print(sys.argv[0] + ': failed to fetch crontab: ' + str(err))
