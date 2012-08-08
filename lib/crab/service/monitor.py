@@ -126,12 +126,12 @@ class CrabMonitor(CrabMinutely):
             # Check status of timeouts - need to get a list of keys
             # so that we can delete from the dict while iterating.
 
-            for id_ in self.miss_timeout.keys():
+            for id_ in list(self.miss_timeout.keys()):
                 if self.miss_timeout[id_] < datetime_:
                     self._write_warning(id_, CrabStatus.MISSED)
                     del self.miss_timeout[id_]
 
-            for id_ in self.timeout.keys():
+            for id_ in list(self.timeout.keys()):
                 if self.timeout[id_] < datetime_:
                     self._write_warning(id_, CrabStatus.TIMEOUT)
                     del self.timeout[id_]
