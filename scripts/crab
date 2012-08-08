@@ -13,7 +13,7 @@ from crab.util.guesstimezone import guess_timezone
 def store_crontab(jobs):
 
     if jobs is None:
-        print "No jobs given to store.\n"
+        print("No jobs given to store.")
         return
 
     # Try to figure out the system's local timezone.
