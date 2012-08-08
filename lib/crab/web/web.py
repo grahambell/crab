@@ -18,12 +18,13 @@ class CrabWebQuery:
     """CherryPy handler class for the JSON query part of the crab web
     interface."""
 
-    def __init__(self, store, monitor):
+    def __init__(self, store, monitor, service):
         """Constructor: saves the given storage backend and reference
         to the monitor thread."""
 
         self.store = store
         self.monitor = monitor
+        self.service = service
 
     @cherrypy.expose
     def jobstatus(self, startid, warnid, finishid):
@@ -31,8 +32,11 @@ class CrabWebQuery:
         from the monitor thread."""
 
         try:
-            return json.dumps(self.monitor.wait_for_event_since(int(startid),
-                                                   int(warnid), int(finishid)))
+            s = self.monitor.wait_for_event_since(int(startid),
+                                                  int(warnid), int(finishid))
+            s['service'] = dict((s, self.service[s].is_alive())
+                                for s in self.service)
+            return json.dumps(s)
         except ValueError:
             raise HTTPError(404, 'Query parameter not an integer')
 
@@ -53,7 +57,7 @@ class CrabWebQuery:
 class CrabWeb:
     """CherryPy handler for the HTML part of the crab web interface."""
 
-    def __init__(self, config, store, monitor):
+    def __init__(self, config, store, monitor, service):
         """Constructor for CrabWeb class.
 
         Stores a reference to the given storage backend, and extracts
@@ -63,7 +67,7 @@ class CrabWeb:
         self.store = store
         home = config['crab']['home']
         self.templ = TemplateLookup(directories=[home + '/templ'])
-        self.query = CrabWebQuery(store, monitor)
+        self.query = CrabWebQuery(store, monitor, service)
 
     @cherrypy.expose
     def index(self):

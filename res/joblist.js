@@ -80,6 +80,20 @@ function setFavicon(url) {
     favicon.replaceWith(favicon.clone().attr('href', url));
 }
 
+function updateServiceStatus(servstatus) {
+    var statustext = '';
+    for (var id in servstatus) {
+        statustext = statustext.concat(' ' + id + ': ');
+        if (servstatus[id]) {
+            statustext = statustext.concat('running');
+        }
+        else {
+            statustext = statustext.concat('stopped');
+        }
+    }
+    $('#service_status').text(statustext);
+}
+
 function updateStatus(data) {
     var statusdata = data['status'];
     for (var id in statusdata) {
@@ -103,6 +117,8 @@ function updateStatus(data) {
 
     var current_time = new Date();
     $('#last_refresh').text(current_time.toString());
+
+    updateServiceStatus(data['service']);
 
     if (data['numerror'] > 0) {
         setFavicon('/res/favicon-error.png');

@@ -81,7 +81,10 @@ def main():
     notify.start()
 
     cherrypy.config.update(config)
-    cherrypy.tree.mount(CrabWeb(config, store, monitor), '/', config)
+    cherrypy.tree.mount(CrabWeb(config, store, monitor, {
+                            'Monitor' : monitor,
+                            'Notification' : notify
+                        }), '/', config)
     cherrypy.tree.mount(CrabServer(store), '/api/0', {})
     cherrypy.tree.mount(CrabRSS(store, base_url), '/rss', {})
 
