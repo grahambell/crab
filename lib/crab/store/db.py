@@ -533,7 +533,8 @@ class CrabDB(CrabStore):
         get_job_output method if an outputstore was provided to the
         contructor, allowing the outputstore to organise its
         information hierarchically if desired.  Otherwise this method
-        does not make use of those parameters."""
+        does not make use of those parameters.  Returns None if no
+        output is found."""
 
         if self.outputstore is not None:
             return self.outputstore.get_job_output(finishid, host, user, id_)
@@ -547,7 +548,7 @@ class CrabDB(CrabStore):
             row = c.fetchone()
 
             if row is None:
-                raise CrabError('no output found')
+                return None
 
             return row
 

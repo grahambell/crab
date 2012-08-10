@@ -134,9 +134,13 @@ class CrabWeb:
 
 
             # TODO: check that the given finishid is for the correct job.id.
-            (stdout, stderr) = self.store.get_job_output(finishid,
+            pair = self.store.get_job_output(finishid,
                     info['host'], info['user'], id_)
 
+            if pair is None:
+                raise HTTPError(404, 'No output found for the given job run.')
+
+            (stdout, stderr) = pair
             return self._write_template('joboutput.html',
                        {'id': id_, 'info': info,
                         'stdout': stdout, 'stderr': stderr})
