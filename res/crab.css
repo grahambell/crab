@@ -195,3 +195,32 @@ div > pre {
 .meta_info {
     color: grey;
 }
+
+ul#service_status {
+    list-style-type: none;
+    margin: 20px 0px 20px 0px;
+    padding: 0px;
+}
+
+ul#service_status:before {
+    content: 'Service status: ';
+}
+
+ul#service_status li {
+    display: inline-block;
+    color: inherit;
+    background: inherit;
+    margin: 0px;
+    padding: 2px;
+}
+
+ul#service_status li.status_fail {
+    border: 1px solid red;
+    border-left: 20px solid red;
+    text-decoration: line-through;
+}
+
+ul#service_status li.status_ok {
+    border: 1px solid green;
+    border-left: 20px solid green;
+}

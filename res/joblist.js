@@ -83,15 +83,15 @@ function setFavicon(url) {
 function updateServiceStatus(servstatus) {
     var statustext = '';
     for (var id in servstatus) {
-        statustext = statustext.concat(' ' + id + ': ');
         if (servstatus[id]) {
-            statustext = statustext.concat('running');
+            statustext = statustext.concat('<li class="status_ok">');
         }
         else {
-            statustext = statustext.concat('stopped');
+            statustext = statustext.concat('<li class="status_fail">');
         }
+        statustext = statustext.concat(id + '</li> ');
     }
-    $('#service_status').text(statustext);
+    $('#service_status').html(statustext);
 }
 
 function updateStatus(data) {
