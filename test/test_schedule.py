@@ -60,7 +60,7 @@ class ScheduleTestCase(TestCase):
         thu = CrabSchedule('* * * * 4', 'UTC')
         fri = CrabSchedule('* * * * fri', 'UTC')
         sat = CrabSchedule('* * * * 6', 'UTC')
-        sun1= CrabSchedule('* * * * 7', 'UTC')
+        sun7= CrabSchedule('* * * * 7', 'UTC')
 
         d = datetime(2012, 8, 10, 12, 0, tzinfo=UTC)
         day = timedelta(days=1)
@@ -70,8 +70,7 @@ class ScheduleTestCase(TestCase):
         self.assertTrue(sat.match(d), 'Date + 1 is Saturday')
         d += day
         self.assertTrue(sun.match(d), 'Date + 2 is Sunday')
-        # Need to fix 'crontab' module to get this to work...
-        # self.assertTrue(sun1.match(d), 'Date + 2 is Sunday (day 7)')
+        self.assertTrue(sun7.match(d), 'Date + 2 is Sunday (day 7)')
         d += day
         self.assertTrue(mon.match(d), 'Date + 3 is Monday')
         d += day
