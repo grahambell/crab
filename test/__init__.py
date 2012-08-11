@@ -5,7 +5,7 @@ from crab.store.db import CrabDB
 
 class CrabDBTestCase(TestCase):
     def setUp(self):
-        self.conn = sqlite3.connect(':memory:')
+        self.conn = sqlite3.connect(':memory:', check_same_thread=False)
 
         with open('doc/schema.txt') as file:
             schema = file.read()
