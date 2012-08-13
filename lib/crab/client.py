@@ -11,6 +11,7 @@ except ImportError:
     import simplejson as json
 import os
 import pwd
+import re
 import socket
 import sys
 # urllib.quote moved into urllib.parse.quote in Python 3
@@ -149,8 +150,9 @@ class CrabClient:
                 conn.request('GET', url)
 
                 res = conn.getresponse()
+
                 if res.status != 200:
-                    raise CrabError('server error : ' + res.reason)
+                    raise CrabError('server error: ' + self._read_error(res))
 
                 return json.loads(latin_1_decode(res.read(), 'replace')[0])
 
@@ -187,7 +189,7 @@ class CrabClient:
                 res = conn.getresponse()
 
                 if res.status != 200:
-                    raise CrabError('server error : ' + res.reason)
+                    raise CrabError('server error: ' + self._read_error(res))
 
             #except HTTPException as err:
             #except HTTPException, err:
@@ -203,3 +205,22 @@ class CrabClient:
 
         finally:
             conn.close()
+
+    def _read_error(self, res):
+        """Determine the error message to show based on an
+        unsuccessful HTTP response.
+
+        Currently use the HTTP status phrase or the first
+        paragraph of the body, if found with a regular expression."""
+
+        message = res.reason
+
+        try:
+            body = latin_1_decode(res.read(), 'replace')[0]
+            match = re.search('<p>([^<]*)', body)
+            if match:
+                message = match.group(1)
+        except:
+            pass
+
+        return message
