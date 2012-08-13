@@ -100,7 +100,6 @@ class CronLogTester(RandomTester):
         self.store.get_job_info(id_)
         # Need to add the write_config method when implemented
         self.store.get_job_config(id_)
-        self.store.get_job_starts(id_, 10)
         self.store.get_job_finishes(id_, 10)
         self.store.get_job_events(id_, 10)
 

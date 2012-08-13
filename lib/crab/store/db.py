@@ -339,17 +339,6 @@ class CrabDB(CrabStore):
                 'SELECT graceperiod, timeout ' +
                 'FROM jobconfig WHERE jobid = ?', [id_])
 
-    def get_job_starts(self, id_, limit=100):
-        """Retrieves a list of recent job starts for the given job,
-        most recent first."""
-
-        with self.lock:
-            return self._query_to_dict_list(
-                'SELECT id, datetime, command ' +
-                    'FROM jobstart WHERE jobid = ? ' +
-                    'ORDER BY datetime DESC LIMIT ?',
-                [id_, limit])
-
     def get_job_finishes(self, id_, limit=100):
         """Retrieves a list of recent job finish events for the given job,
         most recent first."""
