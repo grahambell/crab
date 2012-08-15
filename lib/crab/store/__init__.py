@@ -1,14 +1,10 @@
 from __future__ import print_function
 
 import re
-from threading import Lock
 
 from crab.util.string import remove_quotes, quote_multiword, split_quoted_word
 
 class CrabStore:
-    def __init__(self):
-        self.lock = Lock()
-
     def get_crontab(self, host, user):
         """Fetches the job entries for a particular host and user and builds
         a crontab style representation.
@@ -73,60 +69,49 @@ class CrabStore:
         jobid = None
 
         with self.lock:
-            self._begin_transaction()
+            # Iterate over the supplied cron jobs, removing each
+            # job from the idset set as we encounter it.
 
-            try:
+            for job in crontab:
+                if (blankline.search(job) is not None or
+                        comment.search(job) is not None):
+                    continue
 
-                # Iterate over the supplied cron jobs, removing each
-                # job from the idset set as we encounter it.
+                m = variable.search(job)
+                if m is not None:
+                    (var, value) = m.groups()
+                    if var == 'CRABID':
+                        jobid = remove_quotes(value.rstrip())
+                    if var == 'CRON_TZ':
+                        timezone = remove_quotes(value.rstrip())
+                    continue
 
-                for job in crontab:
-                    if (blankline.search(job) is not None or
-                            comment.search(job) is not None):
-                        continue
+                m = cronrule.search(job)
+                if m is not None:
+                    (time, command) = m.groups()
 
-                    m = variable.search(job)
-                    if m is not None:
-                        (var, value) = m.groups()
-                        if var == 'CRABID':
-                            jobid = remove_quotes(value.rstrip())
-                        if var == 'CRON_TZ':
-                            timezone = remove_quotes(value.rstrip())
-                        continue
+                    if command.startswith('CRABIGNORE='):
+                        (ignore, command) = split_quoted_word(command[11:])
+                        if ignore.lower() not in ['0', 'no', 'false', 'off']:
+                            continue
 
-                    m = cronrule.search(job)
-                    if m is not None:
-                        (time, command) = m.groups()
+                    if command.startswith('CRABID='):
+                        (jobid, command) = split_quoted_word(command[7:])
 
-                        if command.startswith('CRABIGNORE='):
-                            (ignore, command) = split_quoted_word(command[11:])
-                            if ignore.lower() not in ['0', 'no', 'false', 'off']:
-                                continue
+                    command = command.rstrip()
 
-                        if command.startswith('CRABID='):
-                            (jobid, command) = split_quoted_word(command[7:])
+                    id_ = self._check_job(host, user, jobid,
+                                          command, time, timezone)
 
-                        command = command.rstrip()
+                    idset.discard(id_)
+                    jobid = None
+                    continue
 
-                        id_ = self._check_job(host, user, jobid,
-                                              command, time, timezone)
-
-                        idset.discard(id_)
-                        jobid = None
-                        continue
-
-                    print('*** Did not recognise line:', job)
+                print('*** Did not recognise line:', job)
 
 
-                # Set any jobs remaining in the id set to deleted
-                # because we did not see them in the current crontab
+            # Set any jobs remaining in the id set to deleted
+            # because we did not see them in the current crontab
 
-                for id_ in idset:
-                    self._delete_job(id_);
-
-            except:
-                self._rollback_transaction()
-                raise
-
-            else:
-                self._commit_transaction()
+            for id_ in idset:
+                self._delete_job(id_);

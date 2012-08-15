@@ -1,10 +1,45 @@
+from __future__ import print_function
+
 import datetime
 import pytz
+from threading import Lock
+from traceback import extract_stack
 
 from sqlite3 import DatabaseError
 
 from crab import CrabError, CrabStatus
 from crab.store import CrabStore
+
+class CrabDBLock():
+    def __init__(self, conn):
+        self.lock = Lock()
+        self.conn = conn
+        self.laststack = ''
+
+    def __enter__(self):
+        try:
+            st = extract_stack(limit=4)
+            del st[-1]
+            stack = ' '.join([fn for (fi, ln, fn, l) in st])
+        except:
+            stack = ''
+
+        if not self.lock.acquire(False):
+            print('Blocking:', stack, '--', self.laststack)
+            self.lock.acquire(True)
+
+        # No 'begin transaction' function for SQLite.
+
+        self.laststack = stack
+
+    def __exit__(self, type, value, tb):
+        if type is None:
+            self.conn.commit()
+        else:
+            self.conn.rollback()
+
+        self.laststack = ''
+        self.lock.release()
 
 class CrabDB(CrabStore):
     """Crab storage backend using a database.
@@ -24,22 +59,10 @@ class CrabDB(CrabStore):
         writing the stdout and stderr from the cron jobs to the database.
         The outputstore should only raise instances of CrabError."""
 
-        CrabStore.__init__(self)
         self.conn = conn
         self.outputstore = outputstore
 
-    # These methods should be used internally by this
-    # class, but for now they are just used by CrabStore.
-    # Would be nice to allow for the 'with' command to be used.
-
-    def _begin_transaction(self):
-        pass
-
-    def _commit_transaction(self):
-        self.conn.commit()
-
-    def _rollback_transaction(self):
-        self.conn.rollback()
+        self.lock = CrabDBLock(conn)
 
     def get_jobs(self, host=None, user=None, include_deleted=False):
         """Fetches a list of all of the cron jobs stored in the database,
@@ -176,10 +199,8 @@ class CrabDB(CrabStore):
                         return id_
 
                     else:
-                      self._insert_job(c, host, user, jobid, time,
-                                       command, timezone)
-
-                      return c.lastrowid
+                      return self._insert_job(host, user, jobid, time,
+                                              command, timezone)
 
             # We don't know the jobid, so we must search by command.
             # In general we can't distinguish multiple copies of the same
@@ -216,10 +237,8 @@ class CrabDB(CrabStore):
                     return id_
 
                 else:
-                    self._insert_job(c, host, user, jobid,
-                                     time, command, timezone)
-
-                    return c.lastrowid
+                    return self._insert_job(host, user, jobid,
+                                            time, command, timezone)
 
         except DatabaseError as err:
             raise CrabError('database error : ' + str(err))
@@ -227,13 +246,24 @@ class CrabDB(CrabStore):
         finally:
             c.close()
 
-    def _insert_job(self, c, host, user, jobid, time, command, timezone):
+    def _insert_job(self, host, user, jobid, time, command, timezone):
         """Inserts a job record into the database."""
 
-        c.execute('INSERT INTO job (host, user, jobid, ' +
-                      'time, command, timezone)' +
-                      'VALUES (?, ?, ?, ?, ?, ?)',
-                  [host, user, jobid, time, command, timezone])
+        c = self.conn.cursor()
+
+        try:
+            c.execute('INSERT INTO job (host, user, jobid, ' +
+                          'time, command, timezone)' +
+                          'VALUES (?, ?, ?, ?, ?, ?)',
+                      [host, user, jobid, time, command, timezone])
+
+            return c.lastrowid
+
+        except DatabaseError as err:
+            raise CrabError('database error : ' + str(err))
+
+        finally:
+            c.close()
 
     def _delete_job(self, id_):
         """Marks a job as deleted in the database."""
@@ -263,8 +293,6 @@ class CrabDB(CrabStore):
                 c.execute('INSERT INTO jobstart (jobid, command) VALUES (?, ?)',
                           [id_, command])
 
-                self.conn.commit()
-
             except DatabaseError as err:
                 raise CrabError('database error : ' + str(err))
 
@@ -289,8 +317,6 @@ class CrabDB(CrabStore):
 
                 finishid = c.lastrowid
 
-                self.conn.commit()
-
             except DatabaseError as err:
                 raise CrabError('database error : ' + str(err))
 
@@ -313,8 +339,6 @@ class CrabDB(CrabStore):
             try:
                 c.execute('INSERT INTO jobwarn (jobid, status) VALUES (?, ?)',
                           [id_, status])
-
-                self.conn.commit()
 
             except DatabaseError as err:
                 raise CrabError('database error : ' + str(err))
@@ -490,11 +514,7 @@ class CrabDB(CrabStore):
 
     def write_job_output(self, finishid, host, user, id_,
                          stdout, stderr):
-        """Writes the job output to the database using the given cursor.
-
-        However this method also allows calling without a cursor
-        reference, in which case it will create one, and
-        commit the transaction, closing the cursor before returning.
+        """Writes the job output to the database.
 
         This method does not require the host, user, or job ID
         number, but will pass them to the outputstore's corresponding
@@ -512,8 +532,6 @@ class CrabDB(CrabStore):
                 c.execute('INSERT INTO joboutput (finishid, stdout, stderr) ' +
                           'VALUES (?, ?, ?)',
                           [finishid, stdout, stderr])
-
-                self.conn.commit()
 
             except DatabaseError as err:
                 raise CrabError('database error : ' + str(err))
@@ -600,10 +618,7 @@ class CrabDB(CrabStore):
                     c.execute('UPDATE rawcrontab SET crontab = ? WHERE id = ?',
                               ['\n'.join(crontab), entry['id']])
 
-                self.conn.commit()
-
             except DatabaseError as err:
-                self.conn.rollback()
                 raise CrabError('database error : ' + str(err))
 
             finally:
