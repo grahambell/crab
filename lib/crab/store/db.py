@@ -646,6 +646,7 @@ class CrabDB(CrabStore):
         with self.lock:
             return self._query_to_dict_list(
                 'SELECT jobnotify.id AS notifyid, method, address, '
+                        'skip_ok, skip_warning, skip_error, '
                         'jobconfig.jobid AS id, jobnotify.time AS time, '
                         'COALESCE(jobnotify.timezone, job.timezone) '
                             'AS timezone '
@@ -656,6 +657,7 @@ class CrabDB(CrabStore):
                             'ON job.id = jobconfig.jobid '
                     'WHERE job.deleted IS NULL '
                 'UNION SELECT jobnotify.id AS notifyid, method, address, '
+                        'skip_ok, skip_warning, skip_error, '
                         'job.id AS id, jobnotify.time AS time, '
                         'COALESCE(jobnotify.timezone, job.timezone) '
                             'AS timezone '

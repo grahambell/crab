@@ -20,12 +20,14 @@ class CrabNotify:
 
         report = CrabReportGenerator(self.store)
 
-        for (jobs, destinations) in self._group_notifications(notifications):
+        for (jobs, keys) in self._group_notifications(notifications):
             output = report(jobs)
             if output is not None:
                 email = []
 
-                for (method, address) in destinations:
+                for key in keys:
+                    (method, address) = key[0:2]
+
                     if method == 'email':
                         # In the case of email, we can build a list of
                         # addresses and CC a single message to all of them.
@@ -48,10 +50,15 @@ class CrabNotify:
         notification = {}
 
         for entry in notifications:
-            key = (entry.n['method'], entry.n['address'])
+            key = (entry.n['method'], entry.n['address'],
+                   entry.n['skip_ok'], entry.n['skip_warning'],
+                   entry.n['skip_error'])
 
             id_ = entry.n['id']
-            report_job = CrabReportJob(id_, entry.start, entry.end)
+            report_job = CrabReportJob(id_, entry.start, entry.end,
+                                       entry.n['skip_ok'],
+                                       entry.n['skip_warning'],
+                                       entry.n['skip_error'])
 
             if key in notification:
                 if id_ not in notification[key]:

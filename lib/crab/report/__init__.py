@@ -3,7 +3,8 @@ from collections import namedtuple
 from crab import CrabError, CrabStatus, CrabEvent
 from crab.util.filter import CrabEventFilter
 
-CrabReportJob = namedtuple('CrabReportJob', ['id_', 'start', 'end'])
+CrabReportJob = namedtuple('CrabReportJob', ['id_', 'start', 'end',
+                           'skip_ok', 'skip_warning', 'skip_error'])
 
 CrabReport = namedtuple('CrabReport', ['num', 'error', 'warning', 'ok',
                                        'info', 'events'])
@@ -16,14 +17,12 @@ class CrabReportGenerator:
     manner.  This depends on a single configuration, so methods
     for adjusting the filtering are not provided."""
 
-    def __init__(self, store,
-                 skip_start=True, skip_ok=False, **kwargs):
+    def __init__(self, store, **kwargs):
         """Constructor for report object."""
 
         self.store = store
 
-        self.filter = CrabEventFilter(store, skip_start=skip_start,
-                                      skip_ok=skip_ok, **kwargs)
+        self.filter = CrabEventFilter(store, **kwargs)
         self.cache_info = {}
         self.cache_event = {}
         self.cache_error = {}
@@ -53,7 +52,7 @@ class CrabReportGenerator:
             else:
                 checked.add(job)
 
-            (id_, start, end) = job
+            (id_, start, end, skip_ok, skip_warning, skip_error) = job
 
             if id_ in self.cache_info:
                 info = self.cache_info[id_]
@@ -77,7 +76,9 @@ class CrabReportGenerator:
                 self.filter.set_timezone(info['timezone'])
                 events = self.cache_event[job] = self.filter(
                              self.store.get_job_events(id_, limit=None,
-                                                       start=start, end=end))
+                                                       start=start, end=end),
+                             skip_ok=skip_ok, skip_warning=skip_warning,
+                             skip_error=skip_error, skip_start=True)
                 num_errors = self.cache_error[job] = self.filter.errors
                 num_warnings = self.cache_warning[job] = self.filter.warnings
 

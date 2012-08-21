@@ -6,8 +6,6 @@ class CrabEventFilter:
     """Class implementing an event filtering action."""
 
     def __init__(self, store, timezone=None,
-                 skip_trivial=True, skip_start=False,
-                 skip_ok=False, skip_warning=False,
                  squash_start=False):
         """Construct filter object.
 
@@ -15,11 +13,6 @@ class CrabEventFilter:
 
         self.store = store
         self.set_timezone(timezone)
-
-        self.skip_trivial = skip_trivial
-        self.skip_start = skip_start
-        self.skip_ok = skip_ok
-        self.skip_warning = skip_warning
 
         self.squash_start = squash_start
 
@@ -37,7 +30,8 @@ class CrabEventFilter:
             except pytz.UnknownTimeZoneError:
                 self.zoneinfo = None
 
-    def __call__(self, events):
+    def __call__(self, events, skip_ok=False, skip_warning=False,
+                 skip_error=False, skip_trivial=True, skip_start=False):
         """Performs filtering, and returns the altered event list."""
 
         output = []
@@ -52,12 +46,13 @@ class CrabEventFilter:
             e = e.copy()
 
             if e['type'] == CrabEvent.START:
-                if self.skip_start:
+                if skip_start:
                     continue
             else:
-                if (self.skip_trivial and CrabStatus.is_trivial(e['status'])
-                or self.skip_ok and CrabStatus.is_ok(e['status'])
-                or self.skip_warning and CrabStatus.is_warning(e['status'])):
+                if (skip_trivial and CrabStatus.is_trivial(e['status'])
+                or skip_ok and CrabStatus.is_ok(e['status'])
+                or skip_warning and CrabStatus.is_warning(e['status'])
+                or skip_error and CrabStatus.is_error(e['status'])):
                     continue
 
                 if CrabStatus.is_error(e['status']):

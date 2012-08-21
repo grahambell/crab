@@ -38,7 +38,9 @@ class CrabStatus:
     def get_name(status):
         """Returns a readable name for the given status code."""
         try:
-            if status >= 0:
+            if status is None:
+                return 'Undefined'
+            elif status >= 0:
                 # TODO: find out if this can be referred to without class name?
                 return CrabStatus._error_names[status]
             else:
