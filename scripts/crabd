@@ -22,7 +22,10 @@ def main():
                    'crab': {'home': '/usr/share/crab'},
 
                    'email': {'server': 'mailhost',
-                             'from': 'Crab Daemon'},
+                             'from': 'Crab Daemon',
+                             'subject_ok': 'Crab notification',
+                             'subject_warning': 'Crab notification (WARNING)',
+                             'subject_error': 'Crab notification (ERROR)'},
 
                    'notify': {'timezone': 'UTC',
                               'daily': '0 0 * * *'},

@@ -19,13 +19,23 @@ class CrabNotifyEmail:
         self.home = config['crab']['home']
         self.server = config['email']['server']
         self.from_ = config['email']['from']
+        self.subject_ok = config['email']['subject_ok']
+        self.subject_warning = config['email']['subject_warning']
+        self.subject_error = config['email']['subject_error']
         self.base_url = base_url
 
     def __call__(self, report, to):
         """Sends a report by email to the given addresses."""
 
+        if report.error:
+            subject = self.subject_error
+        elif report.warning:
+            subject = self.subject_warning
+        else:
+            subject = self.subject_ok
+
         message = MIMEMultipart('alternative')
-        message['Subject'] = 'Crab notification'
+        message['Subject'] = subject
         message['Date'] = formatdate(localtime=True)
         message['From'] = self.from_
         message['To'] = ', '.join(to)
