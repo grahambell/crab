@@ -4,28 +4,31 @@ Crab
 Requirements
 ------------
 
-* http://pypi.python.org/pypi/crontab/#downloads
-* http://pypi.python.org/pypi/Mako/#downloads
-* http://pypi.python.org/pypi/PyRSS2Gen/#downloads
-* http://download.cherrypy.org/cherrypy/
-* http://code.jquery.com/
+* crontab (0.15 or newer): http://pypi.python.org/pypi/crontab/#downloads
+* CherryPy: http://download.cherrypy.org/cherrypy/
+* Mako templates: http://pypi.python.org/pypi/Mako/#downloads
+* PyRSS2Gen: http://pypi.python.org/pypi/PyRSS2Gen/#downloads
+* jQuery: http://code.jquery.com/
 
 Installation
 ------------
 
-Until a package is available, the code should be checked out using git.
-If any of the Python dependancies are not installed, the can be
-symlinked into the ``lib`` directory::
+The Crab libraries and scripts can be installed as follows::
 
-    lib/PyRSS2Gen.py -> ../external/PyRSS2Gen-1.0.0/PyRSS2Gen.py
-    lib/cherrypy -> ../external/CherryPy-3.2.2/cherrypy/
-    lib/crontab -> ../external/crontab-.14/crontab/
-    lib/mako -> ../external/Mako-0.7.2/mako/
+    python setup.py install
 
-The jQuery JavaScript library should be symlined into
-Crab's ``res`` directory::
+If any of the Python dependancies listed above can not be installed,
+they can be symlinked into the ``lib`` directory in the following locations::
 
-    res/jquery.js -> ../external/jquery-1.7.2.js
+    lib/PyRSS2Gen.py
+    lib/cherrypy
+    lib/crontab
+    lib/mako
+
+The jQuery JavaScript library should be copied or symlinked into
+Crab's ``res`` directory as::
+
+    res/jquery.js
 
 The Crab Server
 ---------------
@@ -109,7 +112,8 @@ therefore be invoked by cron via the ``SHELL`` variable, for example::
 Where the rules following the ``SHELL`` assignment will be run with the 
 wrapper.  The ``PYTHONPATH`` will need to be set if Crab is not installed
 where the system can find it.  Cron requires the full path when
-specifying the ``SHELL``. The ``CRABID`` is optional,
+specifying the ``SHELL``. The ``CRABID`` parameter is used to
+give the cron job a convenient and unique name.  This is optional,
 unless there are multiple jobs with the same command, 
 in which case they would otherwise be indistinguishable.
 However if it specified, then it must be unique for a given
