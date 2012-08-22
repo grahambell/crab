@@ -37,6 +37,8 @@ setup(name='Crab',
                ],
       classifiers=[
                    'Development Status :: 3 - Alpha',
+                   'License :: OSI Approved :: GNU General Public License '
+                                               'v3 or later (GPLv3+)',
                    'Programming Language :: Python',
                    'Topic :: System :: Monitoring'
                   ]

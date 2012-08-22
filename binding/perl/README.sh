@@ -32,3 +32,12 @@ Authors
 END
 
 perl -MPod::Usage -e 'pod2usage(-input=>"lib/WWW/Crab/Client.pm",-verbose=>99,-sections=>["AUTHOR"])' | sed -e '1d'
+
+cat <<END
+
+Copyright
+---------
+
+END
+
+perl -MPod::Usage -e 'pod2usage(-input=>"lib/WWW/Crab/Client.pm",-verbose=>99,-sections=>["COPYRIGHT"])' | sed -e '1d'
