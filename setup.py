@@ -30,9 +30,14 @@ setup(name='Crab',
                ],
       requires=[
                 'CherryPy (>= 3.2.2)',
-                'crontab (>= 0.14)',
+                'crontab (>= 0.15)',
                 'Mako (>= 0.7.2)',
                 'PyRSS2Gen (>= 1.0.0)',
                 'pytz',
-               ]
+               ],
+      classifiers=[
+                   'Development Status :: 3 - Alpha',
+                   'Programming Language :: Python',
+                   'Topic :: System :: Monitoring'
+                  ]
      )
