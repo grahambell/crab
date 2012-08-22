@@ -8,11 +8,18 @@ WWW::Crab::Client - Crab client library
 
   my $crab = new WWW::Crab::Client();
 
-  $crab->start();
+  eval {
+      $crab->start();
+  };
 
   # Perform the cron job actions ...
 
-  $crab->finish(status => WWW::Crab::Client::SUCCESS);
+  eval {
+      $crab->finish(status => WWW::Crab::Client::SUCCESS, stdout => $message);
+  };
+  if ($@) {
+      print "Failed to report job completion.\n" . $@ . "\n" . $message;
+  }
 
 =head1 DESCRIPTION
 
@@ -112,6 +119,9 @@ Reports that the job has started.
 
   $crab->start();
 
+This method uses "die" to raise an exception if it is unsuccessful
+in reporting to the Crab server.
+
 =cut
 
 sub start {
@@ -137,6 +147,9 @@ to obtain the appropriate Crab status codes:
   FAIL
   UNKNOWN
   COULDNOTSTART
+
+This method uses "die" to raise an exception if it is unsuccessful
+in reporting to the Crab server.
 
 =cut
 
