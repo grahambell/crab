@@ -125,7 +125,7 @@ def main():
     except OSError:
         err = sys.exc_info()[1]
         try:
-            client.fail(CrabStatus.COULDNOTSTART, str(err))
+            client.finish(CrabStatus.COULDNOTSTART, str(err))
         except CrabError:
             print('crabsh: ' + command)
             print('Failed to notify that job could not start.')

@@ -99,13 +99,6 @@ class CrabClient:
                          'stdout':   stdoutdata,
                          'stderr':   stderrdata})
 
-    def fail(self, status=CrabStatus.FAIL, message=''):
-        """Notify the server that the job has failed.
-
-        This is a convenience method calling CrabClient.finish."""
-
-        self.finish(status, stderrdata=message)
-
     def send_crontab(self, crontab, timezone=None):
         """Takes the crontab as a string, breaks it into lines,
         and transmits it to the server."""
