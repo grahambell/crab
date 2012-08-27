@@ -1,0 +1,67 @@
+<%inherit file="base.html"/>
+
+<%block name="links">
+<a href="/host/${info['host'] | h}">${info['host'] | h}</a>
+<a href="/user/${info['user'] | h}">${info['user'] | h}</a>
+% if info['jobid'] is not None:
+<a href="/job/${id | h}">${info['jobid'] | h}</a>
+% else:
+<a href="/job/${id | h}">${info['command'] | h}</a>
+% endif
+<span>configuration</span>
+</%block>
+
+% if config is None:
+%     if orphan:
+<h2>Re-link Orphaned Job Configuration</h2>
+<form method="post" action="/job/${id | h}/config">
+<p>
+<select name="orphan">
+% for o in orphan:
+    <option value="${o['configid'] | h}">
+        ${o['host'] | h} ${o['user'] | h}
+%     if o['jobid'] is not None:
+        ${o['jobid'] | h}
+%     endif
+        ${o['command'] | h}
+        (${o['id'] | h})
+    </option>
+% endfor
+</select>
+<input type="submit" name="submit_relink" value="Re-link" />
+</p>
+</form>
+%     endif
+
+
+<h2>Add New Job Configuration</h2>
+% else:
+<h2>Edit Job Configuration</h2>
+% endif
+
+<form method="post" action="/job/${id | h}/config">
+    <ol>
+        <li>
+            <label for="graceperiod">Grace period</label>
+            <input type="text" name="graceperiod"
+% if config is not None and config['graceperiod'] is not None:
+                value="${config['graceperiod'] | h}"
+% endif
+            />
+            minutes
+        </li>
+        <li>
+            <label for="timeout">Time-out</label>
+            <input type="text" name="timeout"
+ % if config is not None and config['timeout'] is not None:
+                value="${config['timeout'] | h}"
+% endif
+            />
+            minutes
+        </li>
+        <li>
+            <label for="submit-config">&nbsp;</label>
+            <input type="submit" name="submit_config" value="Configure" />
+        </li>
+    </ol>
+</form>

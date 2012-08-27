@@ -21,7 +21,7 @@ import re
 import time
 
 import cherrypy
-from cherrypy import HTTPError
+from cherrypy import HTTPError, HTTPRedirect
 from mako import exceptions
 from mako.lookup import TemplateLookup
 from mako.template import Template
@@ -96,7 +96,9 @@ class CrabWeb:
             raise HTTPError(message=str(err))
 
     @cherrypy.expose
-    def job(self, id_, command=None, finishid=None):
+    def job(self, id_, command=None,
+            submit_config=None, submit_relink=None,
+            finishid=None, orphan=None, graceperiod=None, timeout=None):
         """Displays information about a current job.
 
         Currently also supports showing the job output.
@@ -124,11 +126,12 @@ class CrabWeb:
             # Filter the events.
             events = filter(events)
 
-            # Filter out LATE events as they are not important, and if
-            # shown in green, might make a failing cron job look better
-            # than it is because each job will be marked LATE before MISSED.
+            # Fetch configuration.
+            config = self.store.get_job_config(id_)
+
             return self._write_template('job.html',
-                       {'id': id_, 'info': info, 'events': events})
+                       {'id': id_, 'info': info, 'config': config,
+                        'events': events})
 
         elif command == 'output':
             if finishid is None:
@@ -159,6 +162,44 @@ class CrabWeb:
             return self._write_template('joboutput.html',
                        {'id': id_, 'info': info,
                         'stdout': stdout, 'stderr': stderr})
+
+        elif command == 'config':
+            if submit_relink:
+                try:
+                    orphan = int(orphan)
+                except ValueError:
+                    raise HTTPError(400, 'Orphan number not a number')
+
+                self.store.relink_job_config(orphan, id_)
+                raise HTTPRedirect("/job/" + str(id_))
+
+            elif submit_config:
+                try:
+                    if timeout == '':
+                        timeout = None
+                    elif timeout is not None:
+                        timeout = int(timeout)
+                    if graceperiod == '':
+                        graceperiod = None
+                    elif graceperiod is not None:
+                        graceperiod = int(graceperiod)
+                except ValueError:
+                    raise HTTPError(400, 'Time not a number')
+
+                self.store.write_job_config(id_, graceperiod, timeout)
+                raise HTTPRedirect("/job/" + str(id_))
+
+            else:
+                config = self.store.get_job_config(id_)
+
+                if config is None:
+                    orphan = self.store.get_orphan_configs()
+                else:
+                    orphan = None
+
+                return self._write_template('jobconfig.html',
+                           {'id': id_, 'info': info, 'config': config,
+                            'orphan': orphan})
 
         else:
             raise HTTPError(404)

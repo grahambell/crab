@@ -224,3 +224,14 @@ ul#service_status li.status_ok {
     border: 1px solid green;
     border-left: 20px solid green;
 }
+
+form ol li {
+    list-style: none;
+    margin-bottom: 10px;
+}
+
+label {
+    width: 10em;
+    display: inline-block;
+    text-align: right;
+}

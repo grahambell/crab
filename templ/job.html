@@ -63,10 +63,25 @@ from crab import CrabEvent, CrabStatus
         <td>${info["deleted"] | h}</td>
     </tr>
 % endif
-
-
-
+% if config is not None:
+%     if config['graceperiod'] is not None:
+    <tr>
+        <th>Grace period</th>
+        <td>${config["graceperiod"] | h} minutes</td>
+    </tr>
+%     endif
+%     if config['timeout'] is not None:
+    <tr>
+        <th>Time-out</th>
+        <td>${config["timeout"] | h} minutes</td>
+    </tr>
+%     endif
+% endif
 </table>
+
+<p>
+    <a href="/job/${id | h}/config">Edit configuration.</a>
+</p>
 
 <h2>Job History</h2>
 
