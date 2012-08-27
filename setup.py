@@ -32,7 +32,7 @@ setup(name='Crab',
                 'CherryPy (>= 3.2.2)',
                 'crontab (>= 0.15)',
                 'Mako (>= 0.7.2)',
-                'PyRSS2Gen (>= 1.0.0)',
+                'PyRSS2Gen (>= 1.1)',
                 'pytz',
                ],
       classifiers=[
