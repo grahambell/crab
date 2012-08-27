@@ -670,7 +670,7 @@ class CrabDB(CrabStore):
                             'ON jobnotify.configid = jobconfig.id '
                         'JOIN job '
                             'ON job.id = jobconfig.jobid '
-                    'WHERE job.deleted IS NULL '
+                    'WHERE configid IS NOT NULL AND job.deleted IS NULL '
                 'UNION SELECT jobnotify.id AS notifyid, method, address, '
                         'skip_ok, skip_warning, skip_error, '
                         'job.id AS id, jobnotify.time AS time, '
