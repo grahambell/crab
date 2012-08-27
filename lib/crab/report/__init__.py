@@ -19,10 +19,11 @@ from crab import CrabError, CrabStatus, CrabEvent
 from crab.util.filter import CrabEventFilter
 
 CrabReportJob = namedtuple('CrabReportJob', ['id_', 'start', 'end',
-                           'skip_ok', 'skip_warning', 'skip_error'])
+                           'skip_ok', 'skip_warning', 'skip_error',
+                           'include_output'])
 
 CrabReport = namedtuple('CrabReport', ['num', 'error', 'warning', 'ok',
-                                       'info', 'events'])
+                                       'info', 'events', 'stdout', 'stderr'])
 
 class CrabReportGenerator:
     """Class for generating reports on the operation of cron jobs.
@@ -42,6 +43,8 @@ class CrabReportGenerator:
         self.cache_event = {}
         self.cache_error = {}
         self.cache_warning = {}
+        self.cache_stdout = {}
+        self.cache_stderr = {}
 
     def __call__(self, jobs):
         """Function call method, to process a list of jobs.
@@ -60,6 +63,8 @@ class CrabReportGenerator:
         num = 0
         report_info = {}
         report_events = {}
+        report_stdout = {}
+        report_stderr = {}
 
         for job in jobs:
             if job in checked:
@@ -67,7 +72,8 @@ class CrabReportGenerator:
             else:
                 checked.add(job)
 
-            (id_, start, end, skip_ok, skip_warning, skip_error) = job
+            (id_, start, end, skip_ok, skip_warning, skip_error,
+                include_output) = job
 
             if id_ in self.cache_info:
                 info = self.cache_info[id_]
@@ -110,8 +116,32 @@ class CrabReportGenerator:
                 report_info[id_] = info
                 report_events[id_] = events
 
+                if include_output:
+                    for event in events:
+                        if event['type'] == CrabEvent.FINISH:
+                            finishid = event['id']
+                            if finishid in self.cache_stdout:
+                                report_stdout[finishid] = \
+                                    self.cache_stdout[finishid]
+                                report_stderr[finishid] = \
+                                    self.cache_stderr[finishid]
+                            else:
+                                output = self.store.get_job_output(finishid,
+                                         info['host'], info['user'], id_)
+
+                                if output is None:
+                                    stdout = stderr = None
+                                else:
+                                    (stdout, stderr) = output
+
+                                report_stdout[finishid] = \
+                                    self.cache_stdout[finishid] = stdout
+                                report_stderr[finishid] = \
+                                    self.cache_stderr[finishid] = stderr
+
         if num:
             return CrabReport(num, error, warning, ok,
-                              report_info, report_events)
+                              report_info, report_events,
+                              report_stdout, report_stderr)
         else:
             return None

@@ -55,6 +55,19 @@
                 <td>${CrabStatus.get_name(event['status']) | h}</td>
 % endif
                 <td>${event['datetime'] | h}</td>
+% if event['type'] == CrabEvent.FINISH and report.stdout:
+                <td>
+%     if event['id'] in report.stdout and report.stdout[event['id']]:
+                    <pre>${report.stdout[event['id']] | h}</pre>
+%     endif
+%     if event['id'] in report.stderr and report.stderr[event['id']]:
+%         if event['id'] in report.stdout and report.stdout[event['id']]:
+                    <p><b>Standard error:</b></p>
+%         endif
+                    <pre>${report.stderr[event['id']] | h}</pre>
+%     endif
+                </td>
+% endif
             </tr>
 % endfor
         </table>
