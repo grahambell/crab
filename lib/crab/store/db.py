@@ -378,6 +378,59 @@ class CrabDB(CrabStore):
                 'SELECT graceperiod, timeout ' +
                 'FROM jobconfig WHERE jobid = ?', [id_])
 
+    def write_job_config(self, id_, graceperiod=None, timeout=None):
+        """Writes configuration data for a job by ID number."""
+
+        with self.lock:
+            row = self._query_to_dict('SELECT id as configid '
+                                      'FROM jobconfig '
+                                      'WHERE jobid = ?', [id_])
+
+            c = self.conn.cursor()
+
+            try:
+                if row is None:
+                    c.execute('INSERT INTO jobconfig (jobid, graceperiod, '
+                              'timeout) VALUES (?, ?, ?)',
+                              [id_, graceperiod, timeout])
+                else:
+                    configid = row['configid']
+                    if configid is None:
+                        raise CrabError('job config: got null id')
+
+                    c.execute('UPDATE jobconfig SET graceperiod=?, timeout=? '
+                              'WHERE id=?', [graceperiod, timeout, configid])
+
+            except DatabaseError as err:
+                raise CrabError('database error: ' + str(err))
+
+            finally:
+                c.close()
+
+    def get_orphan_configs(self):
+        """Make a list of orphaned job configuration records."""
+
+        with self.lock:
+            return self._query_to_dict_list(
+                'SELECT jobconfig.id AS configid, job.id AS id, '
+                    'host, user, job.jobid AS jobid, command '
+                'FROM jobconfig JOIN job ON jobconfig.jobid = job.id '
+                'WHERE job.deleted IS NOT NULL')
+
+    def relink_job_config(self, configid, id_):
+        with self.lock:
+            c = self.conn.cursor()
+
+            try:
+                c.execute('UPDATE jobconfig SET jobid = ? '
+                          'WHERE id = ?', [id_, configid])
+
+            except DatabseError as err:
+                raise CrabError('database error: ' + str(err))
+
+            finally:
+                c.close()
+
     def get_job_finishes(self, id_, limit=100):
         """Retrieves a list of recent job finish events for the given job,
         most recent first."""
