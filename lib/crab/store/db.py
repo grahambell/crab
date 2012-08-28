@@ -375,11 +375,13 @@ class CrabDB(CrabStore):
 
         with self.lock:
             return self._query_to_dict(
-                'SELECT graceperiod, timeout ' +
+                'SELECT id AS configid, graceperiod, timeout ' +
                 'FROM jobconfig WHERE jobid = ?', [id_])
 
     def write_job_config(self, id_, graceperiod=None, timeout=None):
-        """Writes configuration data for a job by ID number."""
+        """Writes configuration data for a job by ID number.
+
+        Returns the configuration ID number."""
 
         with self.lock:
             row = self._query_to_dict('SELECT id as configid '
@@ -393,6 +395,8 @@ class CrabDB(CrabStore):
                     c.execute('INSERT INTO jobconfig (jobid, graceperiod, '
                               'timeout) VALUES (?, ?, ?)',
                               [id_, graceperiod, timeout])
+
+                    return c.lastrowid
                 else:
                     configid = row['configid']
                     if configid is None:
@@ -400,6 +404,8 @@ class CrabDB(CrabStore):
 
                     c.execute('UPDATE jobconfig SET graceperiod=?, timeout=? '
                               'WHERE id=?', [graceperiod, timeout, configid])
+
+                    return configid
 
             except DatabaseError as err:
                 raise CrabError('database error: ' + str(err))
