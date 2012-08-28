@@ -96,10 +96,10 @@ class CrabWeb:
             raise HTTPError(message=str(err))
 
     @cherrypy.expose
-    def job(self, id_, command=None,
+    def job(self, id_, command=None, finishid=None,
 
             submit_config=None, submit_relink=None,
-            finishid=None, orphan=None, graceperiod=None, timeout=None,
+            orphan=None, graceperiod=None, timeout=None,
 
             submit_notify=None, **kwargs):
         """Displays information about a current job.

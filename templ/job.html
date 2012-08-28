@@ -76,14 +76,16 @@ from crab import CrabEvent, CrabStatus
         <td>${config["timeout"] | h} minutes</td>
     </tr>
 %     endif
+% endif
+% if notification is not None:
     <tr>
         <th>Notifications</th>
         <td>${len(notification)} explicit
-% if len(notification) == 1:
+%     if len(notification) == 1:
             notification
-% else:
+%     else:
             notifications
-% endif
+%     endif
         </td>
     </tr>
 % endif
