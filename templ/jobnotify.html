@@ -1,0 +1,101 @@
+<%!
+import pytz
+%>
+<%inherit file="base.html"/>
+
+<%block name="links">
+<a href="/host/${info['host'] | h}">${info['host'] | h}</a>
+<a href="/user/${info['user'] | h}">${info['user'] | h}</a>
+% if info['jobid'] is not None:
+<a href="/job/${id | h}">${info['jobid'] | h}</a>
+% else:
+<a href="/job/${id | h}">${info['command'] | h}</a>
+% endif
+<span>notifications</span>
+</%block>
+
+<h2>Configure Job Notifications</h2>
+
+<form method="post" action="/job/${id | h}/notify">
+<table>
+<tr>
+    <th>Method</th>
+    <th>Address</th>
+    <th>Schedule</th>
+    <th>Timezone</th>
+    <th>Successes</th>
+    <th>Warnings</th>
+    <th>Errors</th>
+    <th>Output</th>
+</tr>
+% if notifications is not None:
+%     for n in notifications:
+<%
+          nid = n['notifyid']
+%>
+<tr>
+    <td><select name="method_${nid | h}">
+% for (method, methodname) in [('email', 'Email')]:
+        <option name='${method}'
+% if method == n['method']:
+            selected="selected"
+% endif
+        >${methodname}</option>
+% endfor
+    </select></td>
+    <td><input name="address_${nid | h}"
+% if n['address'] is not None:
+            value="${n['address'] | h}"
+% else:
+            value=""
+% endif
+        /></td>
+    <td><input name="time_${nid | h}"
+% if n['time'] is not None:
+            value="${n['time'] | h}"
+% else:
+            value=""
+% endif
+        /></td>
+    <td><select name="timezone_${nid | h}">
+        <option value=""
+% if n['timezone'] is None:
+            selected="selected"
+% endif
+        >Unspecified</option>
+% for tz in pytz.common_timezones:
+        <option value="${tz | h}"
+% if tz == n['timezone']:
+            selected="selected"
+% endif
+        />${tz | h}</option>
+% endfor
+    </select></td>
+    <td><input name="include_ok_${nid | h}" type="checkbox"
+% if not n['skip_ok']:
+        checked="checked"
+% endif
+    /></td>
+    <td><input name="include_warning_${nid | h}" type="checkbox"
+% if not n['skip_warning']:
+        checked="checked"
+% endif
+    /></td>
+    <td><input name="include_error_${nid | h}" type="checkbox"
+% if not n['skip_error']:
+        checked="checked"
+% endif
+    /></td>
+    <td><input name="include_output_${nid | h}" type="checkbox"
+% if n['include_output']:
+        checked="checked"
+% endif
+    /></td>
+</tr>
+%     endfor
+% endif
+</table>
+<p>
+<input type="submit" name="submit_notify" value="Configure" />
+</p>
+</form>

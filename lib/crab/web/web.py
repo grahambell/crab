@@ -97,8 +97,11 @@ class CrabWeb:
 
     @cherrypy.expose
     def job(self, id_, command=None,
+
             submit_config=None, submit_relink=None,
-            finishid=None, orphan=None, graceperiod=None, timeout=None):
+            finishid=None, orphan=None, graceperiod=None, timeout=None,
+
+            submit_notify=None, **kwargs):
         """Displays information about a current job.
 
         Currently also supports showing the job output.
@@ -129,9 +132,16 @@ class CrabWeb:
             # Fetch configuration.
             config = self.store.get_job_config(id_)
 
+            # Fetch job notifications.
+            if config is not None:
+                notification = self.store.get_job_notifications(
+                                   config['configid'])
+            else:
+                notification = None
+
             return self._write_template('job.html',
                        {'id': id_, 'info': info, 'config': config,
-                        'events': events})
+                        'notification': notification, 'events': events})
 
         elif command == 'output':
             if finishid is None:
@@ -200,6 +210,52 @@ class CrabWeb:
                 return self._write_template('jobconfig.html',
                            {'id': id_, 'info': info, 'config': config,
                             'orphan': orphan})
+
+        elif command == 'notify':
+            if submit_notify:
+                for kwarg in kwargs:
+                    match = re.search('method_(\d+)', kwarg)
+                    if not match:
+                        continue
+
+                    notifyid = match.group(1)
+
+                    config = self.store.get_job_config(id_)
+
+                    if config is not None:
+                        configid = config['configid']
+                    else:
+                        configid = self.store.write_job_config(id_)
+
+                    time = kwargs['time_' + notifyid]
+                    if time == '':
+                        time = None
+
+                    self.store.write_notification(
+                            int(notifyid), configid,
+                            None, None,
+                            kwargs['method_' + notifyid],
+                            kwargs['address_' + notifyid],
+                            time,
+                            kwargs['timezone_' + notifyid],
+                            'include_ok_' + notifyid not in kwargs,
+                            'include_warning_' + notifyid not in kwargs,
+                            'include_error_' + notifyid not in kwargs,
+                            'include_output_' + notifyid in kwargs)
+
+                raise HTTPRedirect("/job/" + str(id_))
+            else:
+                config = self.store.get_job_config(id_)
+
+                if config is not None:
+                    notifications = self.store.get_job_notifications(
+                                        config['configid'])
+                else:
+                    notifications = None
+
+                return self._write_template('jobnotify.html',
+                           {'id': id_, 'info': info,
+                           'notifications': notifications})
 
         else:
             raise HTTPError(404)

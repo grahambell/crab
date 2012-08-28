@@ -76,11 +76,22 @@ from crab import CrabEvent, CrabStatus
         <td>${config["timeout"] | h} minutes</td>
     </tr>
 %     endif
+    <tr>
+        <th>Notifications</th>
+        <td>${len(notification)} explicit
+% if len(notification) == 1:
+            notification
+% else:
+            notifications
+% endif
+        </td>
+    </tr>
 % endif
 </table>
 
 <p>
     <a href="/job/${id | h}/config">Edit configuration.</a>
+    <a href="/job/${id | h}/notify">Edit notifications.</a>
 </p>
 
 <h2>Job History</h2>
