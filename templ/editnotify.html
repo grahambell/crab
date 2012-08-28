@@ -8,12 +8,14 @@
 <%inherit file="base.html"/>
 
 <%block name="links">
+% if not match_mode:
 <a href="/host/${info['host'] | h}">${info['host'] | h}</a>
 <a href="/user/${info['user'] | h}">${info['user'] | h}</a>
-% if info['jobid'] is not None:
+%     if info['jobid'] is not None:
 <a href="/job/${id | h}">${info['jobid'] | h}</a>
-% else:
+%     else:
 <a href="/job/${id | h}">${info['command'] | h}</a>
+%     endif
 % endif
 <span>notifications</span>
 </%block>
@@ -23,6 +25,22 @@
           nid = n['notifyid']
 %>
 <tr id="row_${nid | h}">
+% if match_mode:
+    <td><input name="host_${nid | h}"
+%     if n.get('host') is not None:
+            value="${n['host'] | h}"
+%     else:
+            value=""
+%     endif
+    /></td>
+    <td><input name="user_${nid | h}"
+%     if n.get('user') is not None:
+            value="${n['user'] | h}"
+%     else:
+            value=""
+%     endif
+    /></td>
+% endif
     <td><select name="method_${nid | h}">
 % for (method, methodname) in [('email', 'Email')]:
         <option value="${method}"
@@ -86,11 +104,43 @@
 </tr>
 </%def>
 
+% if match_mode:
+<h2>Configure Host/User Notifications</h2>
+<p>
+This page allows notifications to be configured
+by host name and/or by user name.
+If the host or user box is left blank,
+then the notifications
+will apply to all entries for that parameter.
+</p>
+<p>
+Notifications also can be attached to specific jobs
+by navigating to each job's information page.
+</p>
+% else:
 <h2>Configure Job Notifications</h2>
+<p>
+This page allows notifications to be attached to
+this specific job.
+</p>
+<p>
+Notifications can also be configured
+by host name and/or by user name on the
+<a href="/notify">host/user notifications</a> page.
+</p>
+% endif
 
+% if match_mode:
+<form method="post" action="/notify">
+% else:
 <form method="post" action="/job/${id | h}/notify">
+% endif
 <table id="notifylist">
 <tr>
+% if match_mode:
+    <th>Host name</th>
+    <th>User name</th>
+% endif
     <th>Method</th>
     <th>Address</th>
     <th>Schedule</th>

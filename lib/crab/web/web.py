@@ -29,6 +29,12 @@ from mako.template import Template
 from crab import CrabError, CrabStatus
 from crab.util.filter import CrabEventFilter
 
+def empty_to_none(value):
+    if value == '':
+        return None
+
+    return value
+
 class CrabWebQuery:
     """CherryPy handler class for the JSON query part of the crab web
     interface."""
@@ -243,20 +249,13 @@ class CrabWeb:
                         notifyid = int(key)
                         existing.discard(notifyid)
 
-                    time = kwargs['time_' + key]
-                    if time == '':
-                        time = None
-                    timezone = kwargs['timezone_' + key]
-                    if timezone == '':
-                        timezone = None
-
                     self.store.write_notification(
                             notifyid, configid,
                             None, None,
                             kwargs['method_' + key],
                             kwargs['address_' + key],
-                            time,
-                            timezone,
+                            empty_to_none(kwargs['time_' + key]),
+                            empty_to_none(kwargs['timezone_' + key]),
                             'include_ok_' + key not in kwargs,
                             'include_warning_' + key not in kwargs,
                             'include_error_' + key not in kwargs,
@@ -266,7 +265,7 @@ class CrabWeb:
                 for notifyid in existing:
                     self.store.delete_notification(notifyid)
 
-                raise HTTPRedirect("/job/" + str(id_))
+                raise HTTPRedirect('/job/' + str(id_))
             else:
                 config = self.store.get_job_config(id_)
 
@@ -276,9 +275,10 @@ class CrabWeb:
                 else:
                     notifications = None
 
-                return self._write_template('jobnotify.html',
-                           {'id': id_, 'info': info,
-                           'notifications': notifications})
+                return self._write_template('editnotify.html',
+                            {'match_mode': False,
+                             'id': id_, 'info': info,
+                             'notifications': notifications})
 
         else:
             raise HTTPError(404)
@@ -324,6 +324,57 @@ class CrabWeb:
                 raw[key] = self.store.get_raw_crontab(job['host'], job['user'])
 
         return self._write_template('crontabs.html', info)
+
+    @cherrypy.expose
+    def notify(self, submit_notify=None, **kwargs):
+        """Allows match-based notifications to be viewed and configured."""
+
+        notifications = self.store.get_match_notifications()
+
+        if submit_notify:
+            # Make a list of notifications for this job
+            # so that we can delete those which are not
+            # included in the POST parameters.
+            existing = set()
+            for notification in notifications:
+                existing.add(notification['notifyid'])
+
+                # Update existing notifications.
+                for kwarg in kwargs:
+                    match = re.search('method_(new_)?(\d+)', kwarg)
+                    if not match:
+                        continue
+
+                    if match.group(1):
+                        key = ''.join(match.groups())
+                        notifyid = None
+                    else:
+                        key = match.group(2)
+                        notifyid = int(key)
+                        existing.discard(notifyid)
+
+                    self.store.write_notification(
+                            notifyid, None,
+                            empty_to_none(kwargs['host_' + key]),
+                            empty_to_none(kwargs['user_' + key]),
+                            kwargs['method_' + key],
+                            kwargs['address_' + key],
+                            empty_to_none(kwargs['time_' + key]),
+                            empty_to_none(kwargs['timezone_' + key]),
+                            'include_ok_' + key not in kwargs,
+                            'include_warning_' + key not in kwargs,
+                            'include_error_' + key not in kwargs,
+                            'include_output_' + key in kwargs)
+
+                # Delete existing notifications which were not present.
+                for notifyid in existing:
+                    self.store.delete_notification(notifyid)
+
+            raise HTTPRedirect('/')
+        else:
+            return self._write_template('editnotify.html',
+                                        {'match_mode': True,
+                                         'notifications': notifications})
 
     def _write_template(self, name, dict={}):
         """Returns the output from the named template when rendered
