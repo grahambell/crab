@@ -1,11 +1,7 @@
 <%!
-    scripts = ["joblist"]
+    from crab.util.string import mergelines
 
-    def mergelines(text):
-        output = ''
-        for line in text.split('\n'):
-            output = output + line.strip()
-        return output
+    scripts = ["joblist"]
 %>
 <%inherit file="base.html"/>
 
@@ -56,7 +52,7 @@
 
 <script>
 <% job = {'id': 'XXX'} %>
-var joblistrowtemplate = '${joblistrow(job) | mergelines}';
+var joblistrowtemplate = '${joblistrow(job)}';
 </script>
 
 <ul id="service_status"></ul>

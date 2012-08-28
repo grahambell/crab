@@ -77,7 +77,7 @@ from crab import CrabEvent, CrabStatus
     </tr>
 %     endif
 % endif
-% if notification is not None:
+% if notification is not None and len(notification):
     <tr>
         <th>Notifications</th>
         <td>${len(notification)} explicit

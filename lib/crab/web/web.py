@@ -213,35 +213,58 @@ class CrabWeb:
 
         elif command == 'notify':
             if submit_notify:
+                # Ensure that this job has a configuration entry
+                # so that we can link to it.
+                config = self.store.get_job_config(id_)
+
+                if config is not None:
+                    configid = config['configid']
+                else:
+                    configid = self.store.write_job_config(id_)
+
+                # Make a list of notifications for this job
+                # so that we can delete those which are not
+                # included in the POST parameters.
+                existing = set()
+                for notification in self.store.get_job_notifications(configid):
+                    existing.add(notification['notifyid'])
+
+                # Update existing notifications.
                 for kwarg in kwargs:
-                    match = re.search('method_(\d+)', kwarg)
+                    match = re.search('method_(new_)?(\d+)', kwarg)
                     if not match:
                         continue
 
-                    notifyid = match.group(1)
-
-                    config = self.store.get_job_config(id_)
-
-                    if config is not None:
-                        configid = config['configid']
+                    if match.group(1):
+                        key = ''.join(match.groups())
+                        notifyid = None
                     else:
-                        configid = self.store.write_job_config(id_)
+                        key = match.group(2)
+                        notifyid = int(key)
+                        existing.discard(notifyid)
 
-                    time = kwargs['time_' + notifyid]
+                    time = kwargs['time_' + key]
                     if time == '':
                         time = None
+                    timezone = kwargs['timezone_' + key]
+                    if timezone == '':
+                        timezone = None
 
                     self.store.write_notification(
-                            int(notifyid), configid,
+                            notifyid, configid,
                             None, None,
-                            kwargs['method_' + notifyid],
-                            kwargs['address_' + notifyid],
+                            kwargs['method_' + key],
+                            kwargs['address_' + key],
                             time,
-                            kwargs['timezone_' + notifyid],
-                            'include_ok_' + notifyid not in kwargs,
-                            'include_warning_' + notifyid not in kwargs,
-                            'include_error_' + notifyid not in kwargs,
-                            'include_output_' + notifyid in kwargs)
+                            timezone,
+                            'include_ok_' + key not in kwargs,
+                            'include_warning_' + key not in kwargs,
+                            'include_error_' + key not in kwargs,
+                            'include_output_' + key in kwargs)
+
+                # Delete existing notifications which were not present.
+                for notifyid in existing:
+                    self.store.delete_notification(notifyid)
 
                 raise HTTPRedirect("/job/" + str(id_))
             else:

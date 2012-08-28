@@ -1,5 +1,9 @@
 <%!
-import pytz
+    import pytz
+
+    from crab.util.string import mergelines
+
+    scripts = ["editnotify"]
 %>
 <%inherit file="base.html"/>
 
@@ -14,10 +18,78 @@ import pytz
 <span>notifications</span>
 </%block>
 
+<%def name="notifyrow(n)" filter="mergelines">
+<%
+          nid = n['notifyid']
+%>
+<tr id="row_${nid | h}">
+    <td><select name="method_${nid | h}">
+% for (method, methodname) in [('email', 'Email')]:
+        <option value="${method}"
+% if method == n.get('method'):
+            selected="selected"
+% endif
+        >${methodname}</option>
+% endfor
+    </select></td>
+    <td><input id="address_${nid | h}" name="address_${nid | h}"
+% if n.get('address') is not None:
+            value="${n['address'] | h}"
+% else:
+            value=""
+% endif
+        /></td>
+    <td><input name="time_${nid | h}"
+% if n.get('time') is not None:
+            value="${n['time'] | h}"
+% else:
+            value=""
+% endif
+        /></td>
+    <td><select name="timezone_${nid | h}">
+        <option value=""
+% if n.get('timezone') is None:
+            selected="selected"
+% endif
+        >Unspecified</option>
+% for tz in pytz.common_timezones:
+        <option value="${tz | h}"
+% if tz == n.get('timezone'):
+            selected="selected"
+% endif
+        >${tz | h}</option>
+% endfor
+    </select></td>
+    <td><input name="include_ok_${nid | h}" type="checkbox"
+% if not n.get('skip_ok'):
+        checked="checked"
+% endif
+    /></td>
+    <td><input name="include_warning_${nid | h}" type="checkbox"
+% if not n.get('skip_warning'):
+        checked="checked"
+% endif
+    /></td>
+    <td><input name="include_error_${nid | h}" type="checkbox"
+% if not n.get('skip_error'):
+        checked="checked"
+% endif
+    /></td>
+    <td><input name="include_output_${nid | h}" type="checkbox"
+% if n.get('include_output'):
+        checked="checked"
+% endif
+    /></td>
+    <td class="linkcell">
+        <a href="#" id="delete_${nid | h}">Delete</a>
+    </td>
+</tr>
+</%def>
+
 <h2>Configure Job Notifications</h2>
 
 <form method="post" action="/job/${id | h}/notify">
-<table>
+<table id="notifylist">
 <tr>
     <th>Method</th>
     <th>Address</th>
@@ -27,75 +99,23 @@ import pytz
     <th>Warnings</th>
     <th>Errors</th>
     <th>Output</th>
+    <th>Actions</th>
 </tr>
 % if notifications is not None:
 %     for n in notifications:
-<%
-          nid = n['notifyid']
-%>
-<tr>
-    <td><select name="method_${nid | h}">
-% for (method, methodname) in [('email', 'Email')]:
-        <option name='${method}'
-% if method == n['method']:
-            selected="selected"
-% endif
-        >${methodname}</option>
-% endfor
-    </select></td>
-    <td><input name="address_${nid | h}"
-% if n['address'] is not None:
-            value="${n['address'] | h}"
-% else:
-            value=""
-% endif
-        /></td>
-    <td><input name="time_${nid | h}"
-% if n['time'] is not None:
-            value="${n['time'] | h}"
-% else:
-            value=""
-% endif
-        /></td>
-    <td><select name="timezone_${nid | h}">
-        <option value=""
-% if n['timezone'] is None:
-            selected="selected"
-% endif
-        >Unspecified</option>
-% for tz in pytz.common_timezones:
-        <option value="${tz | h}"
-% if tz == n['timezone']:
-            selected="selected"
-% endif
-        />${tz | h}</option>
-% endfor
-    </select></td>
-    <td><input name="include_ok_${nid | h}" type="checkbox"
-% if not n['skip_ok']:
-        checked="checked"
-% endif
-    /></td>
-    <td><input name="include_warning_${nid | h}" type="checkbox"
-% if not n['skip_warning']:
-        checked="checked"
-% endif
-    /></td>
-    <td><input name="include_error_${nid | h}" type="checkbox"
-% if not n['skip_error']:
-        checked="checked"
-% endif
-    /></td>
-    <td><input name="include_output_${nid | h}" type="checkbox"
-% if n['include_output']:
-        checked="checked"
-% endif
-    /></td>
-</tr>
+          ${notifyrow(n)}
 %     endfor
 % endif
 </table>
 <p>
+<a href="#" id="add_notification">Add notification.</a>
+</p>
+<p>
 <input type="submit" name="submit_notify" value="Configure" />
 </p>
 </form>
+
+<script>
+<% n = {'notifyid': 'XXX'} %>
+var notifyrowtemplate = '${notifyrow(n)}';
+</script>

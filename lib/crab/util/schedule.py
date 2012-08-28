@@ -48,7 +48,7 @@ class CrabSchedule(CronTab):
                 # the timezone objects by zone name.
                 self.timezone = pytz.timezone(timezone)
             except pytz.UnknownTimeZoneError:
-                print('Warning: unknown time zone', jobinfo['timezone'])
+                print('Warning: unknown time zone', timezone)
 
 
     def match(self, datetime):

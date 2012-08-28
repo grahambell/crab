@@ -61,3 +61,11 @@ def alphanum(value):
     replacing them with underscores."""
 
     return re.sub('[^a-zA-Z0-9]', '_', value)
+
+def mergelines(text):
+    """Merges the lines of a string by removing newline characters."""
+
+    output = ''
+    for line in text.split('\n'):
+        output = output + line.strip()
+    return output
