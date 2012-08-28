@@ -15,6 +15,7 @@
 
 from __future__ import print_function
 
+from contextlib import closing
 import datetime
 import pytz
 from threading import Lock
@@ -740,3 +741,86 @@ class CrabDB(CrabStore):
                         'AND COALESCE(job.host = jobnotify.host, 1) '
                     'WHERE configid IS NULL AND job.deleted IS NULL',
                 [])
+
+    def get_job_notifications(self, configid):
+        """Fetches all of the notifications configured for the given
+        configid."""
+
+        with self.lock:
+            return self._query_to_dict_list(
+                'SELECT id AS notifyid, '
+                'method, address, time, timezone, '
+                'skip_ok, skip_warning, skip_error, include_output '
+                'FROM jobnotify WHERE configid=?', [configid])
+
+    def get_match_notifications(self, host=None, user=None):
+        """Fetches matching notifications which are not tied to a
+        configuration entry."""
+
+        params = []
+        conditions = ['configid IS NULL']
+
+        if host is not None:
+            params.append(host)
+            conditions.append('host=?')
+        if user is not None:
+            params.append(user)
+            conditions.append('user=?')
+
+        where_clause = 'WHERE ' + ' AND '.join(conditions)
+
+        with self.lock:
+            return self._query_to_dict_list(
+                'SELECT id AS notifyid, host, user, '
+                'method, address, time, timezone, '
+                'skip_ok, skip_warning, skip_error, include_output '
+                'FROM jobnotify ' + where_clause, params)
+
+    def write_notification(self, notifyid, configid, host, user,
+                           method, address, time, timezone,
+                           skip_ok, skip_warning, skip_error, include_output):
+        """Adds or updates a notification record in the database."""
+
+        if configid is not None and ((host is not None) or (user is not None)):
+            raise CrabError('writing notification: job config and match '
+                            'parameters both specified')
+
+        with self.lock:
+            c = self.conn.cursor()
+
+            try:
+                if notifyid is None:
+                    c.execute('INSERT INTO jobnotify (configid, host, user, '
+                              'method, address, time, timezone, skip_ok, '
+                              'skip_warning, skip_error, include_output) '
+                              'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                              [configid, host, user, method, address,
+                              time, timezone, skip_ok,
+                              skip_warning, skip_error, include_output])
+                else:
+                    c.execute('UPDATE jobnotify SET configid=?, host=?, '
+                              'user=?, method=?, address=?, time=?, '
+                              'timezone=?, skip_ok=?, skip_warning=?, '
+                              'skip_error=?, include_output=? '
+                              'WHERE id=?',
+                              [configid, host, user, method, address,
+                              time, timezone, skip_ok,
+                              skip_warning, skip_error, include_output,
+                              notifyid])
+
+            except DatabaseError as err:
+                raise CrabError('database error: ' + str(err))
+
+            finally:
+                c.close()
+
+    def delete_notification(self, notifyid):
+        """Removes a notification from the database."""
+
+        with self.lock:
+            with closing(self.conn.cursor()) as c:
+                try:
+                    c.execute('DELETE FROM jobnotify WHERE id=?', [notifyid])
+
+                except DatabaseError as err:
+                    raise CrabError('database error: ' + str(err))
