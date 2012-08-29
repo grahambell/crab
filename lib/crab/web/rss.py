@@ -69,10 +69,10 @@ class CrabRSS:
     def event_to_rssitem(self, event):
         """Function converting an event (Python dict) to an RSSItem object."""
 
-        title = (CrabStatus.get_name(event['status']) + ' : ' +
+        title = (CrabStatus.get_name(event['status']) + ': ' +
                     event['user'] + ' @ ' + event['host'])
         if event['command'] is not None:
-            title += ' : '+ event['command']
+            title += ': ' + event['command']
         link = self.base + '/job/' + str(event['id'])
         if event['finishid'] is not None:
             link += '/output/' + str(event['finishid'])

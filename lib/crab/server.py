@@ -49,7 +49,7 @@ class CrabServer:
                 return json.dumps({'crontab': crontab})
             except CrabError as err:
                 cherrypy.log.error('CrabError: read error: ' + str(err))
-                raise HTTPError(message='read error : ' + str(err))
+                raise HTTPError(message='read error: ' + str(err))
 
         elif cherrypy.request.method == 'PUT':
             try:
@@ -64,7 +64,7 @@ class CrabServer:
 
             except CrabError as err:
                 cherrypy.log.error('CrabError: write error: ' + str(err))
-                raise HTTPError(message='write error : ' + str(err))
+                raise HTTPError(message='write error: ' + str(err))
 
     @cherrypy.expose
     def start(self, host, user, jobid=None):
@@ -81,7 +81,7 @@ class CrabServer:
 
         except CrabError as err:
             cherrypy.log.error('CrabError: log error: ' + str(err))
-            raise HTTPError(message='log error : ' + str(err))
+            raise HTTPError(message='log error: ' + str(err))
 
     @cherrypy.expose
     def finish(self, host, user, jobid=None):
@@ -103,7 +103,7 @@ class CrabServer:
 
         except CrabError as err:
             cherrypy.log.error('CrabError: log error: ' + str(err))
-            raise HTTPError(message='log error : ' + str(err))
+            raise HTTPError(message='log error: ' + str(err))
 
     def _read_json(self):
         """Attempts to interpret the HTTP PUT body as JSON and return

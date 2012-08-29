@@ -168,19 +168,19 @@ class CrabClient:
             #except HTTPException, err:
             except HTTPException:
                 err = sys.exc_info()[1]
-                raise CrabError('HTTP error : ' + str(err))
+                raise CrabError('HTTP error: ' + str(err))
 
             #except socket.error as err:
             #except socket.error, err:
             except socket.error:
                 err = sys.exc_info()[1]
-                raise CrabError('socket error : ' + str(err))
+                raise CrabError('socket error: ' + str(err))
 
             #except ValueError as err:
             #except ValueError, err:
             except ValueError:
                 err = sys.exc_info()[1]
-                raise CrabError('did not understand response : ' + str(err))
+                raise CrabError('did not understand response: ' + str(err))
 
         finally:
             conn.close()
@@ -203,13 +203,13 @@ class CrabClient:
             #except HTTPException, err:
             except HTTPException:
                 err = sys.exc_info()[1]
-                raise CrabError('HTTP error : ' + str(err))
+                raise CrabError('HTTP error: ' + str(err))
 
             #except socket.error as err:
             #except socket.error, err:
             except socket.error:
                 err = sys.exc_info()[1]
-                raise CrabError('socket error : ' + str(err))
+                raise CrabError('socket error: ' + str(err))
 
         finally:
             conn.close()

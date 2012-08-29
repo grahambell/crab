@@ -133,7 +133,7 @@ class CrabDB(CrabStore):
                         break
                     id_.add(row[0])
             except DatabaseError as err:
-                raise CrabError('database error : ' + str(err))
+                raise CrabError('database error: ' + str(err))
 
             finally:
                 c.close()
@@ -257,7 +257,7 @@ class CrabDB(CrabStore):
                                             time, command, timezone)
 
         except DatabaseError as err:
-            raise CrabError('database error : ' + str(err))
+            raise CrabError('database error: ' + str(err))
 
         finally:
             c.close()
@@ -276,7 +276,7 @@ class CrabDB(CrabStore):
             return c.lastrowid
 
         except DatabaseError as err:
-            raise CrabError('database error : ' + str(err))
+            raise CrabError('database error: ' + str(err))
 
         finally:
             c.close()
@@ -292,7 +292,7 @@ class CrabDB(CrabStore):
                       [id_])
 
         except DatabaseError as err:
-            raise CrabError('database error : ' + str(err))
+            raise CrabError('database error: ' + str(err))
 
         finally:
             c.close()
@@ -310,7 +310,7 @@ class CrabDB(CrabStore):
                           [id_, command])
 
             except DatabaseError as err:
-                raise CrabError('database error : ' + str(err))
+                raise CrabError('database error: ' + str(err))
 
             finally:
                 c.close()
@@ -334,7 +334,7 @@ class CrabDB(CrabStore):
                 finishid = c.lastrowid
 
             except DatabaseError as err:
-                raise CrabError('database error : ' + str(err))
+                raise CrabError('database error: ' + str(err))
 
             finally:
                 c.close()
@@ -357,7 +357,7 @@ class CrabDB(CrabStore):
                           [id_, status])
 
             except DatabaseError as err:
-                raise CrabError('database error : ' + str(err))
+                raise CrabError('database error: ' + str(err))
 
             finally:
                 c.close()
@@ -580,7 +580,7 @@ class CrabDB(CrabStore):
                 output.append(dict)
 
         except DatabaseError as err:
-            raise CrabError('database error : ' + str(err))
+            raise CrabError('database error: ' + str(err))
 
         finally:
             c.close()
@@ -609,7 +609,7 @@ class CrabDB(CrabStore):
                           [finishid, stdout, stderr])
 
             except DatabaseError as err:
-                raise CrabError('database error : ' + str(err))
+                raise CrabError('database error: ' + str(err))
 
             finally:
                 c.close()
@@ -644,7 +644,7 @@ class CrabDB(CrabStore):
                 return row
 
             except DatabaseError as err:
-                raise CrabError('database error : ' + str(err))
+                raise CrabError('database error: ' + str(err))
 
             finally:
                 c.close()
@@ -694,7 +694,7 @@ class CrabDB(CrabStore):
                               ['\n'.join(crontab), entry['id']])
 
             except DatabaseError as err:
-                raise CrabError('database error : ' + str(err))
+                raise CrabError('database error: ' + str(err))
 
             finally:
                 c.close()

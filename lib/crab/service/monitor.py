@@ -349,7 +349,7 @@ class CrabMonitor(CrabMinutely):
         try:
             self.store.log_warning(id_, status)
         except CrabError as err:
-            print('Could not record warning :', str(err))
+            print('Could not record warning: ', str(err))
 
     def get_job_status(self):
         """Fetches the status of all jobs as a dict.
