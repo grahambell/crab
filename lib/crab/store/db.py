@@ -16,8 +16,6 @@
 from __future__ import print_function
 
 from contextlib import closing
-import datetime
-import pytz
 from threading import Lock
 from traceback import extract_stack
 
@@ -57,7 +55,7 @@ class CrabDBLock():
         self.laststack = ''
         self.lock.release()
 
-class CrabDB(CrabStore):
+class CrabStoreDB(CrabStore):
     """Crab storage backend using a database.
 
     Currently written for SQLite but since it uses the Python DB API
@@ -457,7 +455,6 @@ class CrabDB(CrabStore):
         number of result rows to find the most recent events.  It gives
         the correct ordering for the job info page."""
 
-        # TODO: implement start and end as WHERE clause.
         conditions = ['jobid=?']
         params = [id_]
 
@@ -648,29 +645,6 @@ class CrabDB(CrabStore):
 
             finally:
                 c.close()
-
-    def parse_datetime(self, timestamp):
-        """Parses the timestamp strings used by the database.
-
-        This is a method in this class so that it could potentially
-        adapt to different databases.
-
-        The returned datetime object will include the correct timezone:
-        for SQLite this is always UTC.
-
-        An alternative thing to do would be to have _query_to_dict_list
-        guess which fields are timestamps and automatically run this
-        method on them."""
-
-        return datetime.datetime.strptime(timestamp,
-                        '%Y-%m-%d %H:%M:%S').replace(tzinfo=pytz.UTC)
-
-    def format_datetime(self, datetime_):
-        """Converts a datetime into a timestamp string for the database.
-
-        Includes conversion to UTC as used by SQLite."""
-
-        return datetime_.astimezone(pytz.UTC).strftime('%Y-%m-%d %H:%M:%S')
 
     def write_raw_crontab(self, host, user, crontab):
         if self.outputstore is not None and hasattr(self.outputstore,

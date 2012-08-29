@@ -1,22 +1,14 @@
 from unittest import TestCase
-import sqlite3
 
-from crab.store.db import CrabDB
+from crab.store.sqlite import CrabStoreSQLite
 
 class CrabDBTestCase(TestCase):
     def setUp(self):
-        self.conn = sqlite3.connect(':memory:', check_same_thread=False)
-
         with open('doc/schema.txt') as file:
             schema = file.read()
 
-        self.conn.executescript(schema)
-
-        c = self.conn.cursor()
-        c.execute("PRAGMA foreign_keys = ON");
-        c.close()
-
-        self.store = CrabDB(self.conn)
+        self.store = CrabStoreSQLite(':memory:')
+        self.store.conn.executescript(schema)
 
     def tearDown(self):
-        self.conn.close()
+        self.store.conn.close()

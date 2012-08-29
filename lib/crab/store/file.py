@@ -15,12 +15,12 @@
 
 from __future__ import print_function
 
-class CrabFileStore:
+class CrabStoreFile:
     """Store class for cron job output.
     
     This is currently a dummy implementation of just the
     write_job_output and get_job_output methods, to allow
-    the "outputstore" hooks in CrabDB to be tested.
+    the "outputstore" hooks in CrabStoreDB to be tested.
     
     It needs a constructor method including parameters to
     determine where the files are to be stored."""

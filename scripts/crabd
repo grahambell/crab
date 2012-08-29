@@ -17,7 +17,6 @@
 
 import os
 import socket
-import sqlite3
 
 import cherrypy
 from cherrypy.lib.reprconf import Config
@@ -26,7 +25,7 @@ from crab.service.monitor import CrabMonitor
 from crab.service.notify import CrabNotifyService
 from crab.web.rss import CrabRSS
 from crab.server import CrabServer
-from crab.store.db import CrabDB
+from crab.store.sqlite import CrabStoreSQLite
 from crab.web.web import CrabWeb
 
 def main():
@@ -72,17 +71,7 @@ def main():
                       'tools.staticdir.dir': config['crab']['home'] + '/res'}
 
     if config['store']['type'] == 'sqlite':
-        file = config['store']['file']
-
-        if not os.path.exists(file):
-            raise Exception('SQLite file does not exist')
-
-        dbconn = sqlite3.connect(file, check_same_thread=False)
-        c = dbconn.cursor()
-        c.execute("PRAGMA foreign_keys = ON");
-        c.close()
-
-        store = CrabDB(dbconn)
+        store = CrabStoreSQLite(config['store']['file'])
 
     else:
         raise Exception('Unknown store type')
