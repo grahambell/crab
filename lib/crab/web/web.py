@@ -339,36 +339,36 @@ class CrabWeb:
             for notification in notifications:
                 existing.add(notification['notifyid'])
 
-                # Update existing notifications.
-                for kwarg in kwargs:
-                    match = re.search('method_(new_)?(\d+)', kwarg)
-                    if not match:
-                        continue
+            # Update existing notifications.
+            for kwarg in kwargs:
+                match = re.search('method_(new_)?(\d+)', kwarg)
+                if not match:
+                    continue
 
-                    if match.group(1):
-                        key = ''.join(match.groups())
-                        notifyid = None
-                    else:
-                        key = match.group(2)
-                        notifyid = int(key)
-                        existing.discard(notifyid)
+                if match.group(1):
+                    key = ''.join(match.groups())
+                    notifyid = None
+                else:
+                    key = match.group(2)
+                    notifyid = int(key)
+                    existing.discard(notifyid)
 
-                    self.store.write_notification(
-                            notifyid, None,
-                            empty_to_none(kwargs['host_' + key]),
-                            empty_to_none(kwargs['user_' + key]),
-                            kwargs['method_' + key],
-                            kwargs['address_' + key],
-                            empty_to_none(kwargs['time_' + key]),
-                            empty_to_none(kwargs['timezone_' + key]),
-                            'include_ok_' + key not in kwargs,
-                            'include_warning_' + key not in kwargs,
-                            'include_error_' + key not in kwargs,
-                            'include_output_' + key in kwargs)
+                self.store.write_notification(
+                        notifyid, None,
+                        empty_to_none(kwargs['host_' + key]),
+                        empty_to_none(kwargs['user_' + key]),
+                        kwargs['method_' + key],
+                        kwargs['address_' + key],
+                        empty_to_none(kwargs['time_' + key]),
+                        empty_to_none(kwargs['timezone_' + key]),
+                        'include_ok_' + key not in kwargs,
+                        'include_warning_' + key not in kwargs,
+                        'include_error_' + key not in kwargs,
+                        'include_output_' + key in kwargs)
 
-                # Delete existing notifications which were not present.
-                for notifyid in existing:
-                    self.store.delete_notification(notifyid)
+            # Delete existing notifications which were not present.
+            for notifyid in existing:
+                self.store.delete_notification(notifyid)
 
             raise HTTPRedirect('/')
         else:
