@@ -59,7 +59,7 @@ class CrabWebQuery:
                                 for s in self.service)
             return json.dumps(s)
         except ValueError:
-            raise HTTPError(404, 'Query parameter not an integer')
+            raise HTTPError(400, 'Query parameter not an integer')
 
 
     @cherrypy.expose
@@ -68,7 +68,7 @@ class CrabWebQuery:
         try:
             info = self.store.get_job_info(int(id_))
         except ValueError:
-            raise HTTPError(404, 'Job ID not a number')
+            raise HTTPError(400, 'Job ID not a number')
         if info is None:
             raise HTTPError(404, 'Job not found')
 
@@ -117,7 +117,7 @@ class CrabWeb:
         try:
             id_ = int(id_)
         except ValueError:
-            raise HTTPError(404, 'Job number not a number')
+            raise HTTPError(400, 'Job number not a number')
 
         info = self.store.get_job_info(id_)
         if info is None:
@@ -164,7 +164,7 @@ class CrabWeb:
                 try:
                     finishid = int(finishid)
                 except ValueError:
-                    raise HTTPError(404, 'finish ID is not a number')
+                    raise HTTPError(400, 'Finish ID is not a number')
 
 
             # TODO: check that the given finishid is for the correct job.id.
@@ -309,7 +309,7 @@ class CrabWeb:
             info['host'] = host
             info['user'] = None
         else:
-            raise HTTPError(500)
+            raise HTTPError(500, 'Need one of host or user to be specified')
 
         for job in self.store.get_jobs(host, user, include_deleted=True):
             if by_user:

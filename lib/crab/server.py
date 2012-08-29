@@ -120,5 +120,5 @@ class CrabServer:
             return json.loads(message)
         except ValueError:
             cherrypy.log.error('CrabError: Failed to read JSON: ' + message)
-            raise HTTPError(message='Did not understand JSON')
+            raise HTTPError(400, message='Did not understand JSON')
 
