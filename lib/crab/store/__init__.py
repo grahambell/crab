@@ -20,6 +20,17 @@ import re
 from crab.util.string import remove_quotes, quote_multiword, split_quoted_word
 
 class CrabStore:
+    def get_jobs(self, host=None, user=None, include_deleted=False):
+        """Fetches a list of all of the cron jobs,
+        excluding deleted jobs by default.
+
+        Optionally filters by host or username if these parameters are
+        supplied."""
+
+        with self.lock:
+            return self._get_jobs(host, user, include_deleted)
+
+
     def get_crontab(self, host, user):
         """Fetches the job entries for a particular host and user and builds
         a crontab style representation.
@@ -132,3 +143,82 @@ class CrabStore:
 
             for id_ in idset:
                 self._delete_job(id_);
+
+    def _check_job(self, host, user, jobid, command, time=None, timezone=None):
+        """Ensure that a job exists in the store.
+
+        Tries to find (and update if necessary) the corresponding job.
+        If it is not found, the job is stored as a new entry.
+
+        In either case, the job's ID number is returned.
+
+        This is a private method because the lock must be acquired
+        prior to calling it."""
+
+        id_ = None
+
+        # We know the jobid, so use it to search
+
+        if jobid is not None:
+            jobs = self._get_jobs(host, user, include_deleted=True,
+                                  jobid=jobid)
+
+            if jobs:
+                job = jobs[0]
+                id_ = job['id']
+
+                if (job['deleted'] is None and
+                        command == job['command'] and
+                        (time is None or time == job['time']) and
+                        (timezone is None or timezone == job['timezone'])):
+                    pass
+
+                else:
+                    self._update_job(id_, None, command, time, timezone)
+
+            else:
+                # Need to check if the job already existed without
+                # a job ID, in which case we update it to add the job ID.
+
+                jobs = self._get_jobs(host, user, include_deleted=True,
+                                      command=command)
+                if jobs:
+                    job = jobs[0]
+                    id_ = job['id']
+
+                    self._update_job(id_, jobid, None, time, timezone)
+
+                else:
+                    id_ = self._insert_job(host, user, jobid, time,
+                                           command, timezone)
+
+        # We don't know the jobid, so we must search by command.
+        # In general we can't distinguish multiple copies of the same
+        # command running at different times.
+        # Such jobs should be given job IDs, or combined using
+        # time ranges / steps.
+
+        else:
+            jobs = self._get_jobs(host, user, include_deleted=True,
+                                  command=command)
+
+            if jobs:
+                job = jobs[0]
+                id_ = job['id']
+
+                if (job['deleted'] is None and
+                        (time is None or time == job['time']) and
+                        (timezone is None or timezone == job['timezone'])):
+                    pass
+
+                else:
+                    self._update_job(id_, None, None, time, timezone)
+
+            else:
+                id_ = self._insert_job(host, user, jobid,
+                                       time, command, timezone)
+
+        if id_ is None:
+            raise CrabError('store error: failed to identify job')
+
+        return id_
