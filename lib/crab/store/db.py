@@ -111,33 +111,6 @@ class CrabStoreDB(CrabStore):
                 'FROM job ' + where_clause + ' ' +
                 'ORDER BY host ASC, user ASC, installed ASC', params)
 
-    # TODO: decide if this function is in its most sensible form.
-    # This version added while extracting the crontab importing code
-    # from the database module.
-    def get_user_job_set(self, host, user):
-        """Prepares a set of job ID numbers for the given host and user
-        including deleted jobs."""
-
-        with self.lock:
-            c = self.conn.cursor()
-            id_ = set()
-
-            try:
-                c.execute('SELECT id FROM job WHERE host=? AND user=?',
-                          [host, user])
-                while True:
-                    row = c.fetchone()
-                    if row is None:
-                        break
-                    id_.add(row[0])
-            except DatabaseError as err:
-                raise CrabError('database error: ' + str(err))
-
-            finally:
-                c.close()
-
-            return id_
-
     def _check_job(self, host, user, jobid, command,
                   time=None, timezone=None):
         """Ensure that a job exists in the database.

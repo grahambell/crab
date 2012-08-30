@@ -75,7 +75,6 @@ class CronJobTester(RandomTester):
         self.store.get_jobs()
         self.store.get_jobs(self.host, self.user)
         self.store.get_jobs(self.host, self.user, include_deleted=True)
-        self.store.get_user_job_set(self.host, self.user)
         with self.store.lock:
             self.store._check_job(self.host, self.user, None, sample([
                               'command1', 'command2', 'command3'],1)[0])

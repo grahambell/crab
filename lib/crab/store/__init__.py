@@ -80,8 +80,10 @@ class CrabStore:
         variable = re.compile('^\s*(\w+)\s*=\s*(.*)$')
         cronrule = re.compile('^\s*(@\w+|\S+\s+\S+\s+\S+\s+\S+\s+\S+)\s+(.*)$')
 
-        idset = self.get_user_job_set(host, user)
         jobid = None
+        idset = set()
+        for job in self.get_jobs(host, user):
+            idset.add(job['id'])
 
         with self.lock:
             # Iterate over the supplied cron jobs, removing each
