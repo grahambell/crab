@@ -111,8 +111,7 @@ class CrabStoreDB(CrabStore):
                 'FROM job ' + where_clause + ' ' +
                 'ORDER BY host ASC, user ASC, installed ASC', params)
 
-    def _check_job(self, host, user, jobid, command,
-                  time=None, timezone=None):
+    def _check_job(self, host, user, jobid, command, time=None, timezone=None):
         """Ensure that a job exists in the database.
 
         Tries to find (and update if necessary) the corresponding job in
@@ -146,15 +145,7 @@ class CrabStoreDB(CrabStore):
                         pass
 
                     else:
-                        if time is None:
-                            time = dbtime
-                        if timezone is None:
-                            timezone = dbtz
-
-                        c.execute('UPDATE job SET command=?, time=?, '
-                                  'timezone=?, installed=CURRENT_TIMESTAMP, '
-                                  'deleted=NULL WHERE id=?',
-                                  [command, time, timezone, id_])
+                        self._update_job(id_, None, command, time, timezone)
 
                     return id_
 
@@ -172,16 +163,7 @@ class CrabStoreDB(CrabStore):
                     if row is not None:
                         (id_, dbtime, dbtz, deleted) = row
 
-                        if time is None:
-                            time = dbtime
-                        if timezone is None:
-                            timezone = dbtz
-
-                        c.execute('UPDATE job SET time=?, timezone=?, '
-                                  'jobid=?, '
-                                  'installed=CURRENT_TIMESTAMP, deleted=NULL '
-                                  'WHERE id=?',
-                                  [time, timezone, jobid, id_])
+                        self._update_job(id_, jobid, None, time, timezone)
 
                         return id_
 
@@ -211,15 +193,7 @@ class CrabStoreDB(CrabStore):
                         pass
 
                     else:
-                        if time is None:
-                            time = dbtime
-                        if timezone is None:
-                            timezone = dbtz
-
-                        c.execute('UPDATE job SET time=?, timezone=?, '
-                                  'installed=CURRENT_TIMESTAMP, deleted=NULL '
-                                  'WHERE id=?',
-                                  [time, timezone, id_])
+                        self._update_job(id_, None, None, time, timezone)
 
                     return id_
 
@@ -267,6 +241,41 @@ class CrabStoreDB(CrabStore):
 
         finally:
             c.close()
+
+    def _update_job(self, id_,
+                    jobid=None, command=None, time=None, timezone=None):
+        """Marks a job as not deleted, and updates its information.
+
+        Only fields not given as None are updated."""
+
+        fields = ['installed=CURRENT_TIMESTAMP', 'deleted=NULL']
+        params = []
+
+        if jobid is not None:
+            fields.append('jobid=?')
+            params.append(jobid)
+
+        if command is not None:
+            fields.append('command=?')
+            params.append(command)
+
+        if time is not None:
+            fields.append('time=?')
+            params.append(time)
+
+        if timezone is not None:
+            fields.append('timezone=?')
+            params.append(timezone)
+
+        params.append(id_)
+
+        with closing(self.conn.cursor()) as c:
+            try:
+                c.execute('UPDATE job SET ' + ', '.join(fields) + ' '
+                          'WHERE id=?', params)
+
+            except DatabaseError as err:
+                raise CrabError('database error: ' + str(err))
 
     def log_start(self, host, user, jobid, command):
         """Inserts a job start record into the database."""
