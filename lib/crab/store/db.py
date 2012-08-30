@@ -85,6 +85,14 @@ class CrabStoreDB(CrabStore):
         Optionally filters by host or username if these parameters are
         supplied."""
 
+        with self.lock:
+            return self._get_jobs(host, user, include_deleted)
+
+    def _get_jobs(self, host, user, include_deleted=False,
+                  jobid=None, command=None):
+        """Private/protected version of get_jobs which does not
+        acquire the lock, and takes more search parameters."""
+
         params = []
         conditions = []
 
@@ -99,17 +107,24 @@ class CrabStoreDB(CrabStore):
             conditions.append('user=?')
             params.append(user)
 
+        if jobid is not None:
+            conditions.append('jobid=?')
+            params.append(jobid)
+
+        if command is not None:
+            conditions.append('command=?')
+            params.append(command)
+
         if conditions:
             where_clause = 'WHERE ' + ' AND '.join(conditions)
         else:
             where_clause = ''
 
-        with self.lock:
-            return self._query_to_dict_list(
-                'SELECT id, host, user, jobid, command, time, ' +
-                    'timezone, installed, deleted ' +
-                'FROM job ' + where_clause + ' ' +
-                'ORDER BY host ASC, user ASC, installed ASC', params)
+        return self._query_to_dict_list(
+            'SELECT id, host, user, jobid, command, time, '
+                'timezone, installed, deleted '
+            'FROM job ' + where_clause + ' '
+            'ORDER BY host ASC, user ASC, installed ASC', params)
 
     def _check_job(self, host, user, jobid, command, time=None, timezone=None):
         """Ensure that a job exists in the database.
@@ -123,89 +138,73 @@ class CrabStoreDB(CrabStore):
         This is a private method because it must be run within
         a database transaction."""
 
-        c = self.conn.cursor()
+        id_ = None
 
-        try:
+        # We know the jobid, so use it to search
 
-            # We know the jobid, so use it to search
+        if jobid is not None:
+            jobs = self._get_jobs(host, user, include_deleted=True,
+                                  jobid=jobid)
 
-            if jobid is not None:
-                c.execute('SELECT id, command, time, timezone, deleted '
-                          'FROM job WHERE host=? AND user=? AND jobid=?',
-                          [host, user, jobid])
-                row = c.fetchone()
+            if jobs:
+                job = jobs[0]
+                id_ = job['id']
 
-                if row is not None:
-                    (id_, dbcommand, dbtime, dbtz, deleted) = row
-
-                    if (deleted is None and
-                            command == dbcommand and
-                            (time is None or time == dbtime) and
-                            (timezone is None or timezone == dbtz)):
-                        pass
-
-                    else:
-                        self._update_job(id_, None, command, time, timezone)
-
-                    return id_
+                if (job['deleted'] is None and
+                        command == job['command'] and
+                        (time is None or time == job['time']) and
+                        (timezone is None or timezone == job['timezone'])):
+                    pass
 
                 else:
-                    # Need to check if the job already existed without
-                    # a job ID, in which case we update it to add the job ID.
-
-                    c.execute('SELECT id, time, timezone, deleted '
-                              'FROM job WHERE host=? AND user=? AND command=? '
-                              'AND jobid IS NULL',
-                              [host, user, command])
-
-                    row = c.fetchone()
-
-                    if row is not None:
-                        (id_, dbtime, dbtz, deleted) = row
-
-                        self._update_job(id_, jobid, None, time, timezone)
-
-                        return id_
-
-                    else:
-                      return self._insert_job(host, user, jobid, time,
-                                              command, timezone)
-
-            # We don't know the jobid, so we must search by command.
-            # In general we can't distinguish multiple copies of the same
-            # command running at different times.
-            # Such jobs should be given job IDs, or combined using
-            # time ranges / steps.
+                    self._update_job(id_, None, command, time, timezone)
 
             else:
-                c.execute('SELECT id, time, timezone, deleted '
-                          'FROM job WHERE host=? AND user=? AND command=?',
-                          [host, user, command])
+                # Need to check if the job already existed without
+                # a job ID, in which case we update it to add the job ID.
 
-                row = c.fetchone()
+                jobs = self._get_jobs(host, user, include_deleted=True,
+                                      command=command)
+                if jobs:
+                    job = jobs[0]
+                    id_ = job['id']
 
-                if row is not None:
-                    (id_, dbtime, dbtz, deleted) = row
-
-                    if (deleted is None and
-                            (time is None or time == dbtime) and
-                            (timezone is None or timezone == dbtz)):
-                        pass
-
-                    else:
-                        self._update_job(id_, None, None, time, timezone)
-
-                    return id_
+                    self._update_job(id_, jobid, None, time, timezone)
 
                 else:
-                    return self._insert_job(host, user, jobid,
-                                            time, command, timezone)
+                    id_ = self._insert_job(host, user, jobid, time,
+                                           command, timezone)
 
-        except DatabaseError as err:
-            raise CrabError('database error: ' + str(err))
+        # We don't know the jobid, so we must search by command.
+        # In general we can't distinguish multiple copies of the same
+        # command running at different times.
+        # Such jobs should be given job IDs, or combined using
+        # time ranges / steps.
 
-        finally:
-            c.close()
+        else:
+            jobs = self._get_jobs(host, user, include_deleted=True,
+                                  command=command)
+
+            if jobs:
+                job = jobs[0]
+                id_ = job['id']
+
+                if (job['deleted'] is None and
+                        (time is None or time == job['time']) and
+                        (timezone is None or timezone == job['timezone'])):
+                    pass
+
+                else:
+                    self._update_job(id_, None, None, time, timezone)
+
+            else:
+                id_ = self._insert_job(host, user, jobid,
+                                       time, command, timezone)
+
+        if id_ is None:
+            raise CrabError('store error: failed to identify job')
+
+        return id_
 
     def _insert_job(self, host, user, jobid, time, command, timezone):
         """Inserts a job record into the database."""
