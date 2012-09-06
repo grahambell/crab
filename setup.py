@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 
-with open('README') as file:
+with open('README.rst') as file:
     long_description = file.read()
 
 setup(name='Crab',
