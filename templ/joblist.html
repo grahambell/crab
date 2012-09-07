@@ -1,5 +1,6 @@
 <%!
     from crab.util.string import mergelines
+    from crab.util.web import abbr
 
     scripts = ["joblist"]
 %>
@@ -25,7 +26,7 @@
 % endif
         <td class="linkcell"><a href="/job/${job["id"] | h}" id="command_${job["id"] | h}">
 % if job.get('command') is not None:
-            ${job["command"] | h}
+            ${job["command"] | abbr}
 % else:
             &nbsp;
 % endif

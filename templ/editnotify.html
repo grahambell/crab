@@ -2,6 +2,7 @@
     import pytz
 
     from crab.util.string import mergelines
+    from crab.util.web import abbr
 
     scripts = ["editnotify"]
 %>
@@ -14,7 +15,7 @@
 %     if info['jobid'] is not None:
 <a href="/job/${id | h}">${info['jobid'] | h}</a>
 %     else:
-<a href="/job/${id | h}">${info['command'] | h}</a>
+<a href="/job/${id | h}">${info['command'] | abbr}</a>
 %     endif
 % endif
 <span>notifications</span>

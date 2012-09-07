@@ -1,5 +1,6 @@
 <%!
     from crab.util.string import alphanum
+    from crab.util.web import abbr
 
     scripts = ['crontabs']
 %>
@@ -45,7 +46,7 @@ ${key | h}
 % else:
         <td class="status_unknown" id="jobid_${job["id"] | h}">Unspecified</td>
 % endif
-        <td class="linkcell"><a href="/job/${job['id'] | h}">${job['command'] | h}</a></td>
+        <td class="linkcell"><a href="/job/${job['id'] | h}">${job['command'] | abbr}</a></td>
     </tr>
 % endfor
 </table>

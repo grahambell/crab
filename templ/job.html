@@ -1,5 +1,6 @@
 <%!
-from crab import CrabEvent, CrabStatus
+    from crab import CrabEvent, CrabStatus
+    from crab.util.web import abbr
 %>
 <%inherit file="base.html"/>
 
@@ -9,7 +10,7 @@ from crab import CrabEvent, CrabStatus
 % if info['jobid'] is not None:
 <span>${info['jobid'] | h}</span>
 % else:
-<span>${info['command'] | h}</span>
+<span>${info['command'] | abbr}</span>
 % endif
 </%block>
 
