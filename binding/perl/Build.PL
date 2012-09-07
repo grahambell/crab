@@ -6,6 +6,8 @@ use warnings;
 use Module::Build;
 
 our %require = ('Config::IniFiles' => 0,
+                'File::HomeDir' => 0,
+                'File::Spec' => 0,
                 'HTTP::Request' => 0,
                 'IO::Scalar' => 2.110,
                 'JSON' => 0,

@@ -35,6 +35,8 @@ package WWW::Crab::Client;
 use strict;
 
 use Config::IniFiles;
+use File::HomeDir;
+use File::Spec;
 use HTTP::Request;
 use JSON;
 use LWP::UserAgent;
@@ -79,11 +81,13 @@ sub new {
     my %opt = @_;
 
     my ($username, undef, undef, undef, undef, undef, undef,
-        $homedir, undef, undef) = getpwuid($<);
+        undef, undef, undef) = getpwuid($<);
 
     my $conf = new Config::IniFiles(-file => \'', -allowempty => 1);
-    my $conf_system = '/etc/crab/crab.ini';
-    my $conf_user = $homedir . '/.crab/crab.ini';
+    my $conf_system = File::Spec->catfile($ENV{'CRABSYSCONFIG'} || '/etc/crab',
+                                          'crab.ini');
+    my $conf_user = File::Spec->catfile(File::HomeDir->my_home(),
+                                        '.crab', 'crab.ini');
 
     $conf = new Config::IniFiles(-file => $conf_system, '-import' => $conf)
         if (-e $conf_system);
