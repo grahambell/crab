@@ -14,10 +14,10 @@ WWW::Crab::Client - Crab client library
 
   # Perform the cron job actions ...
 
-  eval {
+  my $finished_ok = eval {
       $crab->finish(status => WWW::Crab::Client::SUCCESS, stdout => $message);
   };
-  if ($@) {
+  unless ($finished_ok) {
       print "Failed to report job completion.\n" . $@ . "\n" . $message;
   }
 
@@ -122,12 +122,14 @@ Reports that the job has started.
 This method uses "die" to raise an exception if it is unsuccessful
 in reporting to the Crab server.
 
+Returns a true value on success.
+
 =cut
 
 sub start {
     my $self = shift;
 
-    $self->_write_json($self->_get_url('start'), {
+    return $self->_write_json($self->_get_url('start'), {
         command => $self->{'command'}});
 }
 
@@ -151,18 +153,29 @@ to obtain the appropriate Crab status codes:
 This method uses "die" to raise an exception if it is unsuccessful
 in reporting to the Crab server.
 
+Returns a true value on success.
+
 =cut
 
 sub finish {
     my $self = shift;
     my %opt = @_;
 
-    $self->_write_json($self->_get_url('finish'), {
+    return $self->_write_json($self->_get_url('finish'), {
         command => $self->{'command'},
         status  => defined $opt{'status'} ? $opt{'status'} : UNKNOWN,
         stdout  => $opt{'stdout'} || '',
         stderr  => $opt{'stderr'} || ''});
 }
+
+# _write_json()
+#
+# Sends the given object to the Crab server as a JSON message.
+#
+#   $self->_write_json($self->_get_url($ACTION), $HASHREF);
+#
+# Dies on failure, and returns 1 on success.  Could be improved
+# to return a useful value on success, so long as it is 'true'.
 
 sub _write_json {
     my $self = shift;
@@ -174,7 +187,16 @@ sub _write_json {
     $req->content(encode_json($obj));
     my $res = $ua->request($req);
     die $res->status_line() unless $res->is_success();
+    return 1;
 }
+
+# _get_url()
+#
+# Returns the URL to be used for a given Crab aaction.
+#
+#     my $url = $self->_get_url($ACTION);
+#
+# Where the action is typically 'start' or 'finish'.
 
 sub _get_url {
     my $self = shift;
