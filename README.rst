@@ -47,7 +47,7 @@ Configuration
 The Crab server is configured by a ``crabd.ini`` file which can
 be placed either in ``/etc/crab/`` or ``~/.crab/``.  Note that this
 is a CherryPy configuration file, which is read slightly differently to
-typical ``.ini`` files which use Python's ConfigParser.
+typical ``.ini`` files which use Python's ConfigParser. ::
 
     % cp doc/crabd.ini ~/.crab/
 
@@ -90,7 +90,7 @@ Configuration
 The Crab clients are configured by a ``crab.ini`` file which can
 be placed either in ``/etc/crab/`` or ``~/.crab/``.  The file
 specifies how to contact the Crab server, and the username and
-hostname which the client will use to report cron jobs.
+hostname which the client will use to report cron jobs. ::
 
     % cp doc/crab.ini ~/.crab/
 
@@ -109,18 +109,18 @@ therefore be invoked by cron via the ``SHELL`` variable, for example::
     SHELL=/path/to/crab/scripts/crabsh
     0 10 * * 1-5 CRABID=test echo "Test cron job"
 
-Where the rules following the ``SHELL`` assignment will be run with the 
+Where the rules following the ``SHELL`` assignment will be run with the
 wrapper.  The ``PYTHONPATH`` will need to be set if Crab is not installed
 where the system can find it.  Cron requires the full path when
 specifying the ``SHELL``. The ``CRABID`` parameter is used to
 give the cron job a convenient and unique name.  This is optional,
-unless there are multiple jobs with the same command, 
+unless there are multiple jobs with the same command,
 in which case they would otherwise be indistinguishable.
 However if it specified, then it must be unique for a given
 host and user, as the Crab server will use it in preference
 to the command string to identify cron job reports.
 
-``crabsh`` will notify the server when the job starts, and when it finishes, 
+``crabsh`` will notify the server when the job starts, and when it finishes,
 assuming it succeeded if the exit status was zero.
 
 Crab-aware Cron Jobs
@@ -164,7 +164,7 @@ again using the ``crab`` utility::
     > CRON_TZ=Pacific/Honolulu
     > 0 10 * * 1-5 CRABID=test echo "Test cron job"
 
-The output is a set of crontab-style lines representing the entries 
+The output is a set of crontab-style lines representing the entries
 from the database.  The crontab can be retrieved exactly as last imported
 (from a separate database table containing the raw crontab) by giving
 the ``--raw`` option as follows::
@@ -244,6 +244,77 @@ SHELL
 TZ
     This can be set to the system timezone, in which case ``crab import``
     will use it as the default timezone for the crontab.
+
+The Web Interface
+-----------------
+
+The Crab dashboard allows the status of the jobs to be monitored.
+On this page, the job status column will change color to indicate
+the status, and it will flash while the job is running.  Clicking
+on the status will lead to the most recent output recorded for
+the job.
+
+The host and user columns contain links leading to a summary page
+of the cron jobs for a given user or host.  From this page,
+the links below each table can be used to show deleted jobs,
+and to display the raw crontab as last imported.
+
+Clicking on a job ID or command link leads to the job information
+page, giving a summary of the job's parameters and a table of the
+most recent events.  Clicking the status of any job finish
+event leads to the corresponding output.
+
+Job Configuration
+~~~~~~~~~~~~~~~~~
+
+Below the summary on the job information page, there is a link
+allowing the job's configuration to be edited.  Any parameter
+which is left blank here will use the default value.
+
+If a job is deleted, then its configuration is considered to be
+orphaned.  In this case, when configuring a job for which
+no configuration exists, the system will offer a list of
+orphaned configurations for re-linking.  This should be used
+when the job is actually the continuation of a previous job.
+Note that notifications which are attached to specific jobs
+are linked via the configuration.  Therefore re-linking the
+configuration will re-attach all associated notifications.
+
+However this problem can generally be avoided by giving the jobs
+suitable names via the ``CRABID`` parameter.  Crab will then be able
+to recognize jobs by name even if the command string changes.
+
+Notifications
+~~~~~~~~~~~~~
+
+Crab includes a configurable notifications system, which currently
+supports sending notification messages by email.  Notifications
+can either be attached to a specific job, or configured
+by host name and/or by user name.
+
+A link below the summary on the job information page allows
+notifications to be attached to that job.  Check-boxes
+for each notification can be used to select which
+severity of events should be featured, and whether the job
+output should be included.  The schedule box should contain
+a cron-style schedule specification (e.g. ``0 12 * * *``),
+and if left blank, will default to the value given in the
+``crabd.ini`` file, allowing all notification schedules to be
+managed in one place.  Notifications will only be sent if there
+are relevant events, so it is possible to request
+almost-immediate error warnings by including a schedule of
+``* * * * *`` and selecting errors only.
+
+The add and delete links can be used to
+add and remove notifications, but the changes are not saved
+until the ``Configure`` button is clicked.
+
+The drop-down menu which appears when the mouse is positioned
+over the Crab heading at the top of each page includes a link to
+the main notifications page.  This allows notifications to be
+configured by host name and/or by user name.  Notifications
+will include any jobs where the host and user match the specified
+values, but if either is left blank, then it will match all entries.
 
 Copyright
 ---------
