@@ -57,6 +57,43 @@ div#headerbar h1 {
     text-align: left;
 }
 
+div#headerbar ul {
+    list-style-type: none;
+    position: absolute;
+    display: none;
+    top: 26pt;
+    left: 26pt;
+    background: white;
+    box-shadow: 0px 0px 30px #002;
+    border-radius: 10px;
+    padding: 5px;
+    border: 2px solid #00A;
+}
+
+div#headerbar ul li {
+    padding: 5px;
+    font-family: sans-serif;
+    font-size: 12pt;
+    color: black;
+}
+
+div#headerbar ul li + li {
+    border-top: 1px solid grey;
+}
+
+div#headerbar *:hover + ul,  div#headerbar ul:hover {
+    display: block;
+}
+
+div#headerbar ul a, div#headerbar ul a:hover {
+    color: #00F;
+    text-shadow: none;
+}
+
+div#headerbar ul a:hover {
+    background: #DDD;
+}
+
 div#headerbar > a {
     font-size: 16pt;
     text-shadow: 0px 0px 5px black;
