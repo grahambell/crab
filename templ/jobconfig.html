@@ -17,6 +17,15 @@
 % if config is None:
 %     if orphan:
 <h2>Re-link Orphaned Job Configuration</h2>
+<p>
+There are orphaned configurations,
+relating to deleted jobs.
+</p>
+<p>
+If this job is the continuation of one which
+has been deleted, its configuration can be
+transferred by selecting it for re-linking.
+</p>
 <form method="post" action="/job/${id | h}/config">
 <p>
 <select name="orphan">
@@ -35,12 +44,14 @@
 </form>
 %     endif
 
-
 <h2>Add New Job Configuration</h2>
 % else:
 <h2>Edit Job Configuration</h2>
 % endif
 
+<p>
+Any parameter which is left blank here will use the default value.
+</p>
 <form method="post" action="/job/${id | h}/config">
     <ol>
         <li>
