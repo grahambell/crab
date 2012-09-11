@@ -19,10 +19,10 @@
 <table>
     <tr>
         <th>Standard output</th>
-        <td><pre>${stdout | h}</pre></td>
+        <td><pre>${stdout.strip() | h}</pre></td>
     </tr>
     <tr>
         <th>Standard error</th>
-        <td><pre>${stderr | h}</pre></td>
+        <td><pre>${stderr.strip() | h}</pre></td>
     </tr>
 </table>

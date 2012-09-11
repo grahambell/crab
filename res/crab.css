@@ -128,6 +128,7 @@ td, th {
     border: 1px solid black;
     padding: 5px;
     text-align: left;
+    vertical-align: top;
 }
 
 th {
@@ -138,6 +139,11 @@ th {
 pre {
     font-family: monospace;
     font-size: 10pt;
+}
+
+td pre {
+    padding: 0px;
+    margin: 0px;
 }
 
 .status_normal {
