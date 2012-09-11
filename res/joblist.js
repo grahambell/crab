@@ -120,7 +120,15 @@ function updateStatus(data) {
 
     updateServiceStatus(data['service']);
 
-    if (data['numerror'] > 0) {
+    var service_ok = true;
+    for (var id in data['service']) {
+        service_ok = service_ok && data['service'][id];
+    }
+
+    if (! service_ok) {
+        setFavicon('/res/favicon-stopped.png');
+    }
+    else if (data['numerror'] > 0) {
         setFavicon('/res/favicon-error.png');
     }
     else if (data['numwarning'] > 0) {
