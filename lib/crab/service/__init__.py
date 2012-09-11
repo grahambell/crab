@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 import datetime
 import pytz
 import time
@@ -60,7 +62,10 @@ class CrabMinutely(Thread):
             previous = self._previous + delta
 
             if not minute_equal(previous, self._previous):
-                self.run_minutely(previous)
+                try:
+                    self.run_minutely(previous)
+                except Exception as e:
+                    print("Error: run_minutely raised exception:", str(e))
 
             self._previous = previous
 
