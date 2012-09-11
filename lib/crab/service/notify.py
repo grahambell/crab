@@ -13,8 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+
 import datetime
 
+from crab import CrabError
 from crab.notify import CrabNotify, CrabNotifyJob
 from crab.service import CrabMinutely
 from crab.util.schedule import CrabSchedule
@@ -50,7 +53,14 @@ class CrabNotifyService(CrabMinutely):
         else:
             daily_start = None
 
-        for notification in self.store.get_notifications():
+        try:
+            notifications = self.store.get_notifications()
+
+        except CrabError as err:
+            print('Error fetching notifications:', str(err))
+            return
+
+        for notification in notifications:
             n_id = notification['notifyid']
 
             if (n_id in self.config and n_id in self.sched
