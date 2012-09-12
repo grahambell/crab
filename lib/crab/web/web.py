@@ -150,15 +150,22 @@ class CrabWeb:
                         'notification': notification, 'events': events})
 
         elif command == 'output':
+            finishid_next = None
+            finishid_prev = None
+
             if finishid is None:
                 # If finishid is not specified, select the most recent
                 # for this job.
-                finishes = self.store.get_job_finishes(id_, limit=1)
+                finishes = self.store.get_job_finishes(id_, limit=2)
 
-                if len(finishes) == 0:
+                if not finishes:
                     raise HTTPError(404, 'No job output found')
 
-                finishid = finishes[0]['id']
+                finish = finishes[0]
+                finishid = finish['id']
+
+                if len(finishes) > 1:
+                    finishid_next = finishes[1]['id']
 
             else:
                 try:
@@ -166,18 +173,33 @@ class CrabWeb:
                 except ValueError:
                     raise HTTPError(400, 'Finish ID is not a number')
 
+                finishes = self.store.get_job_finishes(id_, finishid=finishid)
+                if not finishes:
+                    raise HTTPError(404, 'Finish ID not found or wrong job')
+                finish = finishes[0]
 
-            # TODO: check that the given finishid is for the correct job.id.
+                finishes = self.store.get_job_finishes(id_, before=finishid)
+                if finishes:
+                    finishid_prev = finishes[0]['id']
+
+                finishes = self.store.get_job_finishes(id_, after=finishid)
+                if finishes:
+                    finishid_next = finishes[0]['id']
+
             pair = self.store.get_job_output(finishid,
                     info['host'], info['user'], id_)
 
             if pair is None:
                 raise HTTPError(404, 'No output found for the given job run.')
 
+            filter = CrabEventFilter(self.store, info['timezone'])
+            finish['datetime'] = filter.in_timezone(finish['datetime'])
+
             (stdout, stderr) = pair
             return self._write_template('joboutput.html',
-                       {'id': id_, 'info': info,
-                        'stdout': stdout, 'stderr': stderr})
+                       {'id': id_, 'info': info, 'finish': finish,
+                        'stdout': stdout, 'stderr': stderr,
+                        'next': finishid_next, 'prev': finishid_prev})
 
         elif command == 'config':
             if submit_relink:

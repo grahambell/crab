@@ -327,16 +327,41 @@ class CrabStoreDB(CrabStore):
             finally:
                 c.close()
 
-    def get_job_finishes(self, id_, limit=100):
+    def get_job_finishes(self, id_, limit=100,
+                         finishid=None, before=None, after=None):
         """Retrieves a list of recent job finish events for the given job,
-        most recent first."""
+        most recent first.
+
+        Can optionally find a particular finish, or finishes before
+        or after a certain finish.  In the case of finishes after
+        a certain finish, the most recent event will be last."""
+
+        conditions = ['jobid = ?']
+        params = [id_]
+        order = 'DESC'
+
+        if finishid is not None:
+            conditions.append('id = ?')
+            params.append(finishid)
+
+        elif before is not None:
+            conditions.append('id < ?')
+            params.append(before)
+
+        elif after is not None:
+            conditions.append('id > ?')
+            params.append(after)
+            order = 'ASC'
+
+        params.append(limit)
 
         with self.lock:
             return self._query_to_dict_list(
-                'SELECT id, datetime, command, status ' +
-                    'FROM jobfinish WHERE jobid = ? ' +
-                    'ORDER BY datetime DESC LIMIT ?',
-                [id_, limit])
+                'SELECT id, datetime, command, status '
+                    'FROM jobfinish '
+                    'WHERE ' + ' AND '.join(conditions) + ' '
+                    'ORDER BY datetime ' + order + ' LIMIT ?',
+                params)
 
     def get_job_events(self, id_, limit=100, start=None, end=None):
         """Fetches a combined list of events relating to the specified job.

@@ -16,7 +16,26 @@
 
 <h2>Job Output</h2>
 
+% if next or prev:
+<p>
+%     if prev:
+    <a href="/job/${id | h}/output/${prev | h}">Previous</a>
+%     endif
+%     if next:
+    <a href="/job/${id | h}/output/${next | h}">Next</a>
+%     endif
+</p>
+% endif
+
 <table>
+    <tr>
+        <th>Date and Time</th>
+        <td>${finish['datetime'] | h}</td>
+    </tr>
+    <tr>
+        <th>Command</th>
+        <td>${finish['command'] | h}</td>
+    </tr>
     <tr>
         <th>Standard output</th>
         <td><pre>${stdout.strip() | h}</pre></td>
