@@ -165,7 +165,7 @@ class CrabWeb:
                 finishid = finish['id']
 
                 if len(finishes) > 1:
-                    finishid_next = finishes[1]['id']
+                    finishid_prev = finishes[1]['id']
 
             else:
                 try:
