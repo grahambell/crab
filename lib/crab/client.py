@@ -101,11 +101,16 @@ class CrabClient:
 
     def send_crontab(self, crontab, timezone=None):
         """Takes the crontab as a string, breaks it into lines,
-        and transmits it to the server."""
+        and transmits it to the server.
 
-        self._write_json(self._get_url('crontab'),
-                        {'crontab': crontab.split('\n'),
-                         'timezone': timezone})
+        Returns a list of warnings."""
+
+        data = self._write_json(self._get_url('crontab'),
+                                {'crontab': crontab.split('\n'),
+                                 'timezone': timezone},
+                                read=True)
+
+        return data['warning']
 
     def fetch_crontab(self, raw=False):
         """Retrieves crontab lines from the server, and returns
@@ -185,9 +190,11 @@ class CrabClient:
         finally:
             conn.close()
 
-    def _write_json(self, url, obj):
+    def _write_json(self, url, obj, read=False):
         """Converts the given object to JSON and sends it with an
-        HTTP PUT to the given URL."""
+        HTTP PUT to the given URL.
+
+        Optionally attempts to read JSON from the response."""
 
         try:
             try:
@@ -198,6 +205,9 @@ class CrabClient:
 
                 if res.status != 200:
                     raise CrabError('server error: ' + self._read_error(res))
+
+                if read:
+                    return json.loads(latin_1_decode(res.read(), 'replace')[0])
 
             #except HTTPException as err:
             #except HTTPException, err:
@@ -210,6 +220,12 @@ class CrabClient:
             except socket.error:
                 err = sys.exc_info()[1]
                 raise CrabError('socket error: ' + str(err))
+
+            #except ValueError as err:
+            #except ValueError, err:
+            except ValueError:
+                err = sys.exc_info()[1]
+                raise CrabError('did not understand response: ' + str(err))
 
         finally:
             conn.close()

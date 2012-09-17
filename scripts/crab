@@ -38,7 +38,7 @@ def send_crontab(crontab):
 
     try:
         client = CrabClient()
-        client.send_crontab(crontab, timezone=tz)
+        return client.send_crontab(crontab, timezone=tz)
 
     #except CrabError as err:
     except CrabError:
@@ -140,7 +140,12 @@ Commands:
             crontab = read_file(options.crontabfile)
 
         if crontab is not None:
-            send_crontab(crontab)
+            warning = send_crontab(crontab)
+
+            if warning:
+                print(sys.argv[0] + ': crontab import warnings:')
+                for message in warning:
+                    print(message)
 
     elif args[0] == 'export':
         try:

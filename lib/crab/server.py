@@ -59,8 +59,10 @@ class CrabServer:
                 if crontab is None:
                     raise CrabError('no crontab received')
 
-                self.store.save_crontab(host, user, crontab,
+                warning = self.store.save_crontab(host, user, crontab,
                              timezone=data.get('timezone'))
+
+                return json.dumps({'warning': warning})
 
             except CrabError as err:
                 cherrypy.log.error('CrabError: write error: ' + str(err))

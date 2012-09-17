@@ -79,7 +79,9 @@ class CrabStore:
         It looks for the CRABID and CRON_TZ variables, but otherwise
         ignores everything except command lines.  It also checks for commands
         starting with a CRABID= definition, but otherwise inserts them
-        into the database as is."""
+        into the database as is.
+
+        Returns a list of warning strings."""
 
         # Save the raw crontab.
         self.write_raw_crontab(host, user, crontab)
@@ -93,6 +95,8 @@ class CrabStore:
 
         jobid = None
         idset = set()
+        idsaved = set()
+        warning = []
         for job in self.get_jobs(host, user):
             idset.add(job['id'])
 
@@ -131,11 +135,17 @@ class CrabStore:
                     id_ = self._check_job(host, user, jobid,
                                           command, time, timezone)
 
+                    if id_ in idsaved:
+                        warning.append('Indistinguishable duplicated job: ' +
+                                       job)
+                    else:
+                        idsaved.add(id_)
+
                     idset.discard(id_)
                     jobid = None
                     continue
 
-                print('*** Did not recognise line:', job)
+                warning.append('Did not recognise line: ' + job)
 
 
             # Set any jobs remaining in the id set to deleted
@@ -143,6 +153,8 @@ class CrabStore:
 
             for id_ in idset:
                 self._delete_job(id_);
+
+            return warning
 
     def _check_job(self, host, user, jobid, command, time=None, timezone=None):
         """Ensure that a job exists in the store.
