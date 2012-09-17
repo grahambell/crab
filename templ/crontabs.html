@@ -14,7 +14,7 @@
 % endif
 </%block>
 
-% for (key, joblist) in jobs.items():
+% for (key, joblist) in sorted(jobs.items()):
 <h2>
 % if user is None:
 <a href="/user/${key | h}">
