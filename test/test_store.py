@@ -30,3 +30,9 @@ class JobIdentifyTestCase(CrabDBTestCase):
 
         id_ = self.store._check_job('host1', 'user1', None, 'command1')
         self.assertEqual(id_, 5, 'Original command should now be a new job')
+
+        id_ = self.store._check_job('host1', 'user1', 'jobid2', 'command4')
+        self.assertEqual(id_, 6, 'Additional new command creates new job')
+
+        id_ = self.store._check_job('host1', 'user1', 'jobid3', 'command4')
+        self.assertEqual(id_, 7, 'New ID should create  another new job')

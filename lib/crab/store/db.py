@@ -79,7 +79,7 @@ class CrabStoreDB(CrabStore):
         self.lock = CrabDBLock(conn)
 
     def _get_jobs(self, host, user, include_deleted=False,
-                  jobid=None, command=None):
+                  jobid=None, command=None, without_jobid=False):
         """Private/protected version of get_jobs which does not
         acquire the lock, and takes more search parameters."""
 
@@ -104,6 +104,12 @@ class CrabStoreDB(CrabStore):
         if command is not None:
             conditions.append('command=?')
             params.append(command)
+
+        if without_jobid:
+            if jobid is not None:
+                raise CrabError('_get_jobs called with jobid an without_jobid')
+
+            conditions.append('jobid IS NULL')
 
         if conditions:
             where_clause = 'WHERE ' + ' AND '.join(conditions)

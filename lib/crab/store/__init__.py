@@ -193,7 +193,7 @@ class CrabStore:
                 # a job ID, in which case we update it to add the job ID.
 
                 jobs = self._get_jobs(host, user, include_deleted=True,
-                                      command=command)
+                                      command=command, without_jobid=True)
                 if jobs:
                     job = jobs[0]
                     id_ = job['id']
