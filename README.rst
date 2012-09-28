@@ -9,6 +9,7 @@ Requirements
 * Mako templates: http://pypi.python.org/pypi/Mako/#downloads
 * PyRSS2Gen: http://dalkescientific.com/Python/PyRSS2Gen.html
 * jQuery: http://code.jquery.com/
+* Font Awesome: http://fortawesome.github.com/Font-Awesome (optional)
 
 Installation
 ------------
@@ -29,6 +30,13 @@ The jQuery JavaScript library should be copied or symlinked into
 Crab's ``res`` directory as::
 
     res/jquery.js
+
+To use Font Awesome icons, place its ``font`` directory inside
+Crab's ``res`` directory, and also place its stylesheet inside
+that subdirectory, giving::
+
+    /res/font/font-awesome.css
+    /res/font/fontawesome-webfont.*
 
 The Crab Server
 ---------------

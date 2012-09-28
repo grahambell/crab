@@ -19,10 +19,10 @@
 % if next or prev:
 <p>
 %     if prev:
-    <a href="/job/${id | h}/output/${prev | h}">Previous</a>
+    <a href="/job/${id | h}/output/${prev | h}" class="icon-backward">Previous</a>
 %     endif
 %     if next:
-    <a href="/job/${id | h}/output/${next | h}">Next</a>
+    <a href="/job/${id | h}/output/${next | h}" class="icon-forward">Next</a>
 %     endif
 </p>
 % endif

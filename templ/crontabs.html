@@ -52,11 +52,11 @@ ${key | h}
 </table>
 
 <p>
-<a href="#" id="show_deleted_${key | alphanum}">Show deleted.</a>
-<a href="#" id="hide_deleted_${key | alphanum}" class="hidden">Hide deleted.</a>
+<a href="#" id="show_deleted_${key | alphanum}" class="icon-trash">Show deleted.</a>
+<a href="#" id="hide_deleted_${key | alphanum}" class="hidden icon-trash">Hide deleted.</a>
 % if raw[key] is not None:
-<a href="#" id="show_raw_${key | alphanum}">Show raw crontab.</a>
-<a href="#" id="hide_raw_${key | alphanum}" class="hidden">Hide raw crontab.</a>
+<a href="#" id="show_raw_${key | alphanum}" class="icon-file">Show raw crontab.</a>
+<a href="#" id="hide_raw_${key | alphanum}" class="hidden icon-file">Hide raw crontab.</a>
 % endif
 </p>
 
