@@ -39,9 +39,12 @@
 <%
     info = report.info[id_]
 %>
-        <h2 id="job_${id_ | h}">${info['user'] | h} @
-                                ${info['host'] | h } :
-                                ${info['title'] | h}</h2>
+        <h2 id="job_${id_ | h}">
+            <a href="${base_url | h}/job/${id_ | h}">
+                ${info['user'] | h} @
+                ${info['host'] | h } :
+                ${info['title'] | h}
+        </a></h2>
 
         <table>
 % for event in report.events[id_]:
