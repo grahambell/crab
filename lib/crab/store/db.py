@@ -363,7 +363,7 @@ class CrabStoreDB(CrabStore):
 
         with self.lock:
             return self._query_to_dict_list(
-                'SELECT id, datetime, command, status '
+                'SELECT id AS finishid, datetime, command, status '
                     'FROM jobfinish '
                     'WHERE ' + ' AND '.join(conditions) + ' '
                     'ORDER BY datetime ' + order + ' LIMIT ?',

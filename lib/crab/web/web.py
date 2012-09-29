@@ -162,10 +162,10 @@ class CrabWeb:
                     raise HTTPError(404, 'No job output found')
 
                 finish = finishes[0]
-                finishid = finish['id']
+                finishid = finish['finishid']
 
                 if len(finishes) > 1:
-                    finishid_prev = finishes[1]['id']
+                    finishid_prev = finishes[1]['finishid']
 
             else:
                 try:
@@ -178,13 +178,13 @@ class CrabWeb:
                     raise HTTPError(404, 'Finish ID not found or wrong job')
                 finish = finishes[0]
 
-                finishes = self.store.get_job_finishes(id_, before=finishid)
+                finishes = self.store.get_job_finishes(id_, 1, before=finishid)
                 if finishes:
-                    finishid_prev = finishes[0]['id']
+                    finishid_prev = finishes[0]['finishid']
 
-                finishes = self.store.get_job_finishes(id_, after=finishid)
+                finishes = self.store.get_job_finishes(id_, 1, after=finishid)
                 if finishes:
-                    finishid_next = finishes[0]['id']
+                    finishid_next = finishes[0]['finishid']
 
             pair = self.store.get_job_output(finishid,
                     info['host'], info['user'], id_)
