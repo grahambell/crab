@@ -45,7 +45,7 @@ def report_to_text(report, event_list=True):
                 lines.append('    ' + _event_line(e))
 
                 if e['type'] == CrabEvent.FINISH:
-                    finishid = e['id']
+                    finishid = e['eventid']
                     if finishid in report.stdout and report.stdout[finishid]:
                         lines.extend(_output_lines(8, 'Std. Out.',
                                                    report.stdout[finishid]))

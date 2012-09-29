@@ -119,7 +119,7 @@ class CrabReportGenerator:
                 if include_output:
                     for event in events:
                         if event['type'] == CrabEvent.FINISH:
-                            finishid = event['id']
+                            finishid = event['eventid']
                             if finishid in self.cache_stdout:
                                 report_stdout[finishid] = \
                                     self.cache_stdout[finishid]

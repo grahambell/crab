@@ -108,11 +108,11 @@
     </tr>
 % for event in events:
 % if event["type"] == 1:
-    <tr id="row_start_${event["id"] | h}">
+    <tr id="row_start_${event["eventid"] | h}">
 % elif event["type"] == 2:
-    <tr id="row_warning_${event["id"] | h}">
+    <tr id="row_warning_${event["eventid"] | h}">
 % elif event["type"] == 3:
-    <tr id="row_finish_${event["id"] | h}">
+    <tr id="row_finish_${event["eventid"] | h}">
 % else:
     <tr>
 % endif
@@ -130,7 +130,7 @@
          cell_class = 'status_warn'
 
      if event['type'] == CrabEvent.FINISH:
-         cell_link = '/job/' + str(id) + '/output/' + str(event['id'])
+         cell_link = '/job/' + str(id) + '/output/' + str(event['eventid'])
      else:
          cell_link = None
 

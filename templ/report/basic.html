@@ -51,7 +51,7 @@
             <tr>
                 <td>${CrabEvent.get_name(event['type']) | h}</td>
 % if event['type'] == CrabEvent.FINISH:
-                <td><a href="${base_url | h}/job/${id_ | h}/output/${event['id'] | h}">
+                <td><a href="${base_url | h}/job/${id_ | h}/output/${event['eventid'] | h}">
                     ${CrabStatus.get_name(event['status']) | h}
                 </a></td>
 % else:
@@ -60,14 +60,14 @@
                 <td>${event['datetime'] | h}</td>
 % if event['type'] == CrabEvent.FINISH and report.stdout:
                 <td>
-%     if event['id'] in report.stdout and report.stdout[event['id']]:
-                    <pre>${report.stdout[event['id']].strip() | h}</pre>
+%     if event['eventid'] in report.stdout and report.stdout[event['eventid']]:
+                    <pre>${report.stdout[event['eventid']].strip() | h}</pre>
 %     endif
-%     if event['id'] in report.stderr and report.stderr[event['id']]:
-%         if event['id'] in report.stdout and report.stdout[event['id']]:
+%     if event['eventid'] in report.stderr and report.stderr[event['eventid']]:
+%         if event['eventid'] in report.stdout and report.stdout[event['eventid']]:
                     <p><b>Standard error:</b></p>
 %         endif
-                    <pre>${report.stderr[event['id']].strip() | h}</pre>
+                    <pre>${report.stderr[event['eventid']].strip() | h}</pre>
 %     endif
                 </td>
 % endif

@@ -278,14 +278,14 @@ class CrabMonitor(CrabMinutely):
         values if they are outdate by the event, which is passed as a dict."""
 
         if (event['type'] == CrabEvent.START and
-                event['id'] > self.max_startid):
-            self.max_startid = event['id']
+                event['eventid'] > self.max_startid):
+            self.max_startid = event['eventid']
         if (event['type'] == CrabEvent.WARN and
-                event['id'] > self.max_warnid):
-            self.max_warnid = event['id']
+                event['eventid'] > self.max_warnid):
+            self.max_warnid = event['eventid']
         if (event['type'] == CrabEvent.FINISH and
-                event['id'] > self.max_finishid):
-            self.max_finishid = event['id']
+                event['eventid'] > self.max_finishid):
+            self.max_finishid = event['eventid']
 
     def _process_event(self, id_, event):
         """Processes the given event, updating the instance data

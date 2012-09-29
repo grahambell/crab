@@ -400,15 +400,15 @@ class CrabStoreDB(CrabStore):
         with self.lock:
             return self._query_to_dict_list(
                 'SELECT ' +
-                    'id, 1 AS type, ' +
+                    'id AS eventid, 1 AS type, ' +
                     'datetime, command, NULL AS status FROM jobstart ' +
                         where_clause + ' ' +
                 'UNION SELECT ' +
-                    'id, 2 AS type, ' +
+                    'id AS eventid, 2 AS type, ' +
                         'datetime, NULL AS command, status FROM jobwarn ' +
                         where_clause + ' ' +
                 'UNION SELECT ' +
-                    'id, 3 AS type, ' +
+                    'id AS eventid, 3 AS type, ' +
                         'datetime, command, status FROM jobfinish ' +
                         where_clause + ' ' +
                 'ORDER BY datetime DESC, type DESC ' + limit_clause,
@@ -421,15 +421,15 @@ class CrabStoreDB(CrabStore):
         with self.lock:
             return self._query_to_dict_list(
                 'SELECT ' +
-                    'jobid, id, 1 AS type, ' +
+                    'jobid, id AS eventid, 1 AS type, ' +
                     'datetime, NULL AS status FROM jobstart ' +
                     'WHERE id > ? ' +
                 'UNION SELECT ' +
-                    'jobid, id, 2 AS type, ' +
+                    'jobid, id AS eventid, 2 AS type, ' +
                     'datetime, status FROM jobwarn ' +
                     'WHERE id > ? ' +
                 'UNION SELECT ' +
-                    'jobid, id, 3 AS type, ' +
+                    'jobid, id AS eventid, 3 AS type, ' +
                     'datetime, status FROM jobfinish ' +
                     'WHERE id > ? ' +
                 'ORDER BY datetime ASC, type ASC',
