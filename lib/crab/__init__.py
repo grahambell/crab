@@ -46,6 +46,8 @@ class CrabStatus:
     MISSED = -2
     TIMEOUT = -3
 
+    INTERNAL_VALUES = set([LATE, MISSED, TIMEOUT])
+
     _error_names = ['Succeeded', 'Failed', 'Unknown', 'Could not start']
     _warning_names = ['Late', 'Missed', 'Timed out']
 

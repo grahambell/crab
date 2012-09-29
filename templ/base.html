@@ -12,7 +12,11 @@
 % if self.attr.scripts:
 <script type="text/javascript" src="/res/jquery.js"></script>
 % for script in self.attr.scripts:
+%     if script.startswith('dyn:'):
+<script type="text/javascript" src="/dynres/${script[4:] | h}.js"></script>
+%     else:
 <script type="text/javascript" src="/res/${script | h}.js"></script>
+%     endif
 % endfor
 % endif
 </head>

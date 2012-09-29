@@ -1,47 +1,25 @@
 function updateStatusBox(id, status_, running) {
     var box = $('#status_' + id);
-    switch (status_) {
-        case 0:
-            box.text('Succeeded');
+    if (status_ === null) {
+        box.text('Unknown');
+        box.removeClass().addClass('status_unknown');
+    }
+    else {
+        box.text(crabStatusName(status_));
+        if (crabStatusIsOK(status_)) {
             box.removeClass().addClass('status_ok');
-            break;
-        case 1:
-            box.text('Failed');
-            box.removeClass().addClass('status_fail');
-            break;
-        case 2:
-            box.text('Unknown');
+        }
+        else if (crabStatusIsWarning(status_)) {
             box.removeClass().addClass('status_warn');
-            break;
-        case 3:
-            box.text('Could not start');
+        }
+        else {
             box.removeClass().addClass('status_fail');
-            break;
-        case -1:
-            box.text('Late');
-            box.removeClass().addClass('status_ok');
-            break;
-        case -2:
-            box.text('Missed');
-            box.removeClass().addClass('status_warn');
-            break;
-        case -3:
-            box.text('Timed out');
-            box.removeClass().addClass('status_fail');
-            break;
-        case null:
-            box.text('Unknown');
-            box.removeClass().addClass('status_unknown');
-            break;
-        default:
-            box.text('Status ' + status_);
-            box.removeClass().addClass('status_warn');
+        }
     }
     if (running) {
         box.addClass('status_running');
     }
 }
-
 
 function updateReliabilityBox(id, reliability) {
     var box = $('#reliability_' + id);

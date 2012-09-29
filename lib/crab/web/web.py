@@ -398,6 +398,13 @@ class CrabWeb:
                                         {'match_mode': True,
                                          'notifications': notifications})
 
+    @cherrypy.expose
+    def dynres(self, name):
+        if name == 'crabutil.js':
+            return self._write_template('dynres/crabutil.js', {})
+        else:
+            raise HTTPError(404, 'Dynamic resource not found')
+
     def _write_template(self, name, dict={}):
         """Returns the output from the named template when rendered
         with the given dict.
