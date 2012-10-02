@@ -1,8 +1,23 @@
 Crab
 ====
 
+Crab is a dashboard system for monitoring cron jobs, or other scheduled
+tasks.  The Crab server receives messages when tasks start or finish,
+and displays the status of all of the tasks via a web interface.  It
+can also send notifications by email, for example to warn if a task
+fails, is missed or does not complete within its time-out period.
+
+Tasks communicate with the Crab server by JSON messages sent by HTTP
+PUT requests.  The finish message includes the status of the job,
+and any output from it.  Further messages are used to import and
+export the client's crontab, which the server uses to determine the
+intended schedule.
+
 Requirements
 ------------
+
+Packages
+~~~~~~~~
 
 * crontab (0.15 or newer): http://pypi.python.org/pypi/crontab/#downloads
 * CherryPy: http://download.cherrypy.org/cherrypy/
@@ -10,6 +25,15 @@ Requirements
 * PyRSS2Gen: http://dalkescientific.com/Python/PyRSS2Gen.html
 * jQuery: http://code.jquery.com/
 * Font Awesome: http://fortawesome.github.com/Font-Awesome (optional)
+
+Python Version
+~~~~~~~~~~~~~~
+
+Crab server
+  Has been tested on Python 2.6, 2.7 and 3.2.
+
+Client library and utilities
+  Works with Python 2.4 in addition to the above versions.
 
 Installation
 ------------
