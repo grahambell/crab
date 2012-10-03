@@ -139,6 +139,7 @@ th {
 pre {
     font-family: monospace;
     font-size: 10pt;
+    white-space: pre-wrap;
 }
 
 td pre {
