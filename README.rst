@@ -33,7 +33,9 @@ Crab server
   Has been tested on Python 2.6, 2.7 and 3.2.
 
 Client library and utilities
-  Works with Python 2.4 in addition to the above versions.
+  Works with Python 2.4 in addition to the above versions (but
+  may require the ``pytz`` and ``simplejson`` packages also to be
+  installed).
 
 Installation
 ------------
