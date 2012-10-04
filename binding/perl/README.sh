@@ -9,6 +9,10 @@ END
 perl -MPod::Usage -e 'pod2usage(-input=>"lib/WWW/Crab/Client.pm",-verbose=>99,-sections=>["DESCRIPTION"])' | sed -e '1d'
 
 cat <<END
+    The Crab server and utilities are available from:
+
+    http://github.com/grahambell/crab
+
 Requirements
 ------------
 

@@ -18,6 +18,7 @@ our %require = ('Config::IniFiles' => 0,
 
 my $build = new Module::Build(
     module_name => 'WWW::Crab::Client',
+    license       => 'gpl',
     requires => \%require,
     build_requires => {
                        'Test::More' => 0,
