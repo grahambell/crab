@@ -53,7 +53,7 @@ def find_files(inst, base=None, path=[]):
 
     return subdirs
 
-setup(name='Crab',
+setup(name='crab',
       version='0.1.0',
       author='Graham Bell',
       author_email='g.bell@jach.hawaii.edu',
