@@ -40,12 +40,17 @@ Client library and utilities
 Installation
 ------------
 
-The Crab libraries and scripts can be installed as follows::
+The Crab server, clients and libraries can be installed as follows::
 
     python setup.py install
 
-If any of the Python dependancies listed above can not be installed,
-they can be symlinked into the ``lib`` directory in the following locations::
+If necessary, the ``--install-data`` option can be used to configure
+the location in which the templates (``templ``), resources (``res``)
+and example files (``doc``) should be installed.
+
+To run Crab without installing it, and if any of the Python dependancies
+listed above can not be installed, they can be symlinked into the ``lib``
+directory in the following locations::
 
     lib/PyRSS2Gen.py
     lib/cherrypy
@@ -57,12 +62,12 @@ Crab's ``res`` directory as::
 
     res/jquery.js
 
-To use Font Awesome icons, place its ``font`` directory inside
+To use Font Awesome icons, copy or symlink its ``font`` directory into
 Crab's ``res`` directory, and also place its stylesheet inside
 that subdirectory, giving::
 
-    /res/font/font-awesome.css
-    /res/font/fontawesome-webfont.*
+    res/font/font-awesome.css
+    res/font/fontawesome-webfont.*
 
 The Crab Server
 ---------------
@@ -86,8 +91,10 @@ typical ``.ini`` files which use Python's ConfigParser. ::
     % cp doc/crabd.ini ~/.crab/
 
 The example ``crabd.ini`` file should be edited to uncomment the
-[crab] and [store] sections.  The 'home' and 'file' entries must point
-to the location of Crab's data files and the database file just created.
+``[crab]`` and ``[store]`` sections.  The ``home`` and ``file`` entries
+must point to the location of Crab's data files and the database file
+just created.  By default the data files are installed in ``share/crab``
+relative to the Python system prefix (``sys.prefix``).
 
 Running
 ~~~~~~~
