@@ -1,0 +1,60 @@
+<%!
+    from crab import CrabEvent, CrabStatus
+%>
+% for event in events:
+% if event["type"] == 1:
+    <tr id="row_start_${event["eventid"] | h}">
+% elif event["type"] == 2:
+    <tr id="row_warning_${event["eventid"] | h}">
+% elif event["type"] == 3:
+    <tr id="row_finish_${event["eventid"] | h}">
+% else:
+    <tr>
+% endif
+% if event["status"] is None:
+        <td>${CrabEvent.get_name(event['type']) | h}</td>
+% else:
+<%
+     if CrabStatus.is_trivial(event['status']):
+         cell_class = 'status_trivial'
+     elif CrabStatus.is_ok(event['status']):
+         cell_class = 'status_ok'
+     elif CrabStatus.is_warning(event['status']):
+         cell_class = 'status_warn'
+     elif CrabStatus.is_error(event['status']):
+         cell_class = 'status_fail'
+     else:
+         cell_class = 'status_warn'
+
+     if event['type'] == CrabEvent.FINISH:
+         cell_link = '/job/' + str(id) + '/output/' + str(event['eventid'])
+     else:
+         cell_link = None
+
+     cell_text = CrabStatus.get_name(event['status'])
+%>
+% if cell_link is None:
+        <td class="${cell_class}">${cell_text | h}</td>
+% else:
+        <td class="statuscell">
+            <a class="${cell_class}" href="${cell_link | h}">${cell_text | h}</a>
+        </td>
+% endif
+% endif
+        <td>${event["datetime"] | h}</td>
+% if event["command"] is not None:
+        <td>${event["command"] | h}</td>
+% else:
+        <td>&nbsp;</td>
+% endif
+% if event.get('duration') is None:
+        <td>&nbsp;</td>
+% else:
+        <td>${event['duration'] | h}</td>
+% endif
+    </tr>
+% endfor
+<script>
+var lastDateTime = '${lastdatetime | h}';
+</script>
+

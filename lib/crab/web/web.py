@@ -104,6 +104,8 @@ class CrabWeb:
     @cherrypy.expose
     def job(self, id_, command=None, finishid=None,
 
+            barerows=None, unfiltered=None, limit=None, enddate=None,
+
             submit_config=None, submit_relink=None,
             orphan=None, graceperiod=None, timeout=None,
 
@@ -124,16 +126,49 @@ class CrabWeb:
             raise HTTPError(404, 'Job not found')
 
         if command is None:
-            events = self.store.get_job_events(id_)
-            filter = CrabEventFilter(self.store, info['timezone'],
-                                     squash_start=True)
+            if limit is None:
+                limit = 100
+            else:
+                try:
+                    limit = int(limit)
+                except ValueError:
+                    raise HTTPError(400, 'Limit is not a number')
+                if limit < 1:
+                    raise HTTPError(400, 'Limit should not be less than one')
+                elif limit > 1000:
+                    raise HTTPError(400, 'Limit greater than a thousand')
+
+            if unfiltered is None:
+                squash_start = True
+            else:
+                squash_start = False
+
+            if enddate is not None:
+                try:
+                    enddate = self.store.parse_datetime(enddate)
+                except ValueError:
+                    raise HTTPError(400, 'Start date format is invalid')
+
+            events = self.store.get_job_events(id_, limit, end=enddate)
+
+            if events:
+                lastdatetime = events[-1]['datetime']
+            else:
+                lastdatetime = None
+
+            # Filter the events.
+            filter = CrabEventFilter(self.store, info['timezone'])
+            events = filter(events, squash_start=squash_start,
+                            skip_trivial=squash_start)
+
+            if barerows is not None:
+                return self._write_template('jobevents.html',
+                           {'id': id_, 'events': events,
+                            'lastdatetime': lastdatetime})
 
             # Try to convert the times to the timezone shown on the page.
             info['installed'] = filter.in_timezone(info['installed'])
             info['deleted'] = filter.in_timezone(info['deleted'])
-
-            # Filter the events.
-            events = filter(events)
 
             # Fetch configuration.
             config = self.store.get_job_config(id_)
@@ -147,7 +182,8 @@ class CrabWeb:
 
             return self._write_template('job.html',
                        {'id': id_, 'info': info, 'config': config,
-                        'notification': notification, 'events': events})
+                        'notification': notification, 'events': events,
+                        'lastdatetime': lastdatetime})
 
         elif command == 'output':
             finishid_next = None

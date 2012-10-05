@@ -20,16 +20,13 @@ from crab import CrabEvent, CrabStatus
 class CrabEventFilter:
     """Class implementing an event filtering action."""
 
-    def __init__(self, store, timezone=None,
-                 squash_start=False):
+    def __init__(self, store, timezone=None):
         """Construct filter object.
 
         Just stores the given information."""
 
         self.store = store
         self.set_timezone(timezone)
-
-        self.squash_start = squash_start
 
         self.errors = None
         self.warnings = None
@@ -46,7 +43,8 @@ class CrabEventFilter:
                 self.zoneinfo = None
 
     def __call__(self, events, skip_ok=False, skip_warning=False,
-                 skip_error=False, skip_trivial=True, skip_start=False):
+                 skip_error=False, skip_trivial=True, skip_start=False,
+                 squash_start=False):
         """Performs filtering, and returns the altered event list."""
 
         output = []
@@ -75,7 +73,7 @@ class CrabEventFilter:
                 if CrabStatus.is_warning(e['status']):
                     self.warnings += 1
 
-            if self.squash_start and e['type'] == CrabEvent.FINISH:
+            if squash_start and e['type'] == CrabEvent.FINISH:
                 start = _find_previous_start(events, i)
                 if start is not None:
                     squash.add(start)

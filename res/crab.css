@@ -171,6 +171,10 @@ td pre {
     color: gray;
 }
 
+.status_trivial {
+    color: gray;
+}
+
 .status_running {
     opacity: 0.5;
 }
