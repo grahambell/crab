@@ -38,17 +38,21 @@
 <h2>Dashboard</h2>
 
 <table id="joblist">
+    <thead>
     <tr>
-        <th>Job status</th>
-        <th>Host</th>
-        <th>User</th>
-        <th>Job ID</th>
-        <th>Command</th>
-        <th>Reliability</th>
+        <th id="headingstatus">Job status</th>
+        <th id="headinghost">Host</th>
+        <th id="headinguser">User</th>
+        <th id="headingjobid">Job ID</th>
+        <th id="headingcommand">Command</th>
+        <th id="headingreliability">Reliability</th>
     </tr>
+    </thead>
+    <tbody id="joblistbody">
 % for job in jobs:
     ${joblistrow(job)}
 % endfor
+    </tbody>
 </table>
 
 <script>

@@ -158,6 +158,35 @@ function refreshStatusCometLoop(startid, warnid, finishid) {
     });
 }
 
+function dashboardSorter(keyfield) {
+    var sortdirection = 1;
+
+    return function (event) {
+        var arr = new Array();
+        var tab = $('#joblistbody');
+
+        tab.children().each(function (index) {
+            arr.push({row: this, text: $(this).find('[id^=' + keyfield + '_]').text()});
+        });
+
+        arr.sort(function (a, b) {
+            return a.text == b.text ? 0 : sortdirection * (a.text < b.text ? -1 : 1);
+        });
+
+        for (var i in arr) {
+            tab.append($(arr[i].row).detach());
+        }
+
+        sortdirection = - sortdirection;
+    };
+}
+
+function dashboardSortStatus(event) {
+    var tab = $('#joblistbody');
+    tab.append(tab.children().has('.status_ok').detach());
+    tab.prepend(tab.children().has('.status_warn').detach());
+    tab.prepend(tab.children().has('.status_fail').detach());
+}
 
 $(document).ready(function () {
     refreshStatusCometLoop(0, 0, 0);
@@ -208,4 +237,10 @@ $(document).ready(function () {
         }, 500);
     }
 
+    $('#headingstatus').click(dashboardSortStatus);
+    $('#headinghost').click(dashboardSorter('host'));
+    $('#headinguser').click(dashboardSorter('user'));
+    $('#headingjobid').click(dashboardSorter('jobid'));
+    $('#headingcommand').click(dashboardSorter('command'));
+    $('#headingreliability').click(dashboardSorter('reliability'));
 });

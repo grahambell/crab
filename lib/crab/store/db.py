@@ -120,7 +120,7 @@ class CrabStoreDB(CrabStore):
             'SELECT id, host, user, jobid, command, time, '
                 'timezone, installed, deleted '
             'FROM job ' + where_clause + ' '
-            'ORDER BY host ASC, user ASC, installed ASC', params)
+            'ORDER BY host ASC, user ASC, jobid ASC, installed ASC', params)
 
     def _insert_job(self, host, user, jobid, time, command, timezone):
         """Inserts a job record into the database."""
