@@ -13,43 +13,154 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
+import os
+
+from crab import CrabError
+from crab.util.string import alphanum
 
 class CrabStoreFile:
     """Store class for cron job output.
     
-    This is currently a dummy implementation of just the
-    write_job_output and get_job_output methods, to allow
-    the "outputstore" hooks in CrabStoreDB to be tested.
-    
-    It needs a constructor method including parameters to
-    determine where the files are to be stored."""
+    This backend currently implements only the write_job_output and
+    get_job_output methods, to allow it to be used as an
+    "outputstore" along with CrabStoreDB."""
 
-    def write_job_output(self, finishid, host, user, id_, stdout, stderr):
+    def __init__(self, dir):
+        """Constructor for file-based storage backend.
+
+        Takes a path to the base directory in which the files are to be
+        stored."""
+
+        self.dir = dir
+        self.breakdigits = 3
+        self.outext = 'txt'
+        self.errext = 'err'
+
+        if not os.path.isdir(self.dir):
+            raise CrabError('file store error: invalid base directory')
+
+        if not os.access(self.dir, os.W_OK):
+            raise CrabError('file store error: unwritable base directory')
+
+        self.outputdir = os.path.join(dir, 'output')
+
+        if not os.path.exists(self.outputdir):
+            try:
+                os.mkdir(self.outputdir)
+            except OSError as err:
+                raise CrabError('file store error: could not make directory: ' +
+                                str(err))
+
+    def write_job_output(self, finishid, host, user, id_, jobid,
+                         stdout, stderr):
         """Write the cron job output to a file.
-
-        DUMMY IMPLEMENTATION
 
         The only parameter required to uniquely identify the event
         associated with this output is the "finishid", but the
-        host, user and job ID number are also provided to allow
-        hierarchical storage."""
+        host, user and job identifiers are also provided to allow
+        hierarchical storage.
 
-        print('Write output for finishid:', finishid, 'host:', host,
-              'user:', user, 'id:', id_)
-        print('Stdout:', stdout)
-        print('Stderr:', stderr)
+        Always writes a stdout file (extension set by self.outext, by default
+        txt), but only writes a stderr file (extension self.errext, default
+        err) if the standard error is not empty."""
 
-    def get_job_output(self, finishid, host, user, id_):
+        path = self._make_output_path(finishid, host, user, id_, jobid)
+
+        (dir, file) = os.path.split(path)
+
+        if not os.path.exists(dir):
+            try:
+                os.makedirs(dir)
+            except OSError as err:
+                raise CrabError('file store error: could not make directory: ' +
+                                str(err))
+
+        outfile = path + '.' + self.outext
+        errfile = path + '.' + self.errext
+
+        if os.path.exists(outfile) or os.path.exists(errfile):
+            raise CrabError('file store error: file already exists: ' + path)
+
+        try:
+            with open(outfile, 'w') as file:
+                file.write(stdout)
+
+            if stderr != '':
+                with open(errfile, 'w') as file:
+                    file.write(stderr)
+
+        except IOError as err:
+            raise CrabError('file store error: could not write files: ' +
+                            str(err))
+
+    def get_job_output(self, finishid, host, user, id_, jobid):
         """Find the file containing the cron job output and read it.
 
-        DUMMY IMPLEMENTATION
+        As for write_job_output, only the "finishid" is logically required,
+        but this method makes use of the host, user and job identifiers
+        to read from a directory hierarchy.
 
-        As for write_job_output, only the "finishid" is really required,
-        but this method can make use of the host, user and job ID number
-        to read from a directory hierarchy."""
+        Requires there to be an stdout file but allows the
+        stderr file to be absent."""
 
-        print('Read output for finishid:', finishid, 'host:', host,
-              'user:', user, 'id:', id_)
-        return ('Dummy stdout', 'Dummy stderr')
+        path = self._make_output_path(finishid, host, user, id_, jobid)
 
+        outfile = path + '.' + self.outext
+        errfile = path + '.' + self.errext
+
+        if not os.path.exists(outfile):
+            return None
+
+        try:
+            with open(outfile) as file:
+                stdout = file.read()
+
+            if os.path.exists(errfile):
+                with open(errfile) as file:
+                    stderr = file.read()
+            else:
+                stderr = ''
+
+        except IOError as err:
+            raise CrabError('file store error: could not read files: ' +
+                            str(err))
+
+        return (stdout, stderr)
+
+    def _make_output_path(self, finishid, host, user, id_, jobid):
+        """Determine the full path to use to store output
+        (excluding file extensions).
+
+        This uses a directory heirarchy:
+
+            * host
+            * user
+            * jobid (name) or ID (number)
+            * finish ID
+
+        Where the finish ID is broken into blocks of a few characters,
+        the first of which is zero-padded to ensure all blocks are the
+        same length.  This prevents an excessive number of entries
+        being placed in a single directory, while the path is easily
+        determined without needing to read the directory structure.
+        So breaking on the default number of digits (3) finish ID 1 would
+        yield 001 whereas 2005 would yield 002/005."""
+
+        if jobid is None or jobid == '':
+            job = str(id_)
+        else:
+            job = alphanum(jobid)
+
+        finish = str(finishid)
+        finishpath = []
+
+        lead = len(finish) % self.breakdigits
+        if lead:
+            finishpath.append('0' * (self.breakdigits - lead) + finish[:lead])
+            finish = finish[lead:]
+
+        finishpath.extend([finish[x:x + self.breakdigits]
+                           for x in range(0, len(finish), self.breakdigits)])
+
+        return os.path.join(self.outputdir, alphanum(host), alphanum(user),
+                            job, *finishpath)

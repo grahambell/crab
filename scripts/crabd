@@ -26,6 +26,7 @@ from crab.service.monitor import CrabMonitor
 from crab.service.notify import CrabNotifyService
 from crab.web.rss import CrabRSS
 from crab.server import CrabServer
+from crab.store.file import CrabStoreFile
 from crab.store.sqlite import CrabStoreSQLite
 from crab.web.web import CrabWeb
 
@@ -71,8 +72,17 @@ def main():
     config['/res'] = {'tools.staticdir.on': True,
                       'tools.staticdir.dir': config['crab']['home'] + '/res'}
 
+    if 'outputstore' in config:
+        if config['outputstore']['type'] == 'file':
+            outputstore = CrabStoreFile(config['outputstore']['dir'])
+
+        else:
+            raise Exception('Unknown output store type')
+    else:
+        outputstore = None
+
     if config['store']['type'] == 'sqlite':
-        store = CrabStoreSQLite(config['store']['file'])
+        store = CrabStoreSQLite(config['store']['file'], outputstore)
 
     else:
         raise Exception('Unknown store type')

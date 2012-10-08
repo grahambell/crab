@@ -223,7 +223,7 @@ class CrabWeb:
                     finishid_next = finishes[0]['finishid']
 
             pair = self.store.get_job_output(finishid,
-                    info['host'], info['user'], id_)
+                    info['host'], info['user'], id_, info['jobid'])
 
             if pair is None:
                 raise HTTPError(404, 'No output found for the given job run.')

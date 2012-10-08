@@ -53,7 +53,7 @@ class CrabRSS:
             if fail['finishid'] is not None:
                 pair = self.store.get_job_output(
                         fail['finishid'], fail['host'], fail['user'],
-                        fail['id'])
+                        fail['id'], fail['jobid'])
                 if pair is not None:
                     (fail['stdout'], fail['stderr']) = pair
 

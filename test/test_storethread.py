@@ -113,4 +113,4 @@ class CronLogTester(RandomTester):
                 self.f = eid
 
         self.store.get_fail_events(10)
-        self.store.get_job_output(0, self.host, self.user, id_)
+        self.store.get_job_output(0, self.host, self.user, id_, None)

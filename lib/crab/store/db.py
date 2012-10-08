@@ -234,7 +234,7 @@ class CrabStoreDB(CrabStore):
             finally:
                 c.close()
 
-        self.write_job_output(finishid, host, user, id_, stdout, stderr)
+        self.write_job_output(finishid, host, user, id_, jobid, stdout, stderr)
 
     def log_warning(self, id_, status):
         """Inserts a warning regarding a job into the database.
@@ -506,7 +506,7 @@ class CrabStoreDB(CrabStore):
 
         return output
 
-    def write_job_output(self, finishid, host, user, id_,
+    def write_job_output(self, finishid, host, user, id_, jobid,
                          stdout, stderr):
         """Writes the job output to the database.
 
@@ -516,8 +516,8 @@ class CrabStoreDB(CrabStore):
         with the database."""
 
         if self.outputstore is not None:
-            return self.outputstore.write_job_output(finishid, host, user, id_,
-                                                     stdout, stderr)
+            return self.outputstore.write_job_output(finishid, host, user,
+                                    id_, jobid, stdout, stderr)
 
         with self.lock:
             c = self.conn.cursor()
@@ -533,7 +533,7 @@ class CrabStoreDB(CrabStore):
             finally:
                 c.close()
 
-    def get_job_output(self, finishid, host, user, id_):
+    def get_job_output(self, finishid, host, user, id_, jobid):
         """Fetches the standard output and standard error for the
         given finish ID.
 
@@ -546,7 +546,8 @@ class CrabStoreDB(CrabStore):
         output is found."""
 
         if self.outputstore is not None:
-            return self.outputstore.get_job_output(finishid, host, user, id_)
+            return self.outputstore.get_job_output(finishid, host, user,
+                                                   id_, jobid)
 
         with self.lock:
             c = self.conn.cursor()
