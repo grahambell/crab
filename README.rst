@@ -242,6 +242,10 @@ CRABECHO
     This allows the output to be sent by email via cron's default
     behavior as well as being captured by the Crab system.
 
+CRABHOME
+    If present overrides the Crab server home directory, where the
+    ``res`` and ``templ`` directories are to be found.
+
 CRABHOST
     Specifies the Crab server to which clients should connect, overriding
     the setting in the configuration file.
