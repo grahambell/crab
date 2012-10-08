@@ -1,3 +1,5 @@
+var sortByStatus = false;
+
 function updateStatusBox(id, status_, running) {
     var box = $('#status_' + id);
     if (status_ === null) {
@@ -12,8 +14,13 @@ function updateStatusBox(id, status_, running) {
         else if (crabStatusIsWarning(status_)) {
             box.removeClass().addClass('status_warn');
         }
-        else {
+        else if (! box.hasClass('status_fail')) {
             box.removeClass().addClass('status_fail');
+
+            if (sortByStatus) {
+                var tab = $('#joblistbody');
+                tab.prepend($('#row_' + id).detach());
+            }
         }
     }
     if (running) {
@@ -177,7 +184,11 @@ function dashboardSorter(keyfield) {
             tab.append($(arr[i].row).detach());
         }
 
+        $('#joblisthead a').removeClass();
+        $('#heading' + keyfield).addClass('icon-sort-' + (sortdirection > 0 ? 'up' : 'down'));
+
         sortdirection = - sortdirection;
+        sortByStatus = false;
         event.preventDefault();
     };
 }
@@ -187,6 +198,9 @@ function dashboardSortStatus(event) {
     tab.append(tab.children().has('.status_ok').detach());
     tab.prepend(tab.children().has('.status_warn').detach());
     tab.prepend(tab.children().has('.status_fail').detach());
+    sortByStatus = true;
+    $('#joblisthead a').removeClass();
+    $('#headingstatus').addClass('icon-sort');
     event.preventDefault();
 }
 
