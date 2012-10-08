@@ -178,6 +178,7 @@ function dashboardSorter(keyfield) {
         }
 
         sortdirection = - sortdirection;
+        event.preventDefault();
     };
 }
 
@@ -186,6 +187,7 @@ function dashboardSortStatus(event) {
     tab.append(tab.children().has('.status_ok').detach());
     tab.prepend(tab.children().has('.status_warn').detach());
     tab.prepend(tab.children().has('.status_fail').detach());
+    event.preventDefault();
 }
 
 $(document).ready(function () {
