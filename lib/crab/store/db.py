@@ -359,14 +359,18 @@ class CrabStoreDB(CrabStore):
             params.append(after)
             order = 'ASC'
 
-        params.append(limit)
+        if limit is not None:
+            limit_clause = 'LIMIT ?'
+            params.append(limit)
+        else:
+            limit_clause = ''
 
         with self.lock:
             return self._query_to_dict_list(
                 'SELECT id AS finishid, datetime, command, status '
                     'FROM jobfinish '
                     'WHERE ' + ' AND '.join(conditions) + ' '
-                    'ORDER BY datetime ' + order + ' LIMIT ?',
+                    'ORDER BY datetime ' + order + ' ' + limit_clause,
                 params)
 
     def get_job_events(self, id_, limit=100, start=None, end=None):
