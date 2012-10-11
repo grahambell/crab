@@ -234,6 +234,14 @@ class CrabStoreDB(CrabStore):
             finally:
                 c.close()
 
+        # If a jobid was not specified, check whether the job
+        # actually has one.  This is to avoid sending misleading
+        # parameters to write_job_output, which can cause the
+        # file-based output store to default to a numeric directory name.
+        if jobid is None:
+            info = self.get_job_info(id_)
+            jobid = info['jobid']
+
         self.write_job_output(finishid, host, user, id_, jobid, stdout, stderr)
 
     def log_warning(self, id_, status):

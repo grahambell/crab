@@ -109,16 +109,25 @@ class CrabStoreFile:
         stderr file to be absent."""
 
         path = self._make_output_path(finishid, host, user, id_, jobid)
-
         outfile = path + '.' + self.outext
-        errfile = path + '.' + self.errext
 
         if not os.path.exists(outfile):
-            return None
+            if jobid is not None:
+                # Try again with no jobid.  This is to handle the case where
+                # a job is imported with no name, but is subsequently named.
+                path = self._make_output_path(finishid, host, user, id_, None)
+                outfile = path + '.' + self.outext
+
+                if not os.path.exists(outfile):
+                    return None
+            else:
+                return None
 
         try:
             with open(outfile) as file:
                 stdout = file.read()
+
+            errfile = path + '.' + self.errext
 
             if os.path.exists(errfile):
                 with open(errfile) as file:
