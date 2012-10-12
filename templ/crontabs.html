@@ -24,6 +24,7 @@
 ${key | h}
 </a></h2>
 
+<% hasDeleted = False %>
 <table id="table_${key | alphanum}">
     <tr>
         <th>Time</th>
@@ -35,6 +36,7 @@ ${key | h}
     <tr>
 % else:
     <tr class="deleted_${key | alphanum} hidden">
+    <% hasDeleted = True %>
 % endif
 % if job.get('time') is not None:
         <td>${job['time'] | h}</td>
@@ -52,8 +54,10 @@ ${key | h}
 </table>
 
 <p>
+% if hasDeleted:
 <a href="#" id="show_deleted_${key | alphanum}" class="icon-trash">Show deleted.</a>
 <a href="#" id="hide_deleted_${key | alphanum}" class="hidden icon-trash">Hide deleted.</a>
+% endif
 % if raw[key] is not None:
 <a href="#" id="show_raw_${key | alphanum}" class="icon-file">Show raw crontab.</a>
 <a href="#" id="hide_raw_${key | alphanum}" class="hidden icon-file">Hide raw crontab.</a>
@@ -69,3 +73,11 @@ ${line | h}
 % endif
 
 % endfor
+
+<p>
+<a href="#" id="show_all_table" class="hidden icon-table">Show all tables.</a>
+<a href="#" id="hide_all_table" class="icon-table">Hide all tables.</a>
+
+<a href="#" id="show_all_raw" class="icon-file">Show all raw crontabs.</a>
+<a href="#" id="hide_all_raw" class="hidden icon-file">Hide all raw crontabs.</a>
+</p>
