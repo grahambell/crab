@@ -3,15 +3,15 @@ CREATE TABLE job (
     host VARCHAR(255) NOT NULL,
     user VARCHAR(255) NOT NULL,
     command VARCHAR(255) NOT NULL,
-    jobid VARCHAR(255),
+    crabid VARCHAR(255),
     time VARCHAR(255),
     timezone VARCHAR(255),
     installed VARCHAR(255) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted VARCHAR(255),
-    UNIQUE (host, user, jobid)
+    UNIQUE (host, user, crabid)
 );
 
-CREATE INDEX job_jobid ON job (jobid);
+CREATE INDEX job_crabid ON job (crabid);
 CREATE INDEX job_host ON job (host);
 CREATE INDEX job_user ON job (user);
 CREATE INDEX job_command ON job (command);
@@ -41,7 +41,7 @@ CREATE TABLE jobfinish (
 CREATE INDEX jobfinish_jobid ON jobfinish (jobid);
 CREATE INDEX jobfinish_datetime ON jobfinish (datetime);
 
-CREATE TABLE jobwarn (
+CREATE TABLE jobalarm (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     jobid INTEGER NOT NULL REFERENCES job(id)
         ON DELETE RESTRICT ON UPDATE RESTRICT,
@@ -49,8 +49,8 @@ CREATE TABLE jobwarn (
     status INT NOT NULL
 );
 
-CREATE INDEX jobwarn_jobid ON jobwarn (jobid);
-CREATE INDEX jobwarn_datetime ON jobwarn (datetime);
+CREATE INDEX jobalarm_jobid ON jobalarm (jobid);
+CREATE INDEX jobalarm_datetime ON jobalarm (datetime);
 
 CREATE TABLE joboutput (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

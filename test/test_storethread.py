@@ -95,7 +95,7 @@ class CronLogTester(RandomTester):
         with self.store.lock:
             id_ = self.store._check_job(self.host, self.user,
                                     None, sample(c, 1)[0])
-        self.store.log_warning(id_, -1)
+        self.store.log_alarm(id_, -1)
         self.store.get_job_info(id_)
         # Need to add the write_config method when implemented
         self.store.get_job_config(id_)
@@ -104,7 +104,7 @@ class CronLogTester(RandomTester):
 
         es = self.store.get_events_since(self.s, self.w, self.f)
         for e in es:
-            eid = e['id']
+            eid = e['eventid']
             if e['type'] == 1 and eid > self.s:
                 self.s = eid
             elif e['type'] == 2 and eid > self.w:

@@ -48,13 +48,13 @@ class CrabWebQuery:
         self.service = service
 
     @cherrypy.expose
-    def jobstatus(self, startid, warnid, finishid):
+    def jobstatus(self, startid, alarmid, finishid):
         """CherryPy handler returning the job status dict fetched
         from the monitor thread."""
 
         try:
             s = self.monitor.wait_for_event_since(int(startid),
-                                                  int(warnid), int(finishid))
+                                                  int(alarmid), int(finishid))
             s['service'] = dict((s, self.service[s].is_alive())
                                 for s in self.service)
             return json.dumps(s)
@@ -223,7 +223,7 @@ class CrabWeb:
                     finishid_next = finishes[0]['finishid']
 
             pair = self.store.get_job_output(finishid,
-                    info['host'], info['user'], id_, info['jobid'])
+                    info['host'], info['user'], id_, info['crabid'])
 
             if pair is None:
                 raise HTTPError(404, 'No output found for the given job run.')

@@ -12,8 +12,8 @@
 % if not match_mode:
 <a href="/host/${info['host'] | h}">${info['host'] | h}</a>
 <a href="/user/${info['user'] | h}">${info['user'] | h}</a>
-%     if info['jobid'] is not None:
-<a href="/job/${id | h}">${info['jobid'] | h}</a>
+%     if info['crabid'] is not None:
+<a href="/job/${id | h}">${info['crabid'] | h}</a>
 %     else:
 <a href="/job/${id | h}">${info['command'] | abbr}</a>
 %     endif

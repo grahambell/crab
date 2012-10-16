@@ -56,7 +56,7 @@ class CrabStoreFile:
                                     ': ' + str(err))
 
 
-    def write_job_output(self, finishid, host, user, id_, jobid,
+    def write_job_output(self, finishid, host, user, id_, crabid,
                          stdout, stderr):
         """Write the cron job output to a file.
 
@@ -69,7 +69,7 @@ class CrabStoreFile:
         txt), but only writes a stderr file (extension self.errext, default
         err) if the standard error is not empty."""
 
-        path = self._make_output_path(finishid, host, user, id_, jobid)
+        path = self._make_output_path(finishid, host, user, id_, crabid)
 
         (dir, file) = os.path.split(path)
 
@@ -98,7 +98,7 @@ class CrabStoreFile:
             raise CrabError('file store error: could not write files: ' +
                             str(err))
 
-    def get_job_output(self, finishid, host, user, id_, jobid):
+    def get_job_output(self, finishid, host, user, id_, crabid):
         """Find the file containing the cron job output and read it.
 
         As for write_job_output, only the "finishid" is logically required,
@@ -108,12 +108,12 @@ class CrabStoreFile:
         Requires there to be an stdout file but allows the
         stderr file to be absent."""
 
-        path = self._make_output_path(finishid, host, user, id_, jobid)
+        path = self._make_output_path(finishid, host, user, id_, crabid)
         outfile = path + '.' + self.outext
 
         if not os.path.exists(outfile):
-            if jobid is not None:
-                # Try again with no jobid.  This is to handle the case where
+            if crabid is not None:
+                # Try again with no crabid.  This is to handle the case where
                 # a job is imported with no name, but is subsequently named.
                 path = self._make_output_path(finishid, host, user, id_, None)
                 outfile = path + '.' + self.outext
@@ -183,7 +183,7 @@ class CrabStoreFile:
         return crontab.split('\n')
 
 
-    def _make_output_path(self, finishid, host, user, id_, jobid):
+    def _make_output_path(self, finishid, host, user, id_, crabid):
         """Determine the full path to use to store output
         (excluding file extensions).
 
@@ -191,7 +191,7 @@ class CrabStoreFile:
 
             * host
             * user
-            * jobid (name) or ID (number)
+            * crabid (name) or ID (number)
             * finish ID
 
         Where the finish ID is broken into blocks of a few characters,
@@ -202,10 +202,10 @@ class CrabStoreFile:
         So breaking on the default number of digits (3) finish ID 1 would
         yield 001 whereas 2005 would yield 002/005."""
 
-        if jobid is None or jobid == '':
+        if crabid is None or crabid == '':
             job = str(id_)
         else:
-            job = alphanum(jobid)
+            job = alphanum(crabid)
 
         finish = str(finishid)
         finishpath = []

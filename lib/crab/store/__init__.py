@@ -62,10 +62,10 @@ class CrabStore:
                 crontab.append('### CRAB: UNKNOWN TIMEZONE ###')
                 timezone = None
 
-            # Include the jobid in the command if present.
+            # Include the crabid in the command if present.
             command = job['command']
-            if job['jobid'] is not None:
-                command = 'CRABID=' + quote_multiword(job['jobid']) + ' ' + command
+            if job['crabid'] is not None:
+                command = 'CRABID=' + quote_multiword(job['crabid']) + ' ' + command
 
             crontab.append(time + ' ' + command)
 
@@ -93,7 +93,7 @@ class CrabStore:
         variable = re.compile('^\s*(\w+)\s*=\s*(.*)$')
         cronrule = re.compile('^\s*(@\w+|\S+\s+\S+\s+\S+\s+\S+\s+\S+)\s+(.*)$')
 
-        jobid = None
+        crabid = None
         idset = set()
         idsaved = set()
         warning = []
@@ -113,7 +113,7 @@ class CrabStore:
                 if m is not None:
                     (var, value) = m.groups()
                     if var == 'CRABID':
-                        jobid = remove_quotes(value.rstrip())
+                        crabid = remove_quotes(value.rstrip())
                     if var == 'CRON_TZ':
                         timezone = remove_quotes(value.rstrip())
                     continue
@@ -128,11 +128,11 @@ class CrabStore:
                             continue
 
                     if command.startswith('CRABID='):
-                        (jobid, command) = split_quoted_word(command[7:])
+                        (crabid, command) = split_quoted_word(command[7:])
 
                     command = command.rstrip()
 
-                    id_ = self._check_job(host, user, jobid,
+                    id_ = self._check_job(host, user, crabid,
                                           command, time, timezone)
 
                     if id_ in idsaved:
@@ -142,7 +142,7 @@ class CrabStore:
                         idsaved.add(id_)
 
                     idset.discard(id_)
-                    jobid = None
+                    crabid = None
                     continue
 
                 warning.append('Did not recognise line: ' + job)
@@ -156,7 +156,7 @@ class CrabStore:
 
             return warning
 
-    def _check_job(self, host, user, jobid, command, time=None, timezone=None):
+    def _check_job(self, host, user, crabid, command, time=None, timezone=None):
         """Ensure that a job exists in the store.
 
         Tries to find (and update if necessary) the corresponding job.
@@ -169,11 +169,11 @@ class CrabStore:
 
         id_ = None
 
-        # We know the jobid, so use it to search
+        # We know the crabid, so use it to search
 
-        if jobid is not None:
+        if crabid is not None:
             jobs = self._get_jobs(host, user, include_deleted=True,
-                                  jobid=jobid)
+                                  crabid=crabid)
 
             if jobs:
                 job = jobs[0]
@@ -193,18 +193,18 @@ class CrabStore:
                 # a job ID, in which case we update it to add the job ID.
 
                 jobs = self._get_jobs(host, user, include_deleted=True,
-                                      command=command, without_jobid=True)
+                                      command=command, without_crabid=True)
                 if jobs:
                     job = jobs[0]
                     id_ = job['id']
 
-                    self._update_job(id_, jobid, None, time, timezone)
+                    self._update_job(id_, crabid, None, time, timezone)
 
                 else:
-                    id_ = self._insert_job(host, user, jobid, time,
+                    id_ = self._insert_job(host, user, crabid, time,
                                            command, timezone)
 
-        # We don't know the jobid, so we must search by command.
+        # We don't know the crabid, so we must search by command.
         # In general we can't distinguish multiple copies of the same
         # command running at different times.
         # Such jobs should be given job IDs, or combined using
@@ -227,7 +227,7 @@ class CrabStore:
                     self._update_job(id_, None, None, time, timezone)
 
             else:
-                id_ = self._insert_job(host, user, jobid,
+                id_ = self._insert_job(host, user, crabid,
                                        time, command, timezone)
 
         if id_ is None:

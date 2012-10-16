@@ -49,7 +49,7 @@ class CrabStatus:
     INTERNAL_VALUES = set([LATE, MISSED, TIMEOUT])
 
     _error_names = ['Succeeded', 'Failed', 'Unknown', 'Could not start']
-    _warning_names = ['Late', 'Missed', 'Timed out']
+    _alarm_names = ['Late', 'Missed', 'Timed out']
 
     @staticmethod
     def get_name(status):
@@ -61,7 +61,7 @@ class CrabStatus:
                 # TODO: find out if this can be referred to without class name?
                 return CrabStatus._error_names[status]
             else:
-                return CrabStatus._warning_names[(-1) - status]
+                return CrabStatus._alarm_names[(-1) - status]
         except IndexError:
             return 'Status ' + int(status)
 
@@ -92,10 +92,10 @@ class CrabEvent:
 
     Currently just provides symbolic names for the event types."""
     START = 1
-    WARN = 2
+    ALARM = 2
     FINISH = 3
 
-    _event_names = ['Started', 'Warning', 'Finished']
+    _event_names = ['Started', 'Alarm', 'Finished']
 
     @staticmethod
     def get_name(event):

@@ -46,7 +46,7 @@ from crab import CrabError, CrabStatus
 class CrabClient:
     """Crab client class, used for interaction with the server."""
 
-    def __init__(self, command=None, jobid=None):
+    def __init__(self, command=None, crabid=None):
         """Constructor for CrabClient.
 
         This causes the client to configure itself,
@@ -55,11 +55,11 @@ class CrabClient:
         settings from the configuration files.
 
         If the client has been started to report on the status of a
-        job, then the command must be supplied, and the jobid should
+        job, then the command must be supplied, and the crabid should
         be given if known.
         """
         self.command = command
-        self.jobid = jobid
+        self.crabid = crabid
 
         self.config = SafeConfigParser()
         self.config.add_section('server')
@@ -142,8 +142,8 @@ class CrabClient:
                '/' + urlquote(self.config.get('client', 'hostname'), '') +
                '/' + urlquote(self.config.get('client', 'username'), ''))
 
-        if self.jobid is not None:
-            url = url + '/' + urlquote(self.jobid, '')
+        if self.crabid is not None:
+            url = url + '/' + urlquote(self.crabid, '')
 
         return url
 

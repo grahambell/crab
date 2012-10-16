@@ -50,7 +50,7 @@ class CrabMonitor(CrabMinutely):
         self.timeout = {}
         self.miss_timeout = {}
         self.max_startid = 0
-        self.max_warnid = 0
+        self.max_alarmid = 0
         self.max_finishid = 0
         self.new_event = Condition()
         self.num_warning = 0
@@ -80,7 +80,7 @@ class CrabMonitor(CrabMinutely):
                 self._initialize_job(id_)
 
                 # Allow a margin of events over HISTORY_COUNT to allow
-                # for start events and warnings.
+                # for start events and alarms.
                 events = self.store.get_job_events(id_, 4 * HISTORY_COUNT)
 
                 # Events are returned newest-first but we need to work
@@ -101,7 +101,7 @@ class CrabMonitor(CrabMinutely):
             datetime_ = datetime.datetime.now(pytz.UTC)
 
             events = self.store.get_events_since(self.max_startid,
-                                self.max_warnid, self.max_finishid)
+                                self.max_alarmid, self.max_finishid)
             for event in events:
                 id_ = event['jobid']
                 self._update_max_id_values(event)
@@ -143,12 +143,12 @@ class CrabMonitor(CrabMinutely):
 
             for id_ in list(self.miss_timeout.keys()):
                 if self.miss_timeout[id_] < datetime_:
-                    self._write_warning(id_, CrabStatus.MISSED)
+                    self._write_alarm(id_, CrabStatus.MISSED)
                     del self.miss_timeout[id_]
 
             for id_ in list(self.timeout.keys()):
                 if self.timeout[id_] < datetime_:
-                    self._write_warning(id_, CrabStatus.TIMEOUT)
+                    self._write_alarm(id_, CrabStatus.TIMEOUT)
                     del self.timeout[id_]
 
     def run_minutely(self, datetime_):
@@ -161,7 +161,7 @@ class CrabMonitor(CrabMinutely):
                 if ((id_ not in self.last_start) or
                         (self.last_start[id_] +
                          self.config[id_]['graceperiod'] < datetime_)):
-                    self._write_warning(id_, CrabStatus.LATE)
+                    self._write_alarm(id_, CrabStatus.LATE)
                     self.miss_timeout[id_] = (datetime_ +
                             self.config[id_]['graceperiod'])
 
@@ -274,15 +274,15 @@ class CrabMonitor(CrabMinutely):
             print('Warning: stopping monitoring job but it is not in monitor.')
 
     def _update_max_id_values(self, event):
-        """Updates the instance max_startid, max_warnid and max_finishid
+        """Updates the instance max_startid, max_alarmid and max_finishid
         values if they are outdate by the event, which is passed as a dict."""
 
         if (event['type'] == CrabEvent.START and
                 event['eventid'] > self.max_startid):
             self.max_startid = event['eventid']
-        if (event['type'] == CrabEvent.WARN and
-                event['eventid'] > self.max_warnid):
-            self.max_warnid = event['eventid']
+        if (event['type'] == CrabEvent.ALARM and
+                event['eventid'] > self.max_alarmid):
+            self.max_alarmid = event['eventid']
         if (event['type'] == CrabEvent.FINISH and
                 event['eventid'] > self.max_finishid):
             self.max_finishid = event['eventid']
@@ -344,12 +344,12 @@ class CrabMonitor(CrabMinutely):
                 len([x for x in history if x == CrabStatus.SUCCESS]) /
                 len(history))
 
-    def _write_warning(self, id_, status):
-        """Inserts a warning into the storage backend."""
+    def _write_alarm(self, id_, status):
+        """Inserts an alarm into the storage backend."""
         try:
-            self.store.log_warning(id_, status)
+            self.store.log_alarm(id_, status)
         except CrabError as err:
-            print('Could not record warning: ', str(err))
+            print('Could not record alarm: ', str(err))
 
     def get_job_status(self):
         """Fetches the status of all jobs as a dict.
@@ -360,7 +360,7 @@ class CrabMonitor(CrabMinutely):
         self.status_ready.wait()
         return self.status
 
-    def wait_for_event_since(self, startid, warnid, finishid, timeout=120):
+    def wait_for_event_since(self, startid, alarmid, finishid, timeout=120):
         """Function which waits for new events.
 
         It does this by comparing the IDs with our maximum values seen so
@@ -369,13 +369,13 @@ class CrabMonitor(CrabMinutely):
 
         A random time up to 20s is added to the timeout to stagger requests."""
 
-        if (self.max_startid > startid or self.max_warnid > warnid or
+        if (self.max_startid > startid or self.max_alarmid > alarmid or
                                           self.max_finishid > finishid):
             pass
         else:
             with self.new_event:
                 self.new_event.wait(timeout + self.random.randint(0,20))
 
-        return {'startid': self.max_startid, 'warnid': self.max_warnid,
+        return {'startid': self.max_startid, 'alarmid': self.max_alarmid,
                 'finishid': self.max_finishid, 'status': self.status,
                 'numwarning': self.num_warning, 'numerror': self.num_error}

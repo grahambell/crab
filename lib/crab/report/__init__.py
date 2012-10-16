@@ -82,10 +82,10 @@ class CrabReportGenerator:
                 if info is None:
                     continue
 
-                if info['jobid'] is None:
+                if info['crabid'] is None:
                     info['title'] = info['command']
                 else:
-                    info['title'] = info['jobid']
+                    info['title'] = info['crabid']
 
                 self.cache_info[id_] = info
 
@@ -128,7 +128,7 @@ class CrabReportGenerator:
                             else:
                                 output = self.store.get_job_output(finishid,
                                          info['host'], info['user'], id_,
-                                         info['jobid'])
+                                         info['crabid'])
 
                                 if output is None:
                                     stdout = stderr = None

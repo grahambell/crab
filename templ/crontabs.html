@@ -43,10 +43,10 @@ ${key | h}
 % else:
         <td class="status_unknown">Unspecified</td>
 % endif
-% if job.get('jobid') is not None:
-        <td class="linkcell"><a href="/job/${job['id'] | h}" id="jobid_${job["id"] | h}">${job["jobid"] | h}</a></td>
+% if job.get('crabid') is not None:
+        <td class="linkcell"><a href="/job/${job['id'] | h}" id="crabid_${job["id"] | h}">${job["crabid"] | h}</a></td>
 % else:
-        <td class="status_unknown" id="jobid_${job["id"] | h}">Unspecified</td>
+        <td class="status_unknown" id="crabid_${job["id"] | h}">Unspecified</td>
 % endif
         <td class="linkcell"><a href="/job/${job['id'] | h}">${job['command'] | abbr}</a></td>
     </tr>

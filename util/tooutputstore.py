@@ -41,13 +41,13 @@ def copy_data(indexstore, instore, outstore):
 
         for finish in indexstore.get_job_finishes(job['id'], limit=None):
             pair = instore.get_job_output(finish['finishid'],
-                        job['host'], job['user'], job['id'], job['jobid'])
+                        job['host'], job['user'], job['id'], job['crabid'])
 
             if pair is not None:
                 (stdout, stderr) = pair
 
                 outstore.write_job_output(finish['finishid'],
-                        job['host'], job['user'], job['id'], job['jobid'],
+                        job['host'], job['user'], job['id'], job['crabid'],
                         stdout, stderr)
 
     for (host, user) in hostuser:

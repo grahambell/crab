@@ -8,8 +8,8 @@
 <%block name="links">
 <a href="/host/${info['host'] | h}">${info['host'] | h}</a>
 <a href="/user/${info['user'] | h}">${info['user'] | h}</a>
-% if info['jobid'] is not None:
-<span>${info['jobid'] | h}</span>
+% if info['crabid'] is not None:
+<span>${info['crabid'] | h}</span>
 % else:
 <span>${info['command'] | abbr}</span>
 % endif
@@ -29,10 +29,10 @@
         <td>${info["user"] | h}</td>
     </tr>
 -->
-% if info["jobid"] != None:
+% if info["crabid"] != None:
     <tr>
         <th>Job ID</th>
-        <td>${info["jobid"] | h}</td>
+        <td>${info["crabid"] | h}</td>
     </tr>
 % endif
     <tr>

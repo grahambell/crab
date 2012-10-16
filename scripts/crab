@@ -101,8 +101,8 @@ Commands:
         type='string', dest='command',
         help='specify the cron COMMAND being reported', metavar='COMMAND')
     parser.add_option('--id',
-        type='string', dest='jobid',
-        help='specify the cron job ID to report', metavar='ID')
+        type='string', dest='crabid',
+        help='specify the Crab job ID to report', metavar='ID')
     parser.add_option('--file',
         type='string', dest='crontabfile',
         help='specify file name containing crontab to import')
@@ -122,7 +122,7 @@ Commands:
             parser.error('no command specified')
         else:
             try:
-                client = CrabClient(options.command, jobid=options.jobid)
+                client = CrabClient(options.command, crabid=options.crabid)
 
                 if args[0] == 'start':
                     client.start()

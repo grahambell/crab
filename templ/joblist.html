@@ -19,10 +19,10 @@
 % else:
         <td id="user_${job["id"] | h}">&nbsp;</td>
 % endif
-% if job.get('jobid') is not None:
-        <td class="linkcell"><a href="/job/${job['id'] | h}" id="jobid_${job["id"] | h}">${job["jobid"] | h}</a></td>
+% if job.get('crabid') is not None:
+        <td class="linkcell"><a href="/job/${job['id'] | h}" id="crabid_${job["id"] | h}">${job["crabid"] | h}</a></td>
 % else:
-        <td class="status_unknown" id="jobid_${job["id"] | h}">Unspecified</td>
+        <td class="status_unknown" id="crabid_${job["id"] | h}">Unspecified</td>
 % endif
         <td class="linkcell"><a href="/job/${job["id"] | h}" id="command_${job["id"] | h}">
 % if job.get('command') is not None:
@@ -43,7 +43,7 @@
         <th><a href="#" id="headingstatus">Status</a></th>
         <th><a href="#" id="headinghost">Host</a></th>
         <th><a href="#" id="headinguser">User</a></th>
-        <th><a href="#" id="headingjobid">Job ID</a></th>
+        <th><a href="#" id="headingcrabid">Job ID</a></th>
         <th><a href="#" id="headingcommand">Command</a></th>
         <th><a href="#" id="headingreliability">Reliability</a></th>
     </tr>

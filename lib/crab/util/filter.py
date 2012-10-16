@@ -115,7 +115,7 @@ def _find_previous_start(events, i):
         if e['type'] == CrabEvent.START:
             return i
 
-        elif e['type'] != CrabEvent.WARN:
+        elif e['type'] != CrabEvent.ALARM:
             return None
 
         i += 1

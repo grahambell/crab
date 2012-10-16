@@ -54,9 +54,9 @@ function updateInfo(data) {
     $('#host_' + id).text(data['host']);
     $('#user_' + id).text(data['user']);
     $('#command_' + id).text(data['command']);
-    if (data['jobid'] !== null) {
-        $('#jobid_' + id).text(data['jobid']);
-        $('#jobid_' + id).removeClass();
+    if (data['crabid'] !== null) {
+        $('#crabid_' + id).text(data['crabid']);
+        $('#crabid_' + id).removeClass();
     }
 }
 
@@ -133,7 +133,7 @@ function refreshStatusOnceError(xhr, text, error) {
 }
 
 function refreshStatusOnce() {
-    $.ajax('/query/jobstatus?startid=0&warnid=0&finishid=0', {
+    $.ajax('/query/jobstatus?startid=0&alarmid=0&finishid=0', {
         dataType: 'json',
         success: refreshStatusOnceSuccess,
         error: refreshStatusOnceError
@@ -142,7 +142,7 @@ function refreshStatusOnce() {
 
 function refreshStatusCometSuccess(data, text, xhr) {
     updateStatus(data);
-    refreshStatusCometLoop(data['startid'], data['warnid'], data['finishid']);
+    refreshStatusCometLoop(data['startid'], data['alarmid'], data['finishid']);
 }
 
 function refreshStatusCometResume() {
@@ -156,8 +156,8 @@ function refreshStatusCometError(xhr, text, error) {
     setFavicon(disconnectFavicon);
 }
 
-function refreshStatusCometLoop(startid, warnid, finishid) {
-    $.ajax('/query/jobstatus?startid=' + startid + '&warnid=' + warnid + '&finishid=' + finishid, {
+function refreshStatusCometLoop(startid, alarmid, finishid) {
+    $.ajax('/query/jobstatus?startid=' + startid + '&alarmid=' + alarmid + '&finishid=' + finishid, {
         dataType: 'json',
         success: refreshStatusCometSuccess,
         error: refreshStatusCometError,
@@ -256,7 +256,7 @@ $(document).ready(function () {
     $('#headingstatus').click(dashboardSortStatus);
     $('#headinghost').click(dashboardSorter('host'));
     $('#headinguser').click(dashboardSorter('user'));
-    $('#headingjobid').click(dashboardSorter('jobid'));
+    $('#headingcrabid').click(dashboardSorter('crabid'));
     $('#headingcommand').click(dashboardSorter('command'));
     $('#headingreliability').click(dashboardSorter('reliability'));
 });
