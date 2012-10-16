@@ -17,7 +17,6 @@ from __future__ import print_function
 
 from contextlib import closing
 from threading import Lock
-from traceback import extract_stack
 
 from sqlite3 import DatabaseError
 
@@ -28,23 +27,11 @@ class CrabDBLock():
     def __init__(self, conn):
         self.lock = Lock()
         self.conn = conn
-        self.laststack = ''
 
     def __enter__(self):
-        try:
-            st = extract_stack(limit=4)
-            del st[-1]
-            stack = ' '.join([fn for (fi, ln, fn, l) in st])
-        except:
-            stack = ''
-
-        if not self.lock.acquire(False):
-            print('Blocking:', stack, '--', self.laststack)
-            self.lock.acquire(True)
+        self.lock.acquire(True)
 
         # No 'begin transaction' function for SQLite.
-
-        self.laststack = stack
 
     def __exit__(self, type, value, tb):
         if type is None:
@@ -52,7 +39,6 @@ class CrabDBLock():
         else:
             self.conn.rollback()
 
-        self.laststack = ''
         self.lock.release()
 
 class CrabStoreDB(CrabStore):
