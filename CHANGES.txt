@@ -1,0 +1,14 @@
+0.2.0, 2012-10-17
+
+    - Minor update to the database schema to replace confusing names.
+      (A corresponding SQLite update script is provided in the util directory.)
+    - Job output and raw crontabs can now optionally be saved in files instead
+      of in the database.
+    - The base URL used in email notifications and the RSS feed is now
+      configurable.
+    - Added history navigation to the job pages.
+    - Headings on the dashboard page can be clicked to sort the table.
+
+0.1.0, 2012-10-05
+
+    - Initial release.
