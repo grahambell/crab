@@ -12,7 +12,14 @@ function updateStatusBox(id, status_, running) {
             box.removeClass().addClass('status_ok');
         }
         else if (crabStatusIsWarning(status_)) {
-            box.removeClass().addClass('status_warn');
+            if (! box.hasClass('status_warn')) {
+                box.removeClass().addClass('status_warn');
+
+                if (sortByStatus) {
+                    var tab = $('#joblistbody');
+                    tab.prepend($('#row_' + id).detach());
+                }
+            }
         }
         else if (! box.hasClass('status_fail')) {
             box.removeClass().addClass('status_fail');
