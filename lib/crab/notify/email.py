@@ -26,7 +26,7 @@ from crab.report.html import report_to_html
 class CrabNotifyEmail:
     """Class to send notification messages by email."""
 
-    def __init__(self, config, base_url):
+    def __init__(self, config):
         """Construct a nofication object.
 
         Stores relevant configuration information in the object."""
@@ -37,7 +37,7 @@ class CrabNotifyEmail:
         self.subject_ok = config['email']['subject_ok']
         self.subject_warning = config['email']['subject_warning']
         self.subject_error = config['email']['subject_error']
-        self.base_url = base_url
+        self.base_url = config['crab']['base_url']
 
     def __call__(self, report, to):
         """Sends a report by email to the given addresses."""

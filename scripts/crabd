@@ -15,8 +15,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import socket
-
 import cherrypy
 
 from crab.service.monitor import CrabMonitor
@@ -36,14 +34,11 @@ def main():
 
     store = construct_store(config['store'], outputstore)
 
-    base_url = ('http://' + socket.getfqdn() + ':' +
-               str(config['global']['server.socket_port']))
-
     monitor = CrabMonitor(store)
     monitor.daemon = True
     monitor.start()
 
-    notify = CrabNotifyService(config, store, base_url)
+    notify = CrabNotifyService(config, store)
     notify.daemon = True
     notify.start()
 
@@ -53,7 +48,7 @@ def main():
                             'Notification' : notify
                         }), '/', config)
     cherrypy.tree.mount(CrabServer(store), '/api/0', {})
-    cherrypy.tree.mount(CrabRSS(store, base_url), '/rss', {})
+    cherrypy.tree.mount(CrabRSS(store, config['crab']['base_url']), '/rss', {})
 
     cherrypy.engine.start()
     cherrypy.engine.block()

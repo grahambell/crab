@@ -14,6 +14,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import socket
 import sys
 
 from cherrypy.lib.reprconf import Config
@@ -31,7 +32,8 @@ def read_crabd_config():
     config.update({'global': {'server.socket_port': 8000,
                               'server.socket_host': '0.0.0.0'},
 
-                   'crab': {'home': os.path.join(sys.prefix, 'share', 'crab')},
+                   'crab': {'home': os.path.join(sys.prefix, 'share', 'crab'),
+                            'base_url': None},
 
                    'email': {'server': 'mailhost',
                              'from': 'Crab Daemon',
@@ -67,6 +69,10 @@ def read_crabd_config():
 
     config['/res'] = {'tools.staticdir.on': True,
                       'tools.staticdir.dir': config['crab']['home'] + '/res'}
+
+    if 'base_url' not in config['crab'] or config['crab']['base_url'] is None:
+        config['crab']['base_url'] = ('http://' + socket.getfqdn() + ':' +
+                                   str(config['global']['server.socket_port']))
 
     return config
 

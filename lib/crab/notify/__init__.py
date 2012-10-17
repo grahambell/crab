@@ -25,10 +25,10 @@ CrabNotifyJob = namedtuple('CrabNotifyJob', ['n', 'start', 'end'])
 class CrabNotify:
     """Class for sending notification messages."""
 
-    def __init__(self, config, store, base_url):
+    def __init__(self, config, store):
         self.store = store
 
-        self.send_email = CrabNotifyEmail(config, base_url)
+        self.send_email = CrabNotifyEmail(config)
 
     def __call__(self, notifications):
         "Sends notification messages."""

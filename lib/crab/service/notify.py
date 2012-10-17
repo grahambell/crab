@@ -27,7 +27,7 @@ class CrabNotifyService(CrabMinutely):
 
     Currently only a single daily schedule is implemented."""
 
-    def __init__(self, config, store, base_url):
+    def __init__(self, config, store):
         """Constructor method.
 
         Prepares CrabNotify object and daily CrabSchedule object."""
@@ -35,7 +35,7 @@ class CrabNotifyService(CrabMinutely):
         CrabMinutely.__init__(self)
 
         self.store = store
-        self.notify = CrabNotify(config, store, base_url)
+        self.notify = CrabNotify(config, store)
         self.schedule = CrabSchedule(config['notify']['daily'],
                                      config['notify']['timezone'])
         self.config = {}
