@@ -42,7 +42,7 @@ use JSON;
 use LWP::UserAgent;
 use Sys::Hostname;
 
-our $VERSION = 0.01;
+our $VERSION = 0.02;
 
 use constant {
     SUCCESS       => 0,
@@ -88,11 +88,12 @@ sub new {
                                           'crab.ini');
     my $conf_user = File::Spec->catfile(File::HomeDir->my_home(),
                                         '.crab', 'crab.ini');
-
-    $conf = new Config::IniFiles(-file => $conf_system, '-import' => $conf)
+    $conf = new Config::IniFiles(-file => $conf_system, '-import' => $conf,
+                                 -allowempty => 1)
         if (-e $conf_system);
 
-    $conf = new Config::IniFiles(-file => $conf_user, '-import' => $conf)
+    $conf = new Config::IniFiles(-file => $conf_user, '-import' => $conf,
+                                 -allowempty => 1)
         if (-e $conf_user);
 
     my $self = {

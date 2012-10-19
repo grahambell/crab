@@ -5,7 +5,7 @@ use warnings;
 
 use Module::Build;
 
-our %require = ('Config::IniFiles' => 0,
+our %require = ('Config::IniFiles' => 2.39,
                 'File::HomeDir' => 0,
                 'File::Spec' => 0,
                 'HTTP::Request' => 0,
