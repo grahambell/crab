@@ -77,19 +77,7 @@ class CrabMonitor(CrabMinutely):
         for job in jobs:
             id_ = job['id']
             try:
-                self._initialize_job(id_)
-
-                # Allow a margin of events over HISTORY_COUNT to allow
-                # for start events and alarms.
-                events = self.store.get_job_events(id_, 4 * HISTORY_COUNT)
-
-                # Events are returned newest-first but we need to work
-                # through them in order.
-                for event in reversed(events):
-                    self._update_max_id_values(event)
-                    self._process_event(id_, event)
-
-                self._compute_reliability(id_)
+                self._initialize_job(id_, load_events=True)
 
             except JobDeleted:
                 print('Warning: job', id_, 'has vanished')
@@ -184,12 +172,8 @@ class CrabMonitor(CrabMinutely):
                 # need to do this?
                 self._configure_job(id_)
             else:
-                # No need to check event history: if there were any
-                # events, we would have added the job when they
-                # occurred (unless a job was just un-deleted or the
-                # an event happend during the schedule check.
                 try:
-                    self._initialize_job(id_)
+                    self._initialize_job(id_, load_events=True)
                 except JobDeleted:
                     print('Warning: job', id_, 'has vanished')
 
@@ -197,7 +181,7 @@ class CrabMonitor(CrabMinutely):
         for id_ in currentjobs:
             self._remove_job(id_)
 
-    def _initialize_job(self, id_):
+    def _initialize_job(self, id_, load_events=False):
         """Fetches information about the specified job and records it
         in the instance data structures.  Includes a call to _schedule_job."""
 
@@ -210,6 +194,19 @@ class CrabMonitor(CrabMinutely):
 
         self._schedule_job(id_, jobinfo)
         self._configure_job(id_)
+
+        if load_events:
+            # Allow a margin of events over HISTORY_COUNT to allow
+            # for start events and alarms.
+            events = self.store.get_job_events(id_, 4 * HISTORY_COUNT)
+
+            # Events are returned newest-first but we need to work
+            # through them in order.
+            for event in reversed(events):
+                self._update_max_id_values(event)
+                self._process_event(id_, event)
+
+            self._compute_reliability(id_)
 
     def _schedule_job(self, id_, jobinfo=None):
         """Sets or updates job scheduling information.
