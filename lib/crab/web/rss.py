@@ -51,11 +51,9 @@ class CrabRSS:
             fail['stderr'] = None
 
             if fail['finishid'] is not None:
-                pair = self.store.get_job_output(
+                (fail['stdout'], fail['stderr']) = self.store.get_job_output(
                         fail['finishid'], fail['host'], fail['user'],
                         fail['id'], fail['crabid'])
-                if pair is not None:
-                    (fail['stdout'], fail['stderr']) = pair
 
         rssitems = [self.event_to_rssitem(e) for e in events]
 
@@ -77,10 +75,10 @@ class CrabRSS:
         if event['finishid'] is not None:
             link += '/output/' + str(event['finishid'])
         output = ''
-        if event['stdout'] is not None and event['stdout'] != '':
+        if event['stdout']:
             output += event['stdout']
-        if event['stderr'] is not None and event['stderr'] != '':
-            if event['stdout'] is not None and event['stdout'] != '':
+        if event['stderr']:
+            if event['stdout']:
                 output += '\n\nStandard Error:\n\n'
             output += event['stderr']
 

@@ -222,16 +222,12 @@ class CrabWeb:
                 if finishes:
                     finishid_next = finishes[0]['finishid']
 
-            pair = self.store.get_job_output(finishid,
+            (stdout, stderr) = self.store.get_job_output(finishid,
                     info['host'], info['user'], id_, info['crabid'])
-
-            if pair is None:
-                raise HTTPError(404, 'No output found for the given job run.')
 
             filter = CrabEventFilter(self.store, info['timezone'])
             finish['datetime'] = filter.in_timezone(finish['datetime'])
 
-            (stdout, stderr) = pair
             return self._write_template('joboutput.html',
                        {'id': id_, 'info': info, 'finish': finish,
                         'stdout': stdout, 'stderr': stderr,

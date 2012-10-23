@@ -40,11 +40,10 @@ def copy_data(indexstore, instore, outstore):
         print('Processing job:', job['id'])
 
         for finish in indexstore.get_job_finishes(job['id'], limit=None):
-            pair = instore.get_job_output(finish['finishid'],
+            (stdout, stderr) = instore.get_job_output(finish['finishid'],
                         job['host'], job['user'], job['id'], job['crabid'])
 
-            if pair is not None:
-                (stdout, stderr) = pair
+            if stdout or stderr:
 
                 outstore.write_job_output(finish['finishid'],
                         job['host'], job['user'], job['id'], job['crabid'],

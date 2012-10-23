@@ -126,14 +126,9 @@ class CrabReportGenerator:
                                 report_stderr[finishid] = \
                                     self.cache_stderr[finishid]
                             else:
-                                output = self.store.get_job_output(finishid,
-                                         info['host'], info['user'], id_,
-                                         info['crabid'])
-
-                                if output is None:
-                                    stdout = stderr = None
-                                else:
-                                    (stdout, stderr) = output
+                                (stdout, stderr) = self.store.get_job_output(
+                                         finishid, info['host'], info['user'],
+                                         id_, info['crabid'])
 
                                 report_stdout[finishid] = \
                                     self.cache_stdout[finishid] = stdout

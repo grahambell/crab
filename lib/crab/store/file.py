@@ -65,9 +65,9 @@ class CrabStoreFile:
         host, user and job identifiers are also provided to allow
         hierarchical storage.
 
-        Always writes a stdout file (extension set by self.outext, by default
-        txt), but only writes a stderr file (extension self.errext, default
-        err) if the standard error is not empty."""
+        Only writes a stdout file (extension set by self.outext, by default
+        txt), and a stderr file (extension self.errext, default err)
+        if they are not empty."""
 
         path = self._make_output_path(finishid, host, user, id_, crabid)
 
@@ -87,10 +87,11 @@ class CrabStoreFile:
             raise CrabError('file store error: file already exists: ' + path)
 
         try:
-            with open(outfile, 'w') as file:
-                file.write(stdout)
+            if stdout:
+                with open(outfile, 'w') as file:
+                    file.write(stdout)
 
-            if stderr != '':
+            if stderr:
                 with open(errfile, 'w') as file:
                     file.write(stderr)
 
@@ -110,24 +111,26 @@ class CrabStoreFile:
 
         path = self._make_output_path(finishid, host, user, id_, crabid)
         outfile = path + '.' + self.outext
+        errfile = path + '.' + self.errext
 
-        if not os.path.exists(outfile):
+        if not (os.path.exists(outfile) or os.path.exists(errfile)):
             if crabid is not None:
                 # Try again with no crabid.  This is to handle the case where
                 # a job is imported with no name, but is subsequently named.
                 path = self._make_output_path(finishid, host, user, id_, None)
                 outfile = path + '.' + self.outext
+                errfile = path + '.' + self.errext
 
-                if not os.path.exists(outfile):
-                    return None
             else:
-                return None
+                # Return now just to avoid testing the same files again.
+                return ('', '')
 
         try:
-            with open(outfile) as file:
-                stdout = file.read()
-
-            errfile = path + '.' + self.errext
+            if os.path.exists(outfile):
+                with open(outfile) as file:
+                    stdout = file.read()
+            else:
+                stdout = ''
 
             if os.path.exists(errfile):
                 with open(errfile) as file:

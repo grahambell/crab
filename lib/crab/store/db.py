@@ -200,7 +200,8 @@ class CrabStoreDB(CrabStore):
                    stdout=None, stderr=None):
         """Inserts a job finish record into the database.
 
-        The output will be passed to the write_job_output method."""
+        The output will be passed to the write_job_output method,
+        unless both stdout and stderr are empty."""
 
         with self.lock:
             c = self.conn.cursor()
@@ -220,15 +221,17 @@ class CrabStoreDB(CrabStore):
             finally:
                 c.close()
 
-        # If a crabid was not specified, check whether the job
-        # actually has one.  This is to avoid sending misleading
-        # parameters to write_job_output, which can cause the
-        # file-based output store to default to a numeric directory name.
-        if crabid is None:
-            info = self.get_job_info(id_)
-            crabid = info['crabid']
+        if stdout or stderr:
+            # If a crabid was not specified, check whether the job
+            # actually has one.  This is to avoid sending misleading
+            # parameters to write_job_output, which can cause the
+            # file-based output store to default to a numeric directory name.
+            if crabid is None:
+                info = self.get_job_info(id_)
+                crabid = info['crabid']
 
-        self.write_job_output(finishid, host, user, id_, crabid, stdout, stderr)
+            self.write_job_output(finishid, host, user, id_, crabid,
+                                  stdout, stderr)
 
     def log_alarm(self, id_, status):
         """Inserts an alarm regarding a job into the database.
@@ -540,8 +543,8 @@ class CrabStoreDB(CrabStore):
         get_job_output method if an outputstore was provided to the
         contructor, allowing the outputstore to organise its
         information hierarchically if desired.  Otherwise this method
-        does not make use of those parameters.  Returns None if no
-        output is found."""
+        does not make use of those parameters.  Returns a pair of empty
+        strings if no output is found."""
 
         if self.outputstore is not None:
             return self.outputstore.get_job_output(finishid, host, user,
@@ -557,7 +560,7 @@ class CrabStoreDB(CrabStore):
                 row = c.fetchone()
 
                 if row is None:
-                    return None
+                    return ('', '')
 
                 return row
 
