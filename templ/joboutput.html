@@ -1,4 +1,5 @@
 <%!
+    from crab import CrabStatus
     from crab.util.web import abbr
 %>
 <%inherit file="base.html"/>
@@ -36,6 +37,10 @@
     <tr>
         <th>Command</th>
         <td>${finish['command'] | h}</td>
+    </tr>
+    <tr>
+        <th>Status</th>
+        <td>${CrabStatus.get_name(finish['status']) | h}</td>
     </tr>
     <tr>
         <th>Standard output</th>
