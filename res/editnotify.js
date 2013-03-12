@@ -2,7 +2,7 @@ var newRowNumber = 1;
 
 function addRow() {
     var nid = 'new_' + (newRowNumber ++);
-    $('table#notifylist').append(notifyrowtemplate.replace('XXX', nid, 'g'));
+    $('table#notifylist').append(notifyrowtemplate.replace(new RegExp('XXX', 'g'), nid));
     $('#delete_' + nid).click(function (event) {
         deleteRow(nid);
         event.preventDefault();

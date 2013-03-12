@@ -92,7 +92,7 @@ function updateStatus(data) {
         var job = statusdata[id];
 
         if ($('#row_'+id).length == 0) {
-            $('table#joblist').append(joblistrowtemplate.replace('XXX', id, 'g'));
+            $('table#joblist').append(joblistrowtemplate.replace(new RegExp('XXX', 'g'), id));
             $.ajax('/query/jobinfo/' + id, {
                 dataType: 'json',
                 success: updateInfo
