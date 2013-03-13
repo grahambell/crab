@@ -26,12 +26,12 @@ $(document).ready(function () {
         refreshJobEvents(null);
     });
 
-    $('#eventsback').click(function (event) {
+    $('#eventslast').click(function (event) {
         refreshJobEvents(null);
         event.preventDefault();
     });
 
-    $('#eventsnext').click(function (event) {
+    $('#eventsprev').click(function (event) {
         refreshJobEvents(lastDateTime);
         event.preventDefault();
     });
