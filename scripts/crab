@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2012-2013 Science and Technology Facilities Council.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -36,14 +36,8 @@ def send_crontab(crontab):
 
     tz = guess_timezone()
 
-    try:
-        client = CrabClient()
-        return client.send_crontab(crontab, timezone=tz)
-
-    #except CrabError as err:
-    except CrabError:
-        err = sys.exc_info()[1]
-        print(sys.argv[0] + ': failed to send crontab: ' + str(err))
+    client = CrabClient()
+    return client.send_crontab(crontab, timezone=tz)
 
 def read_crontab():
     """Fetches the current user's crontab file.
@@ -76,16 +70,19 @@ def read_file(path):
         return sys.stdin.read()
 
     try:
+        fh = None
+
         try:
             fh = open(path, 'r')
             return fh.read()
 
         except IOError:
             err = sys.exc_info()[1]
-            print(sys.argv[0] + ': cannot read file:' + str(err))
+            print(sys.argv[0] + ': cannot read file: ' + str(err))
 
     finally:
-        fh.close()
+        if fh is not None:
+            fh.close()
 
 def main():
     parser = OptionParser(usage = """Usage: %prog [options] [command]
@@ -128,10 +125,12 @@ Commands:
                     client.start()
                 else:
                     client.finish(status=status_commands.index(args[0]))
+
             #except CrabError as err:
             except CrabError:
                 err = sys.exc_info()[1]
                 print(sys.argv[0] + ': ' + str(err))
+                return 1
 
     elif args[0] == 'import':
         if options.crontabfile is None:
@@ -139,7 +138,10 @@ Commands:
         else:
             crontab = read_file(options.crontabfile)
 
-        if crontab is not None:
+        if crontab is None:
+            return 1
+
+        try:
             warning = send_crontab(crontab)
 
             if warning:
@@ -147,15 +149,25 @@ Commands:
                 for message in warning:
                     print(message)
 
+                return 1
+
+        #except CrabError as err:
+        except CrabError:
+            err = sys.exc_info()[1]
+            print(sys.argv[0] + ': failed to send crontab: ' + str(err))
+            return 1
+
     elif args[0] == 'export':
         try:
             client = CrabClient()
             crontab = client.fetch_crontab(raw=options.raw)
             print(crontab)
+
         #except CrabError as err:
         except CrabError:
             err = sys.exc_info()[1]
             print(sys.argv[0] + ': failed to fetch crontab: ' + str(err))
+            return 1
 
     elif args[0] == 'help':
         parser.print_help()
@@ -167,5 +179,7 @@ Commands:
     else:
         parser.error('command not recognised')
 
+    return 0
+
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
