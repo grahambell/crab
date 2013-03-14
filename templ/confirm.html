@@ -1,0 +1,29 @@
+<%!
+    from crab.util.web import abbr
+%>
+<%inherit file="base.html"/>
+
+<%block name="links">
+<a href="/host/${info['host'] | h}">${info['host'] | h}</a>
+<a href="/user/${info['user'] | h}">${info['user'] | h}</a>
+% if info['crabid'] is not None:
+<a href="/job/${id | h}">${info['crabid'] | h}</a>
+% else:
+<a href="/job/${id | h}">${info['command'] | abbr}</a>
+% endif
+<span>${title | h}</span>
+</%block>
+
+
+<h2>Confirm Action</h2>
+
+<form method="post" action="${target | h}">
+<p>
+${description | h}
+</p>
+
+<p>
+<input type="submit" name="submit_cancel" value="Cancel" />
+<input type="submit" name="submit_confirm" value="OK" />
+</p>
+</form>

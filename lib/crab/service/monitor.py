@@ -296,7 +296,10 @@ class CrabMonitor(CrabMinutely):
 
             # Avoid overwriting a status with a less important one.
 
-            if CrabStatus.is_trivial(status):
+            if status == CrabStatus.CLEARED:
+                self.status[id_]['status'] = status
+
+            elif CrabStatus.is_trivial(status):
                 if prevstatus is None or CrabStatus.is_ok(prevstatus):
                     self.status[id_]['status'] = status
 
@@ -348,14 +351,24 @@ class CrabMonitor(CrabMinutely):
         except CrabError as err:
             print('Could not record alarm: ', str(err))
 
-    def get_job_status(self):
+    def get_job_status(self, id_=None):
         """Fetches the status of all jobs as a dict.
 
         For efficiency this returns a reference to our job status dict.
-        Callers should not modify it."""
+        Callers should not modify it.  If a job ID is specified, the
+        status entry for that job is returned, or a dummy entry if it is not
+        in the status dict."""
 
         self.status_ready.wait()
-        return self.status
+
+        if id_ is None:
+            return self.status
+
+        else:
+            if id_ in self.status:
+                return self.status[id_]
+            else:
+                return {'status': None, 'running': False}
 
     def wait_for_event_since(self, startid, alarmid, finishid, timeout=120):
         """Function which waits for new events.

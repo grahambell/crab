@@ -45,11 +45,12 @@ class CrabStatus:
     LATE = -1
     MISSED = -2
     TIMEOUT = -3
+    CLEARED = -4
 
-    INTERNAL_VALUES = set([LATE, MISSED, TIMEOUT])
+    INTERNAL_VALUES = set([LATE, MISSED, TIMEOUT, CLEARED])
 
     _error_names = ['Succeeded', 'Failed', 'Unknown', 'Could not start']
-    _alarm_names = ['Late', 'Missed', 'Timed out']
+    _alarm_names = ['Late', 'Missed', 'Timed out', 'Cleared']
 
     @staticmethod
     def get_name(status):
@@ -69,7 +70,7 @@ class CrabStatus:
     def is_trivial(status):
         """Determines whether a status code is trivial and should
         mostly be ignored."""
-        return status == CrabStatus.LATE
+        return status == CrabStatus.LATE or status == CrabStatus.CLEARED
 
     @staticmethod
     def is_ok(status):

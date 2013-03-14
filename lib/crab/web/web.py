@@ -86,6 +86,7 @@ class CrabWeb:
         engine and instantiates a CrabWebQuery object which CherryPy
         can find as 'query'."""
         self.store = store
+        self.monitor = monitor
         home = config['crab']['home']
         self.templ = TemplateLookup(directories=[home + '/templ'])
         self.query = CrabWebQuery(store, monitor, service)
@@ -107,6 +108,7 @@ class CrabWeb:
             barerows=None, unfiltered=None, limit=None, enddate=None,
 
             submit_config=None, submit_relink=None,
+            submit_confirm=None, submit_cancel=None,
             orphan=None, graceperiod=None, timeout=None,
 
             submit_notify=None, **kwargs):
@@ -182,8 +184,30 @@ class CrabWeb:
 
             return self._write_template('job.html',
                        {'id': id_, 'info': info, 'config': config,
+                        'status': self.monitor.get_job_status(id_),
                         'notification': notification, 'events': events,
                         'lastdatetime': lastdatetime})
+
+        elif command == 'clear':
+            if submit_confirm:
+                self.store.log_alarm(id_, CrabStatus.CLEARED)
+
+                # Wait for the monitor to process new events so that
+                # that the job is in an 'OK' state before we reload the page.
+                with self.monitor.new_event:
+                    self.monitor.new_event.wait(10)
+
+                raise HTTPRedirect("/job/" + str(id_))
+
+            elif submit_cancel:
+                raise HTTPRedirect("/job/" + str(id_))
+
+            else:
+                return self._write_template('confirm.html',
+                       {'id': id_, 'info': info,
+                        'title': 'clear status',
+                        'description': 'Reset the job status?',
+                        'target': '/job/' + str(id_) + '/clear'})
 
         elif command == 'output':
             finishid_next = None
@@ -335,7 +359,7 @@ class CrabWeb:
                              'notifications': notifications})
 
         else:
-            raise HTTPError(404)
+            raise HTTPError(404, 'Unknown job command')
 
     @cherrypy.expose
     def user(self, user):
