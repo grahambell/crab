@@ -49,6 +49,7 @@ use constant {
     FAIL          => 1,
     UNKNOWN       => 2,
     COULDNOTSTART => 3,
+    ALREADYRUNNING=> 4,
 };
 
 =head1 CONSTRUCTOR
@@ -154,6 +155,7 @@ to obtain the appropriate Crab status codes:
   FAIL
   UNKNOWN
   COULDNOTSTART
+  ALREADYRUNNING
 
 This method uses "die" to raise an exception if it is unsuccessful
 in reporting to the Crab server.
@@ -226,7 +228,7 @@ Graham Bell <g.bell@jach.hawaii.edu>
 
 =head1 COPYRIGHT
 
-Copyright (C) 2012 Science and Technology Facilities Council.
+Copyright (C) 2012-2013 Science and Technology Facilities Council.
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

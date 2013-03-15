@@ -90,6 +90,7 @@ def main():
 Commands:
   start, finish, unknown - report cron job progress
   fail, couldnotstart    - report problems with cron job
+  alreadyrunning         - long running job need not start
   import                 - send crontab to server
   export                 - display cron jobs from server
   info                   - print current configuration""")
@@ -109,7 +110,8 @@ Commands:
 
     (options, args) = parser.parse_args()
 
-    status_commands = ['finish', 'fail', 'unknown', 'couldnotstart']
+    status_commands = ['finish', 'fail', 'unknown', 'couldnotstart',
+                       'alreadyrunning']
 
     if len(args) == 0:
         parser.error('no command specified')

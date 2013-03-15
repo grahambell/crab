@@ -1,4 +1,4 @@
-# Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2012-2013 Science and Technology Facilities Council.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,8 +35,9 @@ class CrabStatus:
     FAIL = 1
     UNKNOWN = 2
     COULDNOTSTART = 3
+    ALREADYRUNNING = 4
 
-    VALUES = set([SUCCESS, FAIL, UNKNOWN, COULDNOTSTART])
+    VALUES = set([SUCCESS, FAIL, UNKNOWN, COULDNOTSTART, ALREADYRUNNING])
 
     # Additional internal status values (it is not valid for
     # a client to send these).  Also some of these are less bad
@@ -49,7 +50,8 @@ class CrabStatus:
 
     INTERNAL_VALUES = set([LATE, MISSED, TIMEOUT, CLEARED])
 
-    _error_names = ['Succeeded', 'Failed', 'Unknown', 'Could not start']
+    _error_names = ['Succeeded', 'Failed', 'Unknown', 'Could not start',
+                    'Already running']
     _alarm_names = ['Late', 'Missed', 'Timed out', 'Cleared']
 
     @staticmethod
@@ -70,7 +72,9 @@ class CrabStatus:
     def is_trivial(status):
         """Determines whether a status code is trivial and should
         mostly be ignored."""
-        return status == CrabStatus.LATE or status == CrabStatus.CLEARED
+        return status in (CrabStatus.LATE,
+                          CrabStatus.CLEARED,
+                          CrabStatus.ALREADYRUNNING)
 
     @staticmethod
     def is_ok(status):

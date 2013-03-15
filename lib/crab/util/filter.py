@@ -1,4 +1,4 @@
-# Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2012-2013 Science and Technology Facilities Council.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -105,7 +105,7 @@ class CrabEventFilter:
 def _find_previous_start(events, i):
     """Looks in the event list, past position i, for the previous start.
 
-    Skips over warnings."""
+    Skips over alarms and other trivial events."""
 
     i += 1
 
@@ -115,7 +115,8 @@ def _find_previous_start(events, i):
         if e['type'] == CrabEvent.START:
             return i
 
-        elif e['type'] != CrabEvent.ALARM:
+        elif (e['type'] != CrabEvent.ALARM and
+                not CrabStatus.is_trivial(e['status'])):
             return None
 
         i += 1

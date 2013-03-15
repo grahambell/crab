@@ -1,4 +1,4 @@
-# Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2012-13 Science and Technology Facilities Council.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -318,14 +318,19 @@ class CrabMonitor(CrabMinutely):
                     del history[0]
                 history.append(status)
 
-        if event['type'] == CrabEvent.START:
+        # Handle ALREADYRUNNING as a 'start' type event, so that
+        # the MISSED alarm is not raised and the timeout period
+        # is extended.
+
+        if (event['type'] == CrabEvent.START
+                or event['status'] == CrabStatus.ALREADYRUNNING):
             self.status[id_]['running'] = True
             self.last_start[id_] = datetime_
             self.timeout[id_] = datetime_ + self.config[id_]['timeout']
             if id_ in self.miss_timeout:
                 del self.miss_timeout[id_]
 
-        if (event['type'] == CrabEvent.FINISH
+        elif (event['type'] == CrabEvent.FINISH
                 or event['status'] == CrabStatus.TIMEOUT):
             self.status[id_]['running'] = False
             if id_ in self.timeout:
