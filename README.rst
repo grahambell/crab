@@ -233,6 +233,9 @@ in effect, and is a better way of specifying the identifier as it
 can not apply to more than one cron job.  There should not be multiple
 jobs with the same identifier for any user and host.
 
+The Crab parameters can be placed in any order before the remainder of the
+command string, but they must precede any other variables.
+
 Environment Variables
 ~~~~~~~~~~~~~~~~~~~~~
 

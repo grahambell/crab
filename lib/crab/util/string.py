@@ -56,6 +56,32 @@ def split_quoted_word(value):
 
     return (a, b.lstrip())
 
+def split_crab_vars(command):
+    """Looks for Crab environment variables at the start of a command.
+
+    Bourne-style shells allow environment variables to be specified
+    at the start of a command.  This function takes a string corresponding
+    to a command line to be executed by a shell, and looks for environment
+    variables in the 'CRAB namespace', i.e. those consisting of CRAB
+    followed by a number of upper case characters.
+
+    Returns: a tuple consisting of the remainder of the command and
+    a dictionary of Crab's environment variables."""
+
+    crabvar = re.compile('^(CRAB[A-Z]+)=')
+    vars = {}
+
+    while True:
+        m = crabvar.match(command)
+
+        if m is None:
+            break
+
+        (value, command) = split_quoted_word(command[m.end():])
+        vars[m.group(1)] = value
+
+    return (command, vars)
+
 def alphanum(value):
     """Removes all non-alphanumeric characters from the string,
     replacing them with underscores."""
@@ -69,3 +95,8 @@ def mergelines(text):
     for line in text.split('\n'):
         output = output + line.strip()
     return output
+
+def true_string(text):
+    """Tests whether the string represents a true value."""
+
+    return text.lower() not in ['0', 'no', 'false', 'off']

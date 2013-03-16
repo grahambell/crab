@@ -17,7 +17,8 @@ from __future__ import print_function
 
 import re
 
-from crab.util.string import remove_quotes, quote_multiword, split_quoted_word
+from crab.util.string import remove_quotes, quote_multiword, \
+                             split_crab_vars, true_string
 
 class CrabStore:
     def get_jobs(self, host=None, user=None, include_deleted=False):
@@ -121,14 +122,14 @@ class CrabStore:
                 m = cronrule.search(job)
                 if m is not None:
                     (time, command) = m.groups()
+                    (command, vars) = split_crab_vars(command)
 
-                    if command.startswith('CRABIGNORE='):
-                        (ignore, command) = split_quoted_word(command[11:])
-                        if ignore.lower() not in ['0', 'no', 'false', 'off']:
+                    if 'CRABIGNORE' in vars:
+                        if true_string(vars['CRABIGNORE']):
                             continue
 
-                    if command.startswith('CRABID='):
-                        (crabid, command) = split_quoted_word(command[7:])
+                    if 'CRABID' in vars:
+                        crabid = vars['CRABID']
 
                     command = command.rstrip()
 

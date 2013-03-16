@@ -23,7 +23,7 @@ from optparse import OptionParser
 
 from crab import CrabError, CrabStatus
 from crab.client import CrabClient
-from crab.util.string import split_quoted_word
+from crab.util.string import split_crab_vars, true_string
 
 def main():
     parser = OptionParser()
@@ -46,13 +46,23 @@ def main():
     if options.command is None:
         parser.error('COMMAND not specified')
 
-    command = options.command
+    (command, vars) = split_crab_vars(options.command)
 
-    # Strip leading CRABIGNORE variable from command if present.
+    # Update environment with parsed variables and extract any
+    # additional variables from the environment.
 
-    if command.startswith('CRABIGNORE='):
-        (ignore, command) = split_quoted_word(command[11:])
-        if ignore.lower() not in ['0', 'no', 'false', 'off']:
+    env = os.environ
+
+    for envvar in vars:
+        env[envvar] = vars[envvar]
+    for envvar in env:
+        if envvar.startswith('CRAB') and envvar not in vars:
+            vars[envvar] = env[envvar]
+
+    # Check CRABIGNORE variable from command if present.
+
+    if 'CRABIGNORE' in vars:
+        if true_string(vars['CRABIGNORE']):
             # Currently ignore being told to ignore the cron job as
             # CRABIGNORE was designed to be used in crontab importing.
             # TODO: consider whether crabsh ought to do anything
@@ -64,29 +74,25 @@ def main():
     # Note that cron defaults to sh regardless of the user's shell.
 
     shell = '/bin/sh'
-    env = os.environ
 
     if options.shell:
         shell = options.shell
-    elif 'CRABSHELL' in env:
-        shell = env['CRABSHELL']
+    elif 'CRABSHELL' in vars:
+        shell = vars['CRABSHELL']
 
     # Look for cron job ID
+    #
+    # We could leave the CRABID in the command for the shell to
+    # extract, but stripping it off makes sure the command matches
+    # that in the database and allows for shells which cannot handle
+    # variables given at the start of a command.
 
     crabid = None
 
     if options.crabid:
         crabid = options.crabid
-    elif command.startswith('CRABID='):
-        (crabid, command) = split_quoted_word(command[7:])
-
-        # We could leave the CRABID in the command for the shell to
-        # extract, but doing it this way makes sure the command matches
-        # that in the database and allows for shells which cannot handle
-        # variables given at the start of a command
-        env['CRABID'] = crabid
-    elif 'CRABID' in env:
-        crabid = env['CRABID']
+    elif 'CRABID' in vars:
+        crabid = vars['CRABID']
 
     # Attempt to execute the command
 
@@ -95,7 +101,6 @@ def main():
     try:
         client.start()
     #except CrabError as err:
-    #except CrabError, err:
     except CrabError:
         err = sys.exc_info()[1]
         print('crabsh: ' + command)
@@ -118,10 +123,7 @@ def main():
                       (latin_1_decode(stdoutdata, 'replace'))[0],
                       (latin_1_decode(stderrdata, 'replace'))[0])
 
-
-
     #except OSError as err:
-    #except OSError, err:
     except OSError:
         err = sys.exc_info()[1]
         try:
@@ -132,7 +134,6 @@ def main():
             print('ERROR: ' + str(err))
 
     #except CrabError as err:
-    #except CrabError, err:
     except CrabError:
         err = sys.exc_info()[1]
         # Print fall-back message for cron to send by email (to the
@@ -149,8 +150,7 @@ def main():
     else:
         # Echo the output only if we didn't already print it due
         # to an exception occurring.
-        if (('CRABECHO' in env) and (env['CRABECHO'].lower() not in
-                    ('', '0', 'no', 'false', 'off'))):
+        if ('CRABECHO' in vars) and true_string(vars['CRABECHO']):
             if stdoutdata != '':
                 print(stdoutdata)
             if stderrdata != '':
