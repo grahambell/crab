@@ -59,16 +59,6 @@ def main():
         if envvar.startswith('CRAB') and envvar not in vars:
             vars[envvar] = env[envvar]
 
-    # Check CRABIGNORE variable from command if present.
-
-    if 'CRABIGNORE' in vars:
-        if true_string(vars['CRABIGNORE']):
-            # Currently ignore being told to ignore the cron job as
-            # CRABIGNORE was designed to be used in crontab importing.
-            # TODO: consider whether crabsh ought to do anything
-            # in this case.
-            pass
-
     # Determine shell to use
     #
     # Note that cron defaults to sh regardless of the user's shell.
@@ -79,6 +69,19 @@ def main():
         shell = options.shell
     elif 'CRABSHELL' in vars:
         shell = vars['CRABSHELL']
+
+    # Check CRABIGNORE variable from command if present.
+
+    if 'CRABIGNORE' in vars and true_string(vars['CRABIGNORE']):
+        try:
+            return subprocess.call([shell, '-c', command], env=env)
+
+        except OSError:
+            err = sys.exc_info()[1]
+            print('crabsh (' + shell + '): ' + command)
+            print('ERROR: ' + str(err))
+
+            return 1
 
     # Look for cron job ID
     #
@@ -129,7 +132,7 @@ def main():
         try:
             client.finish(CrabStatus.COULDNOTSTART, str(err))
         except CrabError:
-            print('crabsh: ' + command)
+            print('crabsh (' + shell + '): ' + command)
             print('Failed to notify that job could not start.')
             print('ERROR: ' + str(err))
 

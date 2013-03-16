@@ -226,7 +226,8 @@ The syntax for each cron job is as follows::
     <schedule> [CRABIGNORE=yes] [CRABID=<identifier>] <command string>
 
 A command starting with CRABIGNORE set to a value other than
-0/no/off/false will be ignored when importing a crontab.
+0/no/off/false will be ignored when importing a crontab,
+and ``crabsh`` will not report its status to the Crab server.
 
 A CRABID specification will override any CRABID environment variable
 in effect, and is a better way of specifying the identifier as it
