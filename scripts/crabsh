@@ -19,10 +19,12 @@ from codecs import latin_1_encode, latin_1_decode
 import os
 import sys
 import subprocess
+import time
 from optparse import OptionParser
 
 from crab import CrabError, CrabStatus
 from crab.client import CrabClient
+from crab.util.pid import pidfile_write, pidfile_running, pidfile_delete
 from crab.util.string import split_crab_vars, true_string
 
 def main():
@@ -36,6 +38,9 @@ def main():
     parser.add_option('--shell',
         type='string', dest='shell',
         help='use SHELL to execute COMMAND', metavar='SHELL')
+    parser.add_option('--pidfile',
+        type='string', dest='pidfile',
+        help='use PIDFILE to avoid re-running COMMAND', metavar='PIDFILE')
 
     (options, args) = parser.parse_args()
 
@@ -97,9 +102,30 @@ def main():
     elif 'CRABID' in vars:
         crabid = vars['CRABID']
 
+    # Look for PID file setting
+
+    pidfile = None
+
+    if options.pidfile:
+        pidfile = options.pidfile
+    elif 'CRABPIDFILE' in vars:
+        pidfile = vars['CRABPIDFILE']
+
     # Attempt to execute the command
 
     client = CrabClient(command, crabid=crabid)
+
+    if pidfile is not None:
+        if pidfile_running(pidfile):
+            try:
+                client.finish(CrabStatus.ALREADYRUNNING)
+            except CrabError:
+                err = sys.exc_info()[1]
+                print('crabsh: ' + command)
+                print('Failed to notify job already running.')
+                print('ERROR: ' + str(err) + '\n')
+
+            return 0
 
     try:
         client.start()
@@ -116,7 +142,18 @@ def main():
                              stderr=subprocess.PIPE,
                              env=env)
 
+        if pidfile is not None:
+            # Add a short delay before creating the PID file in case
+            # the cmdline which pidfile_write uses changes when the
+            # shell starts running the command.
+            time.sleep(5)
+            pidfile_write(pidfile, p.pid)
+
         (stdoutdata, stderrdata) = p.communicate()
+
+        if pidfile is not None:
+            pidfile_delete(pidfile)
+
         returncode = CrabStatus.SUCCESS
 
         if p.returncode:

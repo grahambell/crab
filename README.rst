@@ -260,6 +260,13 @@ CRABID
     This should be used with caution to avoid specifying the same
     identifier for multiple cron jobs.
 
+CRABPIDFILE
+    Gives the path to a PID file which ``crabsh`` should use to control
+    the execution of a cron job.  When this parameter is set, it will
+    use the file to try not to run multiple copies of the job at the
+    same time.  Each job should have a separate PID file, so this
+    parameter is most conveniently given at the start of a command string.
+
 CRABPORT
     Specifies the port on the Crab server, overriding the setting in the
     configuration file.
