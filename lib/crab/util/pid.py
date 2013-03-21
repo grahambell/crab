@@ -13,7 +13,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from hashlib import md5
+# hashlib replaced md5 in Python 2.5
+try:
+    from hashlib import md5
+except ImportError:
+    from md5 import md5
 import os
 import os.path
 
