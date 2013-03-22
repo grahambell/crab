@@ -260,6 +260,13 @@ CRABID
     This should be used with caution to avoid specifying the same
     identifier for multiple cron jobs.
 
+CRABIGNORE
+    Prevents Crab from acting on specific cron jobs.  Jobs imported
+    with this value present and not set to 0/no/off/false will not
+    be entered into the database.  Additionally if the ``crabsh``
+    wrapper script is used to run such a job, it will not report its
+    status to the Crab server.
+
 CRABPIDFILE
     Gives the path to a PID file which ``crabsh`` should use to control
     the execution of a cron job.  When this parameter is set, it will
