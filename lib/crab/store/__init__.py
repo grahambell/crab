@@ -94,10 +94,11 @@ class CrabStore:
         variable = re.compile('^\s*(\w+)\s*=\s*(.*)$')
         cronrule = re.compile('^\s*(@\w+|\S+\s+\S+\s+\S+\s+\S+\s+\S+)\s+(.*)$')
 
-        crabid = None
         idset = set()
         idsaved = set()
         warning = []
+        env = {}
+
         for job in self.get_jobs(host, user):
             idset.add(job['id'])
 
@@ -113,27 +114,26 @@ class CrabStore:
                 m = variable.search(job)
                 if m is not None:
                     (var, value) = m.groups()
-                    if var == 'CRABID':
-                        crabid = remove_quotes(value.rstrip())
                     if var == 'CRON_TZ':
                         timezone = remove_quotes(value.rstrip())
+                    elif var.startswith('CRAB'):
+                        env[var] = remove_quotes(value.rstrip())
                     continue
 
                 m = cronrule.search(job)
                 if m is not None:
                     (time, command) = m.groups()
-                    (command, vars) = split_crab_vars(command)
+                    (command, jobvars) = split_crab_vars(command)
+                    vars = env.copy()
+                    vars.update(jobvars)
 
                     if 'CRABIGNORE' in vars:
                         if true_string(vars['CRABIGNORE']):
                             continue
 
-                    if 'CRABID' in vars:
-                        crabid = vars['CRABID']
-
                     command = command.rstrip()
 
-                    id_ = self._check_job(host, user, crabid,
+                    id_ = self._check_job(host, user, vars.get('CRABID'),
                                           command, time, timezone)
 
                     if id_ in idsaved:
@@ -143,7 +143,7 @@ class CrabStore:
                         idsaved.add(id_)
 
                     idset.discard(id_)
-                    crabid = None
+
                     continue
 
                 warning.append('Did not recognise line: ' + job)
