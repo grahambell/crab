@@ -16,18 +16,39 @@
 import re
 
 def remove_quotes(value):
-  """If the given string starts and ends with matching quote marks,
-  remove them from the returned value."""
+    """If the given string starts and ends with matching quote marks,
+    remove them from the returned value.
 
-  if (value.startswith("'") and value.endswith("'")) \
-  or (value.startswith('"') and value.endswith('"')):
-      return value[1:-1]
-  else:
-      return value
+    >>> remove_quotes('alpha')
+    'alpha'
+    >>> remove_quotes('"bravo"')
+    'bravo'
+    >>> remove_quotes("'charlie'")
+    'charlie'
+
+    If the quotes are mismatched it should not remove them.
+
+    >>> remove_quotes('"delta')
+    '"delta'
+    >>> remove_quotes("echo'")
+    "echo'"
+    """
+
+    if (value.startswith("'") and value.endswith("'")) \
+    or (value.startswith('"') and value.endswith('"')):
+        return value[1:-1]
+    else:
+        return value
 
 def quote_multiword(value):
     """If the given string contains space characters, return it
-    surrounded by double quotes, otherwise return the original string."""
+    surrounded by double quotes, otherwise return the original string.
+
+    >>> quote_multiword('alpha')
+    'alpha'
+    >>> quote_multiword('bravo charlie')
+    '"bravo charlie"'
+    """
 
     if value.find(' ') != -1:
         return '"' + value + '"'
@@ -65,6 +86,11 @@ def split_crab_vars(command):
     variables in the 'CRAB namespace', i.e. those consisting of CRAB
     followed by a number of upper case characters.
 
+    >>> split_crab_vars('some command')
+    ('some command', {})
+    >>> split_crab_vars('CRABALPHA=bravo another command')
+    ('another command', {'CRABALPHA': 'bravo'})
+
     Returns: a tuple consisting of the remainder of the command and
     a dictionary of Crab's environment variables."""
 
@@ -84,12 +110,20 @@ def split_crab_vars(command):
 
 def alphanum(value):
     """Removes all non-alphanumeric characters from the string,
-    replacing them with underscores."""
+    replacing them with underscores.
+
+    >>> alphanum('a3.s_?x9!t')
+    'a3_s__x9_t'
+    """
 
     return re.sub('[^a-zA-Z0-9]', '_', value)
 
 def mergelines(text):
-    """Merges the lines of a string by removing newline characters."""
+    """Merges the lines of a string by removing newline characters.
+
+    >>> mergelines('alpha' + chr(10) + 'bravo')
+    'alphabravo'
+    """
 
     output = ''
     for line in text.split('\n'):
@@ -97,6 +131,22 @@ def mergelines(text):
     return output
 
 def true_string(text):
-    """Tests whether the string represents a true value."""
+    """Tests whether the string represents a true value.
+
+    The following strings are false:
+
+    >>> [true_string(x) for x in ['0', 'no', 'false', 'off']]
+    [False, False, False, False]
+
+    And anything else is taken to be true, for example:
+
+    >>> [true_string(x) for x in ['1', 'yes', 'true', 'on']]
+    [True, True, True, True]
+
+    The results are case insensitive.
+
+    >>> [true_string(x) for x in ['no', 'NO', 'True', 'Off']]
+    [False, False, True, False]
+    """
 
     return text.lower() not in ['0', 'no', 'false', 'off']

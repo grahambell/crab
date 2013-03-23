@@ -21,7 +21,13 @@ def abbr(text, limit=60, tolerance=10):
     The text is trimmed to the given length limit, but if a space is found
     within the preceeding 'tolerance' number of characters, then it
     is trimmed there.  The result is an HTML span element with the
-    full text as the title, unless it was not necessary to trim it."""
+    full text as the title, unless it was not necessary to trim it.
+
+    >>> abbr('alpha bravo', 15, 5)
+    'alpha bravo'
+    >>> abbr('alpha bravo charlie', 15, 5)
+    '<span title="alpha bravo charlie">alpha bravo&hellip;</span>'
+    """
 
     if len(text) > limit:
         space = text.rfind(' ', limit - tolerance, limit)
