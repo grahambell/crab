@@ -284,13 +284,6 @@ label {
     text-align: right;
 }
 
-
-[class^="icon-"]:before, [class*=" icon-"]:before {
-    display: inline !important;
-    padding-right: 1ex;
-}
-
-p a[class^="icon-"], p a[class*=" icon-"] {
-    padding-left: 1ex;
-    padding-right: 1ex;
+a + a > *[class^="icon-"], a + a > *[class*=" icon-"] {
+    padding-left: 2ex;
 }

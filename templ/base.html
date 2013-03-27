@@ -6,7 +6,7 @@
 <head>
 <title>Crab</title>
 <link rel="stylesheet" href="/res/crab.css">
-<!-- Icons from: Font Awesome - http://fortawesome.github.com/Font-Awesome -->
+<!-- Icons from: Font Awesome by Dave Gandy - http://fortawesome.github.com/Font-Awesome -->
 <link rel="stylesheet" href="/res/font/font-awesome.css">
 <link rel="icon" href="/res/favicon.png" sizes="16x16" type="image/png">
 % if self.attr.scripts:
@@ -24,11 +24,11 @@
 <div id="headerbar">
 <h1><a href="/">Crab</a></h1>
 <ul>
-<li class="icon-table"><a href="/">Dashboard</a></li>
-<li class="icon-envelope"><a href="/notify">Notifications</a></li>
+<li><span class="icon-table"></span> <a href="/">Dashboard</a></li>
+<li><span class="icon-envelope"></span> <a href="/notify">Notifications</a></li>
 </ul>
 <div>
-<a class="rss icon-rss" href="/rss/failures">Failures</a>
+<a class="rss" href="/rss/failures"><span class="icon-rss"></span> Failures</a>
 </div>
 <%block name="links" />
 </div>
