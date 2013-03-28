@@ -1,3 +1,22 @@
+0.3.0, 2013-03-28
+
+    - Empty job output is no longer stored.
+    - JavaScript uses RegExp instead of replace with 'g' option to avoid
+      problems with browsers which do not support it.
+    - Two new status codes have been added: 'CLEARED' and 'ALREADYRUNNING'.
+    - The web interface now provides an option to clear the status of
+      a job, returning it to a green color on the dashboard by inserting a
+      'CLEARED' event.
+    - Added a basic pidfile module which crabsh can use to detect that a job
+      is already running and send an 'ALREADYRUNNING' status instead of
+      starting it again.
+    - Improved parsing of CRAB variables with the intention that crabsh
+      and crabd both consisently combine variables from the environment
+      with those specified at the start of a job command line.
+    - CRABIGNORE now prevents crabsh reporting the status of a job.
+    - PyRSS2Gen is now an optional dependency, and if it is not present,
+      the RSS button will not be shown.
+
 0.2.0, 2012-10-17
 
     - Minor update to the database schema to replace confusing names.
