@@ -27,9 +27,11 @@
 <li><span class="icon-table"></span> <a href="/">Dashboard</a></li>
 <li><span class="icon-envelope"></span> <a href="/notify">Notifications</a></li>
 </ul>
+% if options.get('rss_enabled'):
 <div>
 <a class="rss" href="/rss/failures"><span class="icon-rss"></span> Failures</a>
 </div>
+% endif
 <%block name="links" />
 </div>
 

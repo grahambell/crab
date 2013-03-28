@@ -22,8 +22,8 @@ Packages
 * crontab (0.15 or newer): http://pypi.python.org/pypi/crontab/#downloads
 * CherryPy: http://download.cherrypy.org/cherrypy/
 * Mako templates: http://pypi.python.org/pypi/Mako/#downloads
-* PyRSS2Gen: http://dalkescientific.com/Python/PyRSS2Gen.html
 * jQuery: http://code.jquery.com/
+* PyRSS2Gen: http://dalkescientific.com/Python/PyRSS2Gen.html (optional)
 * Font Awesome: http://fortawesome.github.com/Font-Awesome (optional)
 
 Python Version

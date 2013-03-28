@@ -19,7 +19,11 @@ import cherrypy
 
 from crab.service.monitor import CrabMonitor
 from crab.service.notify import CrabNotifyService
-from crab.web.rss import CrabRSS
+# crab.web.rss imports the optional PyRSS2Gen requirement
+try:
+    from crab.web.rss import CrabRSS
+except ImportError:
+    CrabRSS = None
 from crab.server import CrabServer
 from crab.server.config import read_crabd_config, construct_store
 from crab.web.web import CrabWeb
@@ -43,12 +47,25 @@ def main():
     notify.start()
 
     cherrypy.config.update(config)
-    cherrypy.tree.mount(CrabWeb(config, store, monitor, {
-                            'Monitor' : monitor,
-                            'Notification' : notify
-                        }), '/', config)
+
+    cherrypy.tree.mount(
+        CrabWeb(store, monitor,
+                config['crab']['home'],
+                {
+                    'Monitor' : monitor,
+                    'Notification' : notify,
+                },
+                {
+                    'rss_enabled': (CrabRSS is not None),
+                }),
+         '/', config)
+
     cherrypy.tree.mount(CrabServer(store), '/api/0', {})
-    cherrypy.tree.mount(CrabRSS(store, config['crab']['base_url']), '/rss', {})
+
+    if CrabRSS is not None:
+        cherrypy.tree.mount(
+            CrabRSS(store, config['crab']['base_url']),
+            '/rss', {})
 
     cherrypy.engine.start()
     cherrypy.engine.block()

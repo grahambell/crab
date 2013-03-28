@@ -78,17 +78,17 @@ class CrabWebQuery:
 class CrabWeb:
     """CherryPy handler for the HTML part of the crab web interface."""
 
-    def __init__(self, config, store, monitor, service):
+    def __init__(self, store, monitor, crab_home, service, options):
         """Constructor for CrabWeb class.
 
-        Stores a reference to the given storage backend, and extracts
+        Stores a reference to the given storage backend, and
         the home directory from the config dict.  Prepares the template
         engine and instantiates a CrabWebQuery object which CherryPy
         can find as 'query'."""
         self.store = store
         self.monitor = monitor
-        home = config['crab']['home']
-        self.templ = TemplateLookup(directories=[home + '/templ'])
+        self.options = options
+        self.templ = TemplateLookup(directories=[crab_home + '/templ'])
         self.query = CrabWebQuery(store, monitor, service)
 
     @cherrypy.expose
@@ -469,7 +469,7 @@ class CrabWeb:
 
         try:
             template = self.templ.get_template(name)
-            return template.render(**dict)
+            return template.render(options=self.options, **dict)
         except:
             return exceptions.html_error_template().render()
 
