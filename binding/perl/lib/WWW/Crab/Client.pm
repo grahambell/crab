@@ -81,9 +81,6 @@ sub new {
     my $class = shift;
     my %opt = @_;
 
-    my ($username, undef, undef, undef, undef, undef, undef,
-        undef, undef, undef) = getpwuid($<);
-
     my $conf = new Config::IniFiles(-file => \'', -allowempty => 1);
     my $conf_system = File::Spec->catfile($ENV{'CRABSYSCONFIG'} || '/etc/crab',
                                           'crab.ini');
@@ -107,7 +104,7 @@ sub new {
         hostname => $opt{'hostname'} || $conf->val('client', 'hostname',
                                             hostname()),
         username => $opt{'username'} || $conf->val('client', 'username',
-                                            $username),
+                                            _get_username()),
     };
 
     return bless $self, $class;
@@ -214,6 +211,32 @@ sub _get_url {
 
     return 'http://' . $self->{'server'} . ':' . $self->{'port'} . '/' .
            join('/', 'api', '0', $action, @path);
+}
+
+# _get_username()
+#
+# Detects the username of the current user.
+#
+# This provides the default value for the username parameter
+# of the WWW::Crab::Client constructor.
+
+sub _get_username {
+    my $username = undef;
+
+    eval {
+        $username = scalar getpwuid($<);
+    };
+
+    return $username if defined $username;
+
+    eval {
+        require Win32;
+        $username = Win32::LoginName();
+    };
+
+    return $username if defined $username;
+
+    return 'user';
 }
 
 1;
