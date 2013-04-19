@@ -7,23 +7,31 @@ function refreshJobEventsError(xhr, text, error) {
 }
 
 function refreshJobEvents(enddate) {
-    var params = '?barerows=1&' + $('#eventsform').serialize();
+    var params = $('#eventsform').serialize();
 
     if (enddate !== null) {
         params = params + '&enddate=' + encodeURIComponent(enddate);
     }
 
-    $.ajax('/job/'+ jobidnumber + params, {
+    $.ajax('/job/'+ jobidnumber + '?barerows=1&' + params, {
         dateType: 'html',
         success: refreshJobEventsSuccess,
         error: refreshJobEventsError,
         timeout: 10000
     });
+
+    var stateObj = {'enddate': enddate};
+    history.replaceState(stateObj, '', '/job/' + jobidnumber + '?' + params);
 }
 
 $(document).ready(function () {
     $('#eventsform').change(function (event) {
-        refreshJobEvents(null);
+        if (history.state && ('enddate' in history.state)) {
+            refreshJobEvents(history.state.enddate);
+        }
+        else {
+            refreshJobEvents(null);
+        }
     });
 
     $('#eventslast').click(function (event) {
