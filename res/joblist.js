@@ -191,8 +191,8 @@ function dashboardSorter(keyfield) {
             tab.append($(arr[i].row).detach());
         }
 
-        $('#joblisthead a').removeClass();
-        $('#heading' + keyfield).addClass('icon-sort-' + (sortdirection > 0 ? 'up' : 'down'));
+        $('#joblisthead span').removeClass();
+        $('#preheading' + keyfield).addClass('icon-sort-' + (sortdirection > 0 ? 'up' : 'down'));
 
         sortdirection = - sortdirection;
         sortByStatus = false;
@@ -206,8 +206,8 @@ function dashboardSortStatus(event) {
     tab.prepend(tab.children().has('.status_warn').detach());
     tab.prepend(tab.children().has('.status_fail').detach());
     sortByStatus = true;
-    $('#joblisthead a').removeClass();
-    $('#headingstatus').addClass('icon-sort');
+    $('#joblisthead span').removeClass();
+    $('#preheadingstatus').addClass('icon-sort');
     event.preventDefault();
 }
 
