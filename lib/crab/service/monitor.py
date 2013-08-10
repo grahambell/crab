@@ -150,8 +150,11 @@ class CrabMonitor(CrabMinutely):
                         (self.last_start[id_] +
                          self.config[id_]['graceperiod'] < datetime_)):
                     self._write_alarm(id_, CrabStatus.LATE)
-                    self.miss_timeout[id_] = (datetime_ +
-                            self.config[id_]['graceperiod'])
+
+                    # Do not reset the miss timeout if it is already "running".
+                    if id_ not in self.miss_timeout:
+                        self.miss_timeout[id_] = (datetime_ +
+                                self.config[id_]['graceperiod'])
 
         # Look for new or deleted jobs.
         currentjobs = set(self.status.keys())
