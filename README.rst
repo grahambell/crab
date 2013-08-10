@@ -96,6 +96,11 @@ must point to the location of Crab's data files and the database file
 just created.  By default the data files are installed in ``share/crab``
 relative to the Python system prefix (``sys.prefix``).
 
+There is also an ``[outputstore]`` section in the server configuration
+file.  This allows the output from cron jobs and raw crontab files
+to be stored separately, and can be used to prevent the main
+database from becoming excessively large.
+
 Running
 ~~~~~~~
 
@@ -382,7 +387,7 @@ values, but if either is left blank, then it will match all entries.
 Copyright
 ---------
 
-Copyright (C) 2012 Science and Technology Facilities Council.
+Copyright (C) 2012-2013 Science and Technology Facilities Council.
 
 Crab is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
