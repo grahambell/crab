@@ -31,6 +31,15 @@ class CrabStore:
         with self.lock:
             return self._get_jobs(host, user, include_deleted)
 
+    def delete_job(self, id_):
+        """Mark a job as deleted."""
+        with self.lock:
+            self._delete_job(id_)
+
+    def undelete_job(self, id_):
+        """Remove deletion mark from a job."""
+        with self.lock:
+            self._update_job(id_)
 
     def get_crontab(self, host, user):
         """Fetches the job entries for a particular host and user and builds

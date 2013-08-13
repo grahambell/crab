@@ -78,3 +78,16 @@ Any parameter which is left blank here will use the default value.
         </li>
     </ol>
 </form>
+
+<h2>Job Control</h2>
+
+<p>
+    <a href="/job/${id | h}/delete"><span class="icon-trash"></span>
+% if info['deleted'] is None:
+        Delete
+% else:
+        Undelete
+% endif
+        job.
+    </a>
+</p>

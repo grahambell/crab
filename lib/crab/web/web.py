@@ -209,6 +209,27 @@ class CrabWeb:
                         'description': 'Reset the job status?',
                         'target': '/job/' + str(id_) + '/clear'})
 
+        elif command == 'delete':
+            notdeleted = info['deleted'] is None
+            if submit_confirm:
+                if notdeleted:
+                    self.store.delete_job(id_)
+                else:
+                    self.store.undelete_job(id_)
+
+                raise HTTPRedirect('/job/' + str(id_))
+
+            elif submit_cancel:
+                raise HTTPRedirect('/job/' + str(id_))
+
+            else:
+                return self._write_template('confirm.html',
+                       {'id': id_, 'info': info,
+                       'title': 'delete' if notdeleted else 'undelete',
+                       'description': ('Delete' if notdeleted else 'Undelete') +
+                                       ' this job from the server?',
+                       'target': '/job/' + str(id_) + '/delete'})
+
         elif command == 'output':
             finishid_next = None
             finishid_prev = None
