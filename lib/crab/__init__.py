@@ -36,8 +36,10 @@ class CrabStatus:
     UNKNOWN = 2
     COULDNOTSTART = 3
     ALREADYRUNNING = 4
+    WARNING = 5
 
-    VALUES = set([SUCCESS, FAIL, UNKNOWN, COULDNOTSTART, ALREADYRUNNING])
+    VALUES = set([SUCCESS, FAIL, UNKNOWN, COULDNOTSTART, ALREADYRUNNING,
+                  WARNING])
 
     # Additional internal status values (it is not valid for
     # a client to send these).  Also some of these are less bad
@@ -51,7 +53,7 @@ class CrabStatus:
     INTERNAL_VALUES = set([LATE, MISSED, TIMEOUT, CLEARED])
 
     _error_names = ['Succeeded', 'Failed', 'Unknown', 'Could not start',
-                    'Already running']
+                    'Already running', 'Warning']
     _alarm_names = ['Late', 'Missed', 'Timed out', 'Cleared']
 
     @staticmethod
@@ -84,7 +86,9 @@ class CrabStatus:
     @staticmethod
     def is_warning(status):
         """True if the given status is some kind of warning."""
-        return status == CrabStatus.UNKNOWN or status == CrabStatus.MISSED
+        return (status == CrabStatus.UNKNOWN or
+                status == CrabStatus.MISSED or
+                status == CrabStatus.WARNING)
 
     @staticmethod
     def is_error(status):

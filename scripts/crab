@@ -123,6 +123,7 @@ Commands:
                        'unknown': CrabStatus.UNKNOWN,
                        'couldnotstart': CrabStatus.COULDNOTSTART,
                        'alreadyrunning': CrabStatus.ALREADYRUNNING,
+                       'warning': CrabStatus.WARNING,
                       }
 
     if len(args) == 0:
