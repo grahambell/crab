@@ -107,6 +107,13 @@ Commands:
     parser.add_option('--raw',
         action="store_true", dest="raw", default=False,
         help="fetch crontab from server exactly as last imported")
+    parser.add_option('--stdout',
+        type="string", dest='stdoutfile',
+        help='file containg standard output to send')
+    parser.add_option('--stderr',
+        type="string", dest='stderrfile',
+        help='file containg standard error to send')
+
 
     (options, args) = parser.parse_args()
 
@@ -131,7 +138,23 @@ Commands:
                 if args[0] == 'start':
                     client.start()
                 else:
-                    client.finish(status=status_commands[args[0]])
+                    stdoutdata = ''
+                    stderrdata = ''
+
+                    if options.stdoutfile is not None:
+                        stdoutdata = read_file(options.stdoutfile)
+                        if stdoutdata is None:
+                            stdoutdata = 'Failed to read from file: ' + \
+                                         options.stdoutfile
+
+                    if options.stderrfile is not None:
+                        stderrdata = read_file(options.stderrfile)
+                        if stderrdata is None:
+                            stderrdata = 'Failed to read from file: ' + \
+                                         options.stderrfile
+
+                    client.finish(status=status_commands[args[0]],
+                                  stdoutdata=stdoutdata, stderrdata=stderrdata)
 
             #except CrabError as err:
             except CrabError:
