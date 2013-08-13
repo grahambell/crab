@@ -110,8 +110,13 @@ Commands:
 
     (options, args) = parser.parse_args()
 
-    status_commands = ['finish', 'fail', 'unknown', 'couldnotstart',
-                       'alreadyrunning']
+    status_commands = {
+                       'finish': CrabStatus.SUCCESS,
+                       'fail': CrabStatus.FAIL,
+                       'unknown': CrabStatus.UNKNOWN,
+                       'couldnotstart': CrabStatus.COULDNOTSTART,
+                       'alreadyrunning': CrabStatus.ALREADYRUNNING,
+                      }
 
     if len(args) == 0:
         parser.error('no command specified')
@@ -126,7 +131,7 @@ Commands:
                 if args[0] == 'start':
                     client.start()
                 else:
-                    client.finish(status=status_commands.index(args[0]))
+                    client.finish(status=status_commands[args[0]])
 
             #except CrabError as err:
             except CrabError:
