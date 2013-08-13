@@ -60,11 +60,15 @@ def read_crontab():
     except OSError:
         print(sys.argv[0] + ': could not execute crontab command')
 
-def read_file(path):
+def read_file(path, silent=False):
     """Returns the contents of the given file.
 
     The file is opened in text-mode read, so it should return
-    a unicode string."""
+    a unicode string.
+
+    If the "silent" option is specified, a warning will not
+    be printed on failure.  (Useful for commands which we
+    expect to be running in a cron job.)"""
 
     if path == '-':
         return sys.stdin.read()
@@ -77,8 +81,9 @@ def read_file(path):
             return fh.read()
 
         except IOError:
-            err = sys.exc_info()[1]
-            print(sys.argv[0] + ': cannot read file: ' + str(err))
+            if not silent:
+                err = sys.exc_info()[1]
+                print(sys.argv[0] + ': cannot read file: ' + str(err))
 
     finally:
         if fh is not None:
@@ -139,22 +144,28 @@ Commands:
                 if args[0] == 'start':
                     client.start()
                 else:
+                    status = status_commands[args[0]]
                     stdoutdata = ''
                     stderrdata = ''
 
                     if options.stdoutfile is not None:
-                        stdoutdata = read_file(options.stdoutfile)
+                        stdoutdata = read_file(options.stdoutfile, silent=True)
                         if stdoutdata is None:
                             stdoutdata = 'Failed to read from file: ' + \
                                          options.stdoutfile
+                            if CrabStatus.is_ok(status):
+                                status = CrabStatus.WARNING
 
                     if options.stderrfile is not None:
-                        stderrdata = read_file(options.stderrfile)
+                        stderrdata = read_file(options.stderrfile, silent=True)
                         if stderrdata is None:
                             stderrdata = 'Failed to read from file: ' + \
                                          options.stderrfile
+                            if CrabStatus.is_ok(status):
+                                status = CrabStatus.WARNING
 
-                    client.finish(status=status_commands[args[0]],
+
+                    client.finish(status,
                                   stdoutdata=stdoutdata, stderrdata=stderrdata)
 
             #except CrabError as err:
