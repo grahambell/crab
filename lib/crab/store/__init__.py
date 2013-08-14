@@ -41,6 +41,14 @@ class CrabStore:
         with self.lock:
             self._update_job(id_)
 
+    def update_job(self, id_, **kwargs):
+        """Updates job information.
+
+        Keyword arguments are passed on to the private _update_job method,
+        and can include: crabid, command, time, timezone."""
+        with self.lock:
+            self._update_job(id_, **kwargs)
+
     def get_crontab(self, host, user):
         """Fetches the job entries for a particular host and user and builds
         a crontab style representation.
