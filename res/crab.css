@@ -133,6 +133,10 @@ h3 {
     margin-bottom: 10px;
 }
 
+p.text {
+    max-width: 80ex;
+}
+
 table {
     border-collapse: collapse;
     width: 100%;
