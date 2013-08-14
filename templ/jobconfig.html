@@ -14,39 +14,12 @@
 <span>configuration</span>
 </%block>
 
-% if config is None:
-%     if orphan:
-<h2>Re-link Orphaned Job Configuration</h2>
-<p>
-There are orphaned configurations,
-relating to deleted jobs.
-</p>
-<p>
-If this job is the continuation of one which
-has been deleted, its configuration can be
-transferred by selecting it for re-linking.
-</p>
-<form method="post" action="/job/${id | h}/config">
-<p>
-<select name="orphan">
-% for o in orphan:
-    <option value="${o['configid'] | h}">
-        ${o['host'] | h} ${o['user'] | h}
-%     if o['crabid'] is not None:
-        ${o['crabid'] | h}
-%     endif
-        ${o['command'] | h}
-    </option>
-% endfor
-</select>
-<input type="submit" name="submit_relink" value="Re-link" />
-</p>
-</form>
-%     endif
+<h2>Job Configuration</h2>
 
-<h2>Add New Job Configuration</h2>
+% if config is None:
+<h3>Add New Job Configuration</h3>
 % else:
-<h2>Edit Job Configuration</h2>
+<h3>Edit Job Configuration</h3>
 % endif
 
 <p>
@@ -73,11 +46,42 @@ Any parameter which is left blank here will use the default value.
             minutes
         </li>
         <li>
-            <label for="submit-config">&nbsp;</label>
+            <label for="submit_config">&nbsp;</label>
             <input type="submit" name="submit_config" value="Configure" />
         </li>
     </ol>
 </form>
+
+% if config is None:
+%     if orphan:
+<h3>Re-link Orphaned Job Configuration</h3>
+<p>
+There are orphaned configurations,
+relating to deleted jobs.
+</p>
+<p>
+If this job is the continuation of one which
+has been deleted, its configuration can be
+transferred by selecting it for re-linking.
+</p>
+<form method="post" action="/job/${id | h}/config">
+<p>
+<select name="orphan">
+% for o in orphan:
+    <option value="${o['configid'] | h}">
+        ${o['host'] | h} ${o['user'] | h}
+%     if o['crabid'] is not None:
+        ${o['crabid'] | h}
+%     endif
+        ${o['command'] | h}
+    </option>
+% endfor
+</select>
+<input type="submit" name="submit_relink" value="Re-link" />
+</p>
+</form>
+%     endif
+% endif
 
 <h2>Job Control</h2>
 
