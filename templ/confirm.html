@@ -25,5 +25,10 @@ ${description | h}
 <p>
 <input type="submit" name="submit_cancel" value="Cancel" />
 <input type="submit" name="submit_confirm" value="OK" />
+% if data is not UNDEFINED:
+%     for (key, value) in data.items():
+<input type="hidden" name="${key | h}" value="${value | h}" />
+%     endfor
+% endif
 </p>
 </form>
