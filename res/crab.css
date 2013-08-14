@@ -114,7 +114,21 @@ div#headerbar > span {
 }
 
 h2 {
+    font-size: 150%;
+    font-family: inherit;
+    font-weight: bold;
+    font-style: normal;
     color: #F80;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+h3 {
+    font-size: 125%;
+    font-family: inherit;
+    font-weight: bold;
+    font-style: normal;
+    color: silver;
     margin-top: 10px;
     margin-bottom: 10px;
 }
