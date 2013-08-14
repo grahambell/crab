@@ -110,6 +110,7 @@ class CrabWeb:
             submit_config=None, submit_relink=None,
             submit_confirm=None, submit_cancel=None,
             orphan=None, graceperiod=None, timeout=None,
+            crabid=None,
 
             submit_notify=None, **kwargs):
         """Displays information about a current job.
@@ -229,6 +230,30 @@ class CrabWeb:
                        'description': ('Delete' if notdeleted else 'Undelete') +
                                        ' this job from the server?',
                        'target': '/job/' + str(id_) + '/delete'})
+
+        elif command == 'changeid':
+            if submit_confirm:
+                self.store.update_job(id_, crabid=crabid)
+                raise HTTPRedirect('/job/' + str(id_))
+
+            elif submit_cancel:
+                raise HTTPRedirect('/job/' + str(id_))
+
+            else:
+                return self._write_template('confirm.html',
+                       {'id': id_, 'info': info,
+                       'title': 'change identifier',
+                       'description': 'Change Crab ID for this job?  Please note '
+                                      'that the ID which will be used to report '
+                                      'events related to this job should be '
+                                      'updated at the same time to ensure that '
+                                      'the job continues to be correctly '
+                                      'identified.  This should be done in the '
+                                      'crontab if the CRABID variable is used, '
+                                      'or in the cron job itself in the case '
+                                      'of Crab-aware cron jobs.',
+                       'target': '/job/' + str(id_) + '/changeid',
+                       'data': {'crabid': crabid}})
 
         elif command == 'output':
             finishid_next = None

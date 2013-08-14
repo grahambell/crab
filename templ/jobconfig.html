@@ -95,3 +95,20 @@ transferred by selecting it for re-linking.
         job.
     </a>
 </p>
+
+<h3>Change Crab ID</h2>
+
+<form method="post" action="/job/${id | h}/changeid">
+     <ol>
+        <li>
+            <label for="crabid">New Crab ID</label>
+            <input type="text" name="crabid"
+                value="${info['crabid'] | h}"
+            />
+        </li>
+        <li>
+            <label for="submit_change">&nbsp;</label>
+            <input type="submit" name="submit_change" value="Change" />
+        </li>
+    </ol>
+</form>
