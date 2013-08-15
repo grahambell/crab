@@ -85,8 +85,9 @@ sub new {
     my $conf = new Config::IniFiles(-file => \'', -allowempty => 1);
     my $conf_system = File::Spec->catfile($ENV{'CRABSYSCONFIG'} || '/etc/crab',
                                           'crab.ini');
-    my $conf_user = File::Spec->catfile(File::HomeDir->my_home(),
-                                        '.crab', 'crab.ini');
+    my $conf_user = File::Spec->catfile($ENV{'CRABUSERCONFIG'} ||
+                                        (File::HomeDir->my_home() . '/.crab'),
+                                        'crab.ini');
     $conf = new Config::IniFiles(-file => $conf_system, '-import' => $conf,
                                  -allowempty => 1)
         if (-e $conf_system);

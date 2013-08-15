@@ -1,4 +1,4 @@
-# Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2012-2013 Science and Technology Facilities Council.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -48,19 +48,17 @@ def read_crabd_config():
                              'file': '/var/lib/crab/crab.db'}})
 
     env = os.environ
-
-    if 'CRABSYSCONFIG' in env:
-        sysconfdir = env['CRABSYSCONFIG']
-    else:
-        sysconfdir = '/etc/crab'
+    sysconfdir = env.get('CRABSYSCONFIG', '/etc/crab')
+    userconfdir = env.get('CRABUSERCONFIG', os.path.expanduser('~/.crab'))
 
     try:
         config.update(os.path.join(sysconfdir, 'crabd.ini'))
     except IOError:
         pass
 
+
     try:
-        config.update(os.path.expanduser('~/.crab/crabd.ini'))
+        config.update(os.path.join(userconfdir, 'crabd.ini'))
     except IOError:
         pass
 

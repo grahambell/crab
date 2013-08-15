@@ -292,6 +292,10 @@ CRABSYSCONFIG
     The directory to be searched for system-level configuration files.
     If not set, then /etc/crab will be used.
 
+CRABUSERCONFIG
+    A directory to search for user-level configuration files.  If not
+    set then ~/.crab will be used.
+
 CRON_TZ
     Cron reads this variable to know in which timezone to interpret
     the crontab schedule.  When the server receives a crontab,

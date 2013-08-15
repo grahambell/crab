@@ -1,4 +1,4 @@
-# Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2012-2013 Science and Technology Facilities Council.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -69,19 +69,18 @@ class CrabClient:
         self.config.set('client', 'hostname', socket.gethostname())
         self.config.set('client', 'username', pwd.getpwuid(os.getuid())[0])
 
-        if 'CRABSYSCONFIG' in os.environ:
-            sysconfdir = os.environ['CRABSYSCONFIG']
-        else:
-            sysconfdir = '/etc/crab'
+        env = os.environ
+        sysconfdir = env.get('CRABSYSCONFIG', '/etc/crab')
+        userconfdir = env.get('CRABUSERCONFIG', os.path.expanduser('~/.crab'))
 
         self.configfiles = self.config.read([
                           os.path.join(sysconfdir, 'crab.ini'),
-                          os.path.expanduser('~/.crab/crab.ini')])
+                          os.path.join(userconfdir, 'crab.ini')])
 
-        if 'CRABHOST' in os.environ:
-            self.config.set('server', 'host', os.environ['CRABHOST'])
-        if 'CRABPORT' in os.environ:
-            self.config.set('server', 'port', os.environ['CRABPORT'])
+        if 'CRABHOST' in env:
+            self.config.set('server', 'host', env['CRABHOST'])
+        if 'CRABPORT' in env:
+            self.config.set('server', 'port', env['CRABPORT'])
 
     def start(self):
         """Notify the server that the job is starting."""
