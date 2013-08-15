@@ -25,6 +25,7 @@ Packages
 * jQuery: http://code.jquery.com/
 * PyRSS2Gen: http://dalkescientific.com/Python/PyRSS2Gen.html (optional)
 * Font Awesome: http://fortawesome.github.com/Font-Awesome (optional)
+* ansi_up: https://github.com/drudru/ansi_up (optional)
 
 Python Version
 ~~~~~~~~~~~~~~
@@ -68,6 +69,11 @@ that subdirectory, giving::
 
     res/font/font-awesome.css
     res/font/fontawesome-webfont.*
+
+To use ansi_up to interpret ANSI color commands in cron job output,
+copy or symlink the ``ansi_up.js`` file into Crab's ``res`` directory::
+
+    res/ansi_up.js
 
 The Crab Server
 ---------------

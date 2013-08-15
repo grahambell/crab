@@ -1,6 +1,8 @@
 <%!
     from crab import CrabStatus
     from crab.util.web import abbr
+
+    scripts = ['ansi_up', 'coloroutput']
 %>
 <%inherit file="base.html"/>
 
@@ -44,10 +46,10 @@
     </tr>
     <tr>
         <th>Standard output</th>
-        <td><pre>${stdout.strip() | h}</pre></td>
+        <td><pre class="joboutput">${stdout.strip() | h}</pre></td>
     </tr>
     <tr>
         <th>Standard error</th>
-        <td><pre>${stderr.strip() | h}</pre></td>
+        <td><pre class="joboutput">${stderr.strip() | h}</pre></td>
     </tr>
 </table>
