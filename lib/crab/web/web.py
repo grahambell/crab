@@ -243,7 +243,7 @@ class CrabWeb:
                 return self._write_template('confirm.html',
                        {'id': id_, 'info': info,
                        'title': 'change identifier',
-                       'description': 'Change Crab ID for this job?  Please note '
+                       'description': 'Change Job ID for this job?  Please note '
                                       'that the ID which will be used to report '
                                       'events related to this job should be '
                                       'updated at the same time to ensure that '
