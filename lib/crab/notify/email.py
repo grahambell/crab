@@ -1,4 +1,4 @@
-# Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2012-2013 Science and Technology Facilities Council.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,18 +26,19 @@ from crab.report.html import report_to_html
 class CrabNotifyEmail:
     """Class to send notification messages by email."""
 
-    def __init__(self, config):
+    def __init__(self, crab_home, base_url, config_email):
         """Construct a nofication object.
 
         Stores relevant configuration information in the object."""
 
-        self.home = config['crab']['home']
-        self.server = config['email']['server']
-        self.from_ = config['email']['from']
-        self.subject_ok = config['email']['subject_ok']
-        self.subject_warning = config['email']['subject_warning']
-        self.subject_error = config['email']['subject_error']
-        self.base_url = config['crab']['base_url']
+        self.home = crab_home
+        self.base_url = base_url
+
+        self.server = config_email['server']
+        self.from_ = config_email['from']
+        self.subject_ok = config_email['subject_ok']
+        self.subject_warning = config_email['subject_warning']
+        self.subject_error = config_email['subject_error']
 
     def __call__(self, report, to):
         """Sends a report by email to the given addresses."""

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2012-2013 Science and Technology Facilities Council.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 
 import cherrypy
 
+from crab.notify import CrabNotify
 from crab.service.monitor import CrabMonitor
 from crab.service.notify import CrabNotifyService
 # crab.web.rss imports the optional PyRSS2Gen requirement
@@ -42,7 +43,11 @@ def main():
     monitor.daemon = True
     monitor.start()
 
-    notify = CrabNotifyService(config, store)
+    # Pass whole configuration to CrabNotify to allow it to
+    # construct notification method objects.
+    notifier = CrabNotify(config, store)
+
+    notify = CrabNotifyService(config['notify'], store, notifier)
     notify.daemon = True
     notify.start()
 

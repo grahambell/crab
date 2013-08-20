@@ -1,4 +1,4 @@
-# Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2012-2013 Science and Technology Facilities Council.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,17 +27,17 @@ class CrabNotifyService(CrabMinutely):
 
     Currently only a single daily schedule is implemented."""
 
-    def __init__(self, config, store):
+    def __init__(self, config, store, notify):
         """Constructor method.
 
-        Prepares CrabNotify object and daily CrabSchedule object."""
+        Stores CrabNotify object and daily CrabSchedule object."""
 
         CrabMinutely.__init__(self)
 
         self.store = store
-        self.notify = CrabNotify(config, store)
-        self.schedule = CrabSchedule(config['notify']['daily'],
-                                     config['notify']['timezone'])
+        self.notify = notify
+        self.schedule = CrabSchedule(config['daily'],
+                                     config['timezone'])
         self.config = {}
         self.sched = {}
 

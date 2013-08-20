@@ -1,4 +1,4 @@
-# Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2012-2013 Science and Technology Facilities Council.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,7 +28,9 @@ class CrabNotify:
     def __init__(self, config, store):
         self.store = store
 
-        self.send_email = CrabNotifyEmail(config)
+        self.send_email = CrabNotifyEmail(config['crab']['home'],
+                                          config['crab']['base_url'],
+                                          config['email'])
 
     def __call__(self, notifications):
         "Sends notification messages."""
