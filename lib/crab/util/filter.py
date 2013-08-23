@@ -20,6 +20,8 @@ from crab import CrabEvent, CrabStatus
 class CrabEventFilter:
     """Class implementing an event filtering action."""
 
+    default_timezone = pytz.UTC
+
     def __init__(self, store, timezone=None):
         """Construct filter object.
 
@@ -35,12 +37,24 @@ class CrabEventFilter:
         """Sets the timezone used by the filter."""
 
         if timezone is None:
-            self.zoneinfo = None
+            self.zoneinfo = self.__class__.default_timezone
         else:
             try:
                 self.zoneinfo = pytz.timezone(timezone)
             except pytz.UnknownTimeZoneError:
-                self.zoneinfo = None
+                self.zoneinfo = self.__class__.default_timezone
+
+    @classmethod
+    def set_default_timezone(cls, timezone):
+        """Sets the default timezone for all filters."""
+
+        if timezone is None:
+            cls.default_timezone = pytz.UTC
+        else:
+            try:
+                cls.default_timezone = pytz.timezone(timezone)
+            except pytz.UnknownTimeZoneError:
+                cls.default_timezone = pytz.UTC
 
     def __call__(self, events, skip_ok=False, skip_warning=False,
                  skip_error=False, skip_trivial=True, skip_start=False,
@@ -81,8 +95,7 @@ class CrabEventFilter:
                         - self.store.parse_datetime(events[start]['datetime']))
                     e['duration'] = str(delta)
 
-            if self.zoneinfo is not None:
-                e['datetime'] = self.in_timezone(e['datetime'])
+            e['datetime'] = self.in_timezone(e['datetime'])
 
             output.append(e)
 
@@ -95,8 +108,8 @@ class CrabEventFilter:
         Includes the zone code to indicate that the conversion has been
         performed."""
 
-        if datetime_ is None or self.zoneinfo is None:
-            return datetime_
+        if datetime_ is None:
+            return 'Unknown date / time'
         else:
             return self.store.parse_datetime(datetime_).astimezone(
                         self.zoneinfo).strftime('%Y-%m-%d %H:%M:%S %Z')
