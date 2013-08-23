@@ -27,6 +27,7 @@ except ImportError:
     CrabRSS = None
 from crab.server import CrabServer
 from crab.server.config import read_crabd_config, construct_store
+from crab.util.filter import CrabEventFilter
 from crab.web.web import CrabWeb
 
 def main():
@@ -38,6 +39,10 @@ def main():
         outputstore = None
 
     store = construct_store(config['store'], outputstore)
+
+    # Set a default timezone: applies to times shown in
+    # notifications and on the web interface.
+    CrabEventFilter.set_default_timezone(config['notify']['timezone'])
 
     monitor = CrabMonitor(store)
     monitor.daemon = True
