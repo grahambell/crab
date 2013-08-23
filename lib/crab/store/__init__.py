@@ -21,15 +21,17 @@ from crab.util.string import remove_quotes, quote_multiword, \
                              split_crab_vars, true_string
 
 class CrabStore:
-    def get_jobs(self, host=None, user=None, include_deleted=False):
+    def get_jobs(self, host=None, user=None, **kwargs):
         """Fetches a list of all of the cron jobs,
         excluding deleted jobs by default.
 
         Optionally filters by host or username if these parameters are
-        supplied."""
+        supplied.  Other keyword arguments (e.g. include_deleted,
+        crabid, command, without_crabid) are passed to the
+        _get_jobs method."""
 
         with self.lock:
-            return self._get_jobs(host, user, include_deleted)
+            return self._get_jobs(host, user, **kwargs)
 
     def delete_job(self, id_):
         """Mark a job as deleted."""

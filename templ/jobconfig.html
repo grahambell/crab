@@ -103,7 +103,11 @@ transferred by selecting it for re-linking.
         <li>
             <label for="crabid">New Job ID</label>
             <input type="text" name="crabid"
+% if info['crabid'] is not None:
                 value="${info['crabid'] | h}"
+% else:
+                value=""
+% endif
             />
         </li>
         <li>

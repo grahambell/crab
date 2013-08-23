@@ -233,8 +233,15 @@ class CrabWeb:
 
         elif command == 'changeid':
             if submit_confirm:
-                self.store.update_job(id_, crabid=crabid)
-                raise HTTPRedirect('/job/' + str(id_))
+                if crabid != '':
+                    if self.store.get_jobs(info['host'], info['user'],
+                            include_deleted=True, crabid=crabid):
+                        raise HTTPError(400, 'Specified job ID already exists.')
+                    else:
+                        self.store.update_job(id_, crabid=crabid)
+                        raise HTTPRedirect('/job/' + str(id_))
+                else:
+                    raise HTTPError(400, 'Specified job ID is blank.')
 
             elif submit_cancel:
                 raise HTTPRedirect('/job/' + str(id_))
