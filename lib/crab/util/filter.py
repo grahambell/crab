@@ -109,7 +109,7 @@ class CrabEventFilter:
         performed."""
 
         if datetime_ is None:
-            return 'Unknown date / time'
+            return None
         else:
             return self.store.parse_datetime(datetime_).astimezone(
                         self.zoneinfo).strftime('%Y-%m-%d %H:%M:%S %Z')
