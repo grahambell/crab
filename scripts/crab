@@ -22,6 +22,7 @@ from optparse import OptionParser
 
 from crab import CrabError, CrabStatus
 from crab.client import CrabClient
+from crab.util.compat import subprocess_options
 from crab.util.guesstimezone import guess_timezone
 
 def send_crontab(crontab):
@@ -47,7 +48,8 @@ def read_crontab():
 
     try:
         p = subprocess.Popen('crontab -l',
-                             shell=True, stdout=subprocess.PIPE)
+                             shell=True, stdout=subprocess.PIPE,
+                             **subprocess_options)
         (stdoutdata, stderrdata) = p.communicate()
 
         if p.returncode == 0:

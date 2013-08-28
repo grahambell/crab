@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2012-2013 Science and Technology Facilities Council.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@ from optparse import OptionParser
 
 from crab import CrabError, CrabStatus
 from crab.client import CrabClient
+from crab.util.compat import subprocess_options
 from crab.util.pid import pidfile_write, pidfile_running, pidfile_delete
 from crab.util.string import split_crab_vars, true_string
 
@@ -79,7 +80,8 @@ def main():
 
     if 'CRABIGNORE' in vars and true_string(vars['CRABIGNORE']):
         try:
-            return subprocess.call([shell, '-c', command], env=env)
+            return subprocess.call([shell, '-c', command], env=env,
+                                   **subprocess_options)
 
         except OSError:
             err = sys.exc_info()[1]
@@ -140,7 +142,8 @@ def main():
         p = subprocess.Popen([shell, '-c', command],
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE,
-                             env=env)
+                             env=env,
+                             **subprocess_options)
 
         if pidfile is not None:
             # Add a short delay before creating the PID file in case
