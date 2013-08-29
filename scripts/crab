@@ -91,6 +91,38 @@ def read_file(path, silent=False):
         if fh is not None:
             fh.close()
 
+def do_import(crontabfile=None):
+    """Action for the "import" command.
+
+    Either reads the given file or fetches the user's crontab.  Then sends
+    it to the Crab server."""
+
+    if crontabfile is None:
+        crontab = read_crontab()
+    else:
+        crontab = read_file(crontabfile)
+
+    if crontab is None:
+        return 1
+
+    try:
+        warning = send_crontab(crontab)
+
+        if warning:
+            print(sys.argv[0] + ': crontab import warnings:')
+            for message in warning:
+                print(message)
+
+            return 1
+
+    #except CrabError as err:
+    except CrabError:
+        err = sys.exc_info()[1]
+        print(sys.argv[0] + ': failed to send crontab: ' + str(err))
+        return 1
+
+    return 0
+
 def main():
     parser = OptionParser(usage = """Usage: %prog [options] [command]
 
@@ -100,6 +132,7 @@ Commands:
   alreadyrunning         - long running job need not start
   import                 - send crontab to server
   export                 - display cron jobs from server
+  edit                   - edit the crontab, and then import it
   info                   - print current configuration""")
 
     parser.add_option('-c',
@@ -177,29 +210,17 @@ Commands:
                 return 1
 
     elif args[0] == 'import':
-        if options.crontabfile is None:
-            crontab = read_crontab()
-        else:
-            crontab = read_file(options.crontabfile)
+        return do_import(options.crontabfile)
 
-        if crontab is None:
+    elif args[0] == 'edit':
+        status = subprocess.call(['crontab', '-e'],
+                                 shell=False, **subprocess_options)
+        if status != 0:
+            print(sys.argv[0] + ': failed to edit crontab')
             return 1
 
-        try:
-            warning = send_crontab(crontab)
-
-            if warning:
-                print(sys.argv[0] + ': crontab import warnings:')
-                for message in warning:
-                    print(message)
-
-                return 1
-
-        #except CrabError as err:
-        except CrabError:
-            err = sys.exc_info()[1]
-            print(sys.argv[0] + ': failed to send crontab: ' + str(err))
-            return 1
+        print(sys.argv[0] + ': importing crontab')
+        return do_import()
 
     elif args[0] == 'export':
         try:
