@@ -47,8 +47,8 @@ def read_crontab():
     string.  Currently ISO-8859-1 encoding is assumed."""
 
     try:
-        p = subprocess.Popen('crontab -l',
-                             shell=True, stdout=subprocess.PIPE,
+        p = subprocess.Popen(['crontab', '-l'],
+                             shell=False, stdout=subprocess.PIPE,
                              **subprocess_options)
         (stdoutdata, stderrdata) = p.communicate()
 
