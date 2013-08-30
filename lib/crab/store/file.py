@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import errno
 import os
 
 from crab import CrabError
@@ -51,9 +52,10 @@ class CrabStoreFile:
                 try:
                     os.mkdir(directory)
                 except OSError as err:
-                    raise CrabError('file store error: '
-                                    'could not make directory ' + directory +
-                                    ': ' + str(err))
+                    if err.errno != errno.EEXIST:
+                        raise CrabError('file store error: '
+                                        'could not make directory ' + directory +
+                                        ': ' + str(err))
 
 
     def write_job_output(self, finishid, host, user, id_, crabid,
@@ -77,8 +79,9 @@ class CrabStoreFile:
             try:
                 os.makedirs(dir)
             except OSError as err:
-                raise CrabError('file store error: could not make directory: ' +
-                                str(err))
+                if err.errno != errno.EEXIST:
+                    raise CrabError('file store error: could not make directory: ' +
+                                    str(err))
 
         outfile = path + '.' + self.outext
         errfile = path + '.' + self.errext
@@ -155,8 +158,9 @@ class CrabStoreFile:
             try:
                 os.makedirs(dir)
             except OSError as err:
-                raise CrabError('file store error: could not make directory: ' +
-                                str(err))
+                if err.errno != errno.EEXIST:
+                    raise CrabError('file store error: could not make directory: ' +
+                                    str(err))
 
         try:
             with open(pathname, 'w') as file:
