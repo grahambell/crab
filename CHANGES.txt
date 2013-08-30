@@ -1,3 +1,22 @@
+0.4.0, 2013-08-29
+
+    - When used to report job finish events, the crab utility now
+      supports --stdout and --stderr options.
+    - A new status code 'WARNING' has been added for generic
+      client-generated warnings for which 'UNKNOWN' is not appropriate.
+    - Jobs can be marked as deleted and job identifiers can be changed
+      via the web interface.
+    - A new environment variable CRABUSERCONFIG can be set to change
+      the directory searched for user level configuration files.
+    - Job output with ANSI colors can be colored if the ansi_up
+      JavaScipt library is installed.
+    - Times related to jobs without specified timezones are now shown
+      in a common timezone instead of as raw database output.
+    - Signals SIGPIPE and SIGCONT/XFSZ are restored by the crabsh wrapper
+      script before invoking commands in versions of Python before 3.2.
+    - An edit command has been added to the crab utility as a convenient
+      alternative to running "crontab -e" and then "crab import".
+
 0.3.0, 2013-03-28
 
     - Empty job output is no longer stored.

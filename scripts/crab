@@ -127,8 +127,9 @@ def main():
     parser = OptionParser(usage = """Usage: %prog [options] [command]
 
 Commands:
-  start, finish, unknown - report cron job progress
+  start, finish          - report cron job progress
   fail, couldnotstart    - report problems with cron job
+  warning, unknown       - report warning on cron job completion
   alreadyrunning         - long running job need not start
   import                 - send crontab to server
   export                 - display cron jobs from server

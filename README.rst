@@ -49,7 +49,7 @@ If necessary, the ``--install-data`` option can be used to configure
 the location in which the templates (``templ``), resources (``res``)
 and example files (``doc``) should be installed.
 
-To run Crab without installing it, and if any of the Python dependancies
+To run Crab without installing it, and if any of the Python dependencies
 listed above can not be installed, they can be symlinked into the ``lib``
 directory in the following locations::
 
@@ -361,6 +361,21 @@ configuration will re-attach all associated notifications.
 However this problem can generally be avoided by giving the jobs
 suitable names via the ``CRABID`` parameter.  Crab will then be able
 to recognize jobs by name even if the command string changes.
+
+The job configuration page also allows jobs to be marked as deleted.
+Normally this would be done by importing a new crontab without that
+job in it, but having this available on the web interface is useful
+in situations such as the host being inaccessible.  Note that
+if a start or finish event is received from the job, but the
+Crab server is still able to identify it, then the job
+should be automatically marked as not deleted.
+
+There is also the option to alter the job identifier.  However
+care must be taken to also update it in the job itself, for
+example via the ``CRABID`` parameter in the crontab.  If the
+identifier is changed via the web server but not in the job,
+then the Crab server will identify it as a new job the next time it
+receives a start or finish report from it.
 
 Notifications
 ~~~~~~~~~~~~~
