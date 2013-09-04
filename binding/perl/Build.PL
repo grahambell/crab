@@ -13,6 +13,7 @@ our %require = ('Config::IniFiles' => 2.39,
                 'JSON' => 0,
                 'LWP::UserAgent' => 0,
                 'Sys::Hostname' => 0,
+                'perl' => '5.8.0',
                );
 
 
