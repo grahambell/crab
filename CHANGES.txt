@@ -1,3 +1,8 @@
+0.4.1, 2013-09-04
+
+    - Avoid an error when two threads attempt to create the same
+      directory at the same time.
+
 0.4.0, 2013-08-29
 
     - When used to report job finish events, the crab utility now

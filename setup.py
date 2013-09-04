@@ -54,7 +54,7 @@ def find_files(inst, base=None, path=[]):
     return subdirs
 
 setup(name='crab',
-      version='0.4.0',
+      version='0.4.1',
       author='Graham Bell',
       author_email='g.bell@jach.hawaii.edu',
       url='http://github.com/grahambell/crab',
