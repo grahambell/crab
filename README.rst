@@ -20,7 +20,7 @@ Packages
 ~~~~~~~~
 
 * crontab (0.15 or newer): http://pypi.python.org/pypi/crontab/#downloads
-* CherryPy: http://download.cherrypy.org/cherrypy/
+* CherryPy: http://pypi.python.org/pypi/CherryPy
 * Mako templates: http://pypi.python.org/pypi/Mako/#downloads
 * jQuery: http://code.jquery.com/
 * PyRSS2Gen: http://dalkescientific.com/Python/PyRSS2Gen.html (optional)
