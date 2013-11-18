@@ -303,6 +303,5 @@ label {
 }
 
 a + a > .fa {
-    background: red;
     padding-left: 2ex;
 }
