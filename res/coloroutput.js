@@ -17,9 +17,9 @@ $(document).ready(function () {
                 var colorpara = $.parseHTML('<p></p>');
                 var invertpara = $.parseHTML('<p class="hidden"></p>');
                 var colorlink = $.parseHTML(
-                    '<a href="#"><span class="icon-adjust"></span> Display ANSI colors.</a>');
+                    '<a href="#"><span class="fa fa-adjust"></span> Display ANSI colors.</a>');
                 var invertlink = $.parseHTML(
-                    '<a href="#"><span class="icon-exchange"></span> Invert colors.</a>');
+                    '<a href="#"><span class="fa fa-exchange"></span> Invert colors.</a>');
                 joboutput.before(colorpara);
                 joboutput.before(invertpara);
                 $(colorpara).append(colorlink);

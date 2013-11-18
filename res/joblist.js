@@ -192,7 +192,7 @@ function dashboardSorter(keyfield) {
         }
 
         $('#joblisthead span').removeClass();
-        $('#preheading' + keyfield).addClass('icon-sort-' + (sortdirection > 0 ? 'up' : 'down'));
+        $('#preheading' + keyfield).addClass('fa fa-sort-' + (sortdirection > 0 ? 'desc' : 'asc'));
 
         sortdirection = - sortdirection;
         sortByStatus = false;
@@ -207,7 +207,7 @@ function dashboardSortStatus(event) {
     tab.prepend(tab.children().has('.status_fail').detach());
     sortByStatus = true;
     $('#joblisthead span').removeClass();
-    $('#preheadingstatus').addClass('icon-sort');
+    $('#preheadingstatus').addClass('fa fa-sort');
     event.preventDefault();
 }
 

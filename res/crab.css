@@ -302,6 +302,7 @@ label {
     text-align: right;
 }
 
-a + a > *[class^="icon-"], a + a > *[class*=" icon-"] {
+a + a > .fa {
+    background: red;
     padding-left: 2ex;
 }

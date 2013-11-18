@@ -22,11 +22,11 @@
 % if next or prev:
 <p>
 %     if prev:
-    <a href="/job/${id | h}/output/${prev | h}"><span class="icon-backward"></span> Previous</a>
+    <a href="/job/${id | h}/output/${prev | h}"><span class="fa fa-backward"></span> Previous</a>
 %     endif
 %     if next:
-    <a href="/job/${id | h}/output/${next | h}"><span class="icon-forward"></span> Next</a>
-    <a href="/job/${id | h}/output"><span class="icon-fast-forward"></span> Last</a>
+    <a href="/job/${id | h}/output/${next | h}"><span class="fa fa-forward"></span> Next</a>
+    <a href="/job/${id | h}/output"><span class="fa fa-fast-forward"></span> Last</a>
 %     endif
 </p>
 % endif

@@ -63,12 +63,15 @@ Crab's ``res`` directory as::
 
     res/jquery.js
 
-To use Font Awesome icons, copy or symlink its ``font`` directory into
+To use Font Awesome icons, copy or symlink its ``fonts`` directory into
 Crab's ``res`` directory, and also place its stylesheet inside
 that subdirectory, giving::
 
-    res/font/font-awesome.css
-    res/font/fontawesome-webfont.*
+    res/fonts/font-awesome.css
+    res/fonts/fontawesome-webfont.*
+
+Note that Font Awesome is not backward compatible between major
+version numbers.  Crab now uses version 4 of Font Awesome.
 
 To use ansi_up to interpret ANSI color commands in cron job output,
 copy or symlink the ``ansi_up.js`` file into Crab's ``res`` directory::

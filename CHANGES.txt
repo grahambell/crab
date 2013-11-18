@@ -1,3 +1,10 @@
+Next release...
+
+    - Now support Font Awesome version 4.  Since this version breaks
+      compatability with version 3, existing installations of the Crab
+      server being updated will also need an updated Font Awesome,
+      including renaming the res/font directory to res/fonts.
+
 0.4.1, 2013-09-04
 
     - Avoid an error when two threads attempt to create the same
