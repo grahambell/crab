@@ -47,15 +47,7 @@ fi
 PIDFILE=$RUNDIR/crabd-$UID.pid
 LOGFILE=$LOGDIR/crabd-$UID.log
 
-# Check if crabd is already running.
+# Launch crabd using its own PID file mechanism.
 
-if [ -e $PIDFILE ] && (ps -p $(< $PIDFILE) > /dev/null)
-then
-    exit 0
-fi
-
-# Launch crabd and record the PID.
-
-crabd >> $LOGFILE 2>&1 &
-echo $! > $PIDFILE
+crabd --pidfile $PIDFILE >> $LOGFILE 2>&1 &
 
