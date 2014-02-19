@@ -1,6 +1,8 @@
 Crab
 ====
 
+.. startcrabintro
+
 Crab is a dashboard system for monitoring cron jobs, or other scheduled
 tasks.  The Crab server receives messages when tasks start or finish,
 and displays the status of all of the tasks via a web interface.  It
@@ -12,6 +14,9 @@ PUT requests.  The finish message includes the status of the job,
 and any output from it.  Further messages are used to import and
 export the client's crontab, which the server uses to determine the
 intended schedule.
+
+.. endcrabintro
+.. startcrabinstall
 
 Requirements
 ------------
@@ -78,8 +83,12 @@ copy or symlink the ``ansi_up.js`` file into Crab's ``res`` directory::
 
     res/ansi_up.js
 
+.. endcrabinstall
+
 The Crab Server
 ---------------
+
+.. startcrabserver
 
 Database Creation
 ~~~~~~~~~~~~~~~~~
@@ -131,8 +140,12 @@ With the server running, the Crab dashboard should be visible from
 a web browser, by default on port 8000.  The Crab clients will use this
 same web service to communicate with the server.
 
+.. endcrabserver
+
 Monitoring Cron Jobs
 --------------------
+
+.. startcrabclient
 
 There are two Crab client commands: the ``crab`` utility, and
 the ``crabsh`` wrapper shell.  Cron jobs can either be run under
@@ -326,6 +339,10 @@ TZ
     This can be set to the system timezone, in which case ``crab import``
     will use it as the default timezone for the crontab.
 
+
+.. endcrabclient
+.. startcrabweb
+
 The Web Interface
 -----------------
 
@@ -411,6 +428,8 @@ the main notifications page.  This allows notifications to be
 configured by host name and/or by user name.  Notifications
 will include any jobs where the host and user match the specified
 values, but if either is left blank, then it will match all entries.
+
+.. endcrabweb
 
 Copyright
 ---------
