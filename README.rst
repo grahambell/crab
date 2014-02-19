@@ -448,3 +448,11 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with Crab.  If not, see <http://www.gnu.org/licenses/>.
+
+Additional Links
+----------------
+
+* `Crab entry on PyPI <https://pypi.python.org/pypi/crab>`_
+* `Documentation at Read the Docs <http://crab.readthedocs.org/en/latest/>`_
+* `Repository at GitHub <https://github.com/grahambell/crab>`_
+* `ADASS article about Crab <http://www.aspbooks.org/a/volumes/article_details/?paper_id=35592>`_
