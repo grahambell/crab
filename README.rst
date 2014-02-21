@@ -24,13 +24,23 @@ Requirements
 Packages
 ~~~~~~~~
 
-* crontab (0.15 or newer): http://pypi.python.org/pypi/crontab/#downloads
-* CherryPy: http://pypi.python.org/pypi/CherryPy
-* Mako templates: http://pypi.python.org/pypi/Mako/#downloads
-* jQuery: http://code.jquery.com/
-* PyRSS2Gen: http://dalkescientific.com/Python/PyRSS2Gen.html (optional)
-* Font Awesome: http://fortawesome.github.com/Font-Awesome (optional)
-* ansi_up: https://github.com/drudru/ansi_up (optional)
+* `crontab`_ (0.15 or newer)
+* `CherryPy`_ (`PyPI entry <CherryPy PyPI_>`_)
+* `Mako`_ (`PyPI entry <Mako PyPI_>`_)
+* `jQuery`_
+* `PyRSS2Gen`_ (optional)
+* `Font Awesome`_ (optional)
+* `ansi_up`_ (optional)
+
+.. _`crontab`: http://pypi.python.org/pypi/crontab/
+.. _`CherryPy`: http://www.cherrypy.org/
+.. _`CherryPy PyPI`: http://pypi.python.org/pypi/CherryPy
+.. _`Mako`: http://www.makotemplates.org/
+.. _`Mako PyPI`: http://pypi.python.org/pypi/Mako/
+.. _`jQuery`: http://jquery.com/
+.. _`PyRSS2Gen`: http://pypi.python.org/pypi/PyRSS2Gen/
+.. _`Font Awesome`: http://fortawesome.github.com/Font-Awesome
+.. _`ansi_up`: https://github.com/drudru/ansi_up
 
 Python Version
 ~~~~~~~~~~~~~~
@@ -210,7 +220,9 @@ Python
     directly and make use of the ``CrabClient`` class.
 
 Perl
-    A Perl module ``WWW::Crab::Client`` is also available.
+    A Perl module `WWW::Crab::Client`_ is also available.
+
+.. _`WWW::Crab::Client`: http://search.cpan.org/perldoc?WWW::Crab::Client
 
 Other languages
     Other language libraries could be written.  They would need to make
