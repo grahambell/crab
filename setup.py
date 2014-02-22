@@ -54,7 +54,7 @@ def find_files(inst, base=None, path=[]):
     return subdirs
 
 setup(name='crab',
-      version='0.4.1',
+      version='0.4.2',
       author='Graham Bell',
       author_email='g.bell@jach.hawaii.edu',
       url='http://github.com/grahambell/crab',
@@ -68,7 +68,12 @@ setup(name='crab',
                    'crabd-check',
                    'crabsh',
               ]],
-      data_files=find_files(os.path.join('share', 'doc', 'crab'), 'doc') +
+      data_files=[(os.path.join('share', 'doc', 'crab'),
+                     [os.path.join('doc', doc) for doc in [
+                         'crab.ini',
+                         'crabd.ini',
+                         'schema.txt',
+                 ]])] +
                  find_files(os.path.join('share', 'crab'), None, ['res']) +
                  find_files(os.path.join('share', 'crab'), None, ['templ']),
       requires=[

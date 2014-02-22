@@ -1,9 +1,11 @@
-Next release...
+0.4.2, 2014-02-21
 
     - Now support Font Awesome version 4.  Since this version breaks
       compatability with version 3, existing installations of the Crab
       server being updated will also need an updated Font Awesome,
       including renaming the res/font directory to res/fonts.
+    - Added internal pidfile support to crabd.  This uses the
+      crab.util.pid module which is also used by crabsh.
 
 0.4.1, 2013-09-04
 
