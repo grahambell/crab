@@ -443,6 +443,21 @@ values, but if either is left blank, then it will match all entries.
 
 .. endcrabweb
 
+Screenshots
+~~~~~~~~~~~
+
+* The dashboard page:
+
+    .. image:: http://grahambell.github.io/crab/img/screenshot-dashboard.png
+
+* View of cron jobs by host:
+
+    .. image:: http://grahambell.github.io/crab/img/screenshot-host.png
+
+* Information page for a cron job:
+
+    .. image:: http://grahambell.github.io/crab/img/screenshot-job.png
+
 Copyright
 ---------
 
