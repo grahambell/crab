@@ -1,4 +1,4 @@
-# Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2012-2014 Science and Technology Facilities Council.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -268,10 +268,14 @@ class CrabStoreDB(CrabStore):
 
         with self.lock:
             return self._query_to_dict(
-                'SELECT id AS configid, graceperiod, timeout ' +
+                'SELECT id AS configid, graceperiod, timeout, ' +
+                     'success_pattern, warning_pattern, fail_pattern, ' +
+                     'note ' +
                 'FROM jobconfig WHERE jobid = ?', [id_])
 
-    def write_job_config(self, id_, graceperiod=None, timeout=None):
+    def write_job_config(self, id_, graceperiod=None, timeout=None,
+            success_pattern=None, warning_pattern=None, fail_pattern=None,
+            note=None):
         """Writes configuration data for a job by ID number.
 
         Returns the configuration ID number."""
@@ -286,8 +290,12 @@ class CrabStoreDB(CrabStore):
             try:
                 if row is None:
                     c.execute('INSERT INTO jobconfig (jobid, graceperiod, '
-                              'timeout) VALUES (?, ?, ?)',
-                              [id_, graceperiod, timeout])
+                                  'timeout, success_pattern, warning_pattern, '
+                                  'fail_pattern, note) '
+                              'VALUES (?, ?, ?, ?, ?, ?, ?)',
+                              [id_, graceperiod, timeout,
+                              success_pattern, warning_pattern, fail_pattern,
+                              note])
 
                     return c.lastrowid
                 else:
@@ -295,8 +303,13 @@ class CrabStoreDB(CrabStore):
                     if configid is None:
                         raise CrabError('job config: got null id')
 
-                    c.execute('UPDATE jobconfig SET graceperiod=?, timeout=? '
-                              'WHERE id=?', [graceperiod, timeout, configid])
+                    c.execute('UPDATE jobconfig SET graceperiod=?, timeout=?, '
+                                  'success_pattern=?, warning_pattern=?, '
+                                  'fail_pattern=?, note=? '
+                              'WHERE id=?',
+                              [graceperiod, timeout,
+                              success_pattern, warning_pattern, fail_pattern,
+                              note, configid])
 
                     return configid
 
