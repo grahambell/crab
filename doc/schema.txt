@@ -65,7 +65,11 @@ CREATE TABLE jobconfig (
     jobid INTEGER NOT NULL UNIQUE REFERENCES job(id)
         ON DELETE RESTRICT ON UPDATE RESTRICT,
     graceperiod INTEGER,
-    timeout INTEGER
+    timeout INTEGER,
+    success_pattern VARCHAR(255) DEFAULT NULL,
+    warning_pattern VARCHAR(255) DEFAULT NULL,
+    fail_pattern VARCHAR(255) DEFAULT NULL,
+    note TEXT DEFAULT NULL
 );
 
 CREATE TABLE jobnotify (
