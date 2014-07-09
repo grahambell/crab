@@ -213,7 +213,8 @@ commands such as::
    % crab finish -c "$0"
    % crab fail -c "$0"
 
-In this way you can also report an unknown status with ``crab unknown``.
+In this way you can also report a warning with ``crab warning`` or an
+unknown status with ``crab unknown``.
 
 Python
     If the cron job is written in Python, it could import ``crab.client``
@@ -461,7 +462,7 @@ Screenshots
 Copyright
 ---------
 
-Copyright (C) 2012-2013 Science and Technology Facilities Council.
+Copyright (C) 2012-2014 Science and Technology Facilities Council.
 
 Crab is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
