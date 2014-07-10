@@ -22,6 +22,7 @@ from sqlite3 import DatabaseError
 
 from crab import CrabError, CrabStatus
 from crab.store import CrabStore
+from crab.util.statuspattern import check_status_patterns
 
 class CrabDBLock():
     def __init__(self, conn):
@@ -209,6 +210,11 @@ class CrabStoreDB(CrabStore):
             try:
                 id_ = self._check_job(host, user, crabid, command)
 
+                # Fetch the configuration so that we can check the status.
+                config = self._get_job_config(id_)
+                if config is not None:
+                    status = check_status_patterns(status, config, stdout)
+
                 c.execute('INSERT INTO jobfinish (jobid, command, status) ' +
                           'VALUES (?, ?, ?)',
                           [id_, command, status])
@@ -267,11 +273,17 @@ class CrabStoreDB(CrabStore):
         """Retrieve configuration data for a job by ID number."""
 
         with self.lock:
-            return self._query_to_dict(
-                'SELECT id AS configid, graceperiod, timeout, ' +
-                     'success_pattern, warning_pattern, fail_pattern, ' +
-                     'note ' +
-                'FROM jobconfig WHERE jobid = ?', [id_])
+            return self._get_job_config(id_)
+
+    def _get_job_config(self, id_):
+        """Private/protected version of get_job_config which does
+        not acquire the lock."""
+
+        return self._query_to_dict(
+            'SELECT id AS configid, graceperiod, timeout, ' +
+                 'success_pattern, warning_pattern, fail_pattern, ' +
+                 'note ' +
+            'FROM jobconfig WHERE jobid = ?', [id_])
 
     def write_job_config(self, id_, graceperiod=None, timeout=None,
             success_pattern=None, warning_pattern=None, fail_pattern=None,
