@@ -23,6 +23,11 @@ def check_status_patterns(status, config, stdout):
     Compares the given standard output with the patterns in the
     job configuration, and returns the updated status."""
 
+    # Is this a special status which doesn't indicate job completion?
+    # If so we should not attempt to look at the patterns.
+    if status == CrabStatus.ALREADYRUNNING:
+        return status
+
     # Check for error status.
     if CrabStatus.is_error(status):
         return status
