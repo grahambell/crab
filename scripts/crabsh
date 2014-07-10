@@ -138,6 +138,8 @@ def main():
         print('Failed to notify job start.')
         print('ERROR: ' + str(err) + '\n')
 
+    returncode = None
+
     try:
         p = subprocess.Popen([shell, '-c', command],
                              stdout=subprocess.PIPE,
@@ -153,16 +155,17 @@ def main():
             pidfile_write(pidfile, p.pid)
 
         (stdoutdata, stderrdata) = p.communicate()
+        returncode = p.returncode
 
         if pidfile is not None:
             pidfile_delete(pidfile)
 
-        returncode = CrabStatus.SUCCESS
+        status = CrabStatus.SUCCESS
 
-        if p.returncode:
-            returncode = CrabStatus.FAIL
+        if returncode:
+            status = CrabStatus.FAIL
 
-        client.finish(returncode,
+        client.finish(status,
                       (latin_1_decode(stdoutdata, 'replace'))[0],
                       (latin_1_decode(stderrdata, 'replace'))[0])
 
