@@ -22,10 +22,10 @@
 <h3>Edit Job Configuration</h3>
 % endif
 
-<p>
-Any parameter which is left blank here will use the default value.
-</p>
 <form method="post" action="/job/${id | h}/config">
+    <p>
+    Any parameter which is left blank here will use the default value.
+    </p>
     <ol>
         <li>
             <label for="graceperiod">Grace period</label>
@@ -45,6 +45,12 @@ Any parameter which is left blank here will use the default value.
             />
             minutes
         </li>
+    </ol>
+    <p>
+    These patterns (if set) will be matched against the job's
+    standard output.
+    </p>
+    <ol>
         <li>
             <label for="success_pattern">Success pattern</label>
             <input type="text" name="success_pattern" size="30"
@@ -69,6 +75,11 @@ Any parameter which is left blank here will use the default value.
 % endif
             />
         </li>
+    </ol>
+    <p>
+    Here you can enter any notes about this job.
+    </p>
+    <ol>
         <li>
             <label for="note">Notes</label>
 % if config is not None and config['note'] is not None:
