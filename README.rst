@@ -379,8 +379,27 @@ Job Configuration
 ~~~~~~~~~~~~~~~~~
 
 Below the summary on the job information page, there is a link
-allowing the job's configuration to be edited.  Any parameter
-which is left blank here will use the default value.
+allowing the job's configuration to be edited.  The grace period
+specifies how close to the scheduled time the job must start
+in order not to be considered missed.  The time-out is the
+maximum expected duration of the job.  If it runs for longer
+than this, it will be marked as stopped with timed-out (error) status.
+Note that the job may actually still be running when this status is
+displayed.  If the job is restarted, or reported as already running,
+during the time-out period, then the time-out is reset.
+If either of these timing parameters are left blank then the default
+values of 2 minutes grace period and 5 minutes time-out will be used.
+
+Regular expression patterns used to determine success or failure
+and to identify warnings can be given.  These patterns are compared
+to the standard output of the job when it finishes, but do not
+override a more severe status.  For example if a job is reported
+as finishing with failure, then it will be logged as such even
+if the success or warning patterns match.  If none of the patterns
+match then the status is logged as it was reported, unless a
+success pattern was defined.  If the success pattern does not match
+then the status will be failure if the was no failure pattern
+or unknown if there was a failure pattern which did not match.
 
 If a job is deleted, then its configuration is considered to be
 orphaned.  In this case, when configuring a job for which
