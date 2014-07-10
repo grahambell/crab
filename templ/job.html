@@ -92,6 +92,32 @@
         </td>
     </tr>
 % endif
+% if config is not None:
+%     if config['success_pattern'] is not None:
+    <tr>
+        <th>Success pattern</th>
+        <td>${config["success_pattern"] | h}</td>
+    </tr>
+%    endif
+%     if config['warning_pattern'] is not None:
+    <tr>
+        <th>Warning pattern</th>
+        <td>${config["warning_pattern"] | h}</td>
+    </tr>
+%    endif
+%     if config['fail_pattern'] is not None:
+    <tr>
+        <th>Failure pattern</th>
+        <td>${config["fail_pattern"] | h}</td>
+    </tr>
+%    endif
+%     if config['note'] is not None:
+    <tr>
+        <th>Notes</th>
+        <td>${config["note"] | h}</td>
+    </tr>
+%    endif
+% endif
 </table>
 
 <p>

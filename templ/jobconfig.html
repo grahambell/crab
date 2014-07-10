@@ -39,11 +39,43 @@ Any parameter which is left blank here will use the default value.
         <li>
             <label for="timeout">Time-out</label>
             <input type="text" name="timeout"
- % if config is not None and config['timeout'] is not None:
+% if config is not None and config['timeout'] is not None:
                 value="${config['timeout'] | h}"
 % endif
             />
             minutes
+        </li>
+        <li>
+            <label for="success_pattern">Success pattern</label>
+            <input type="text" name="success_pattern" size="30"
+% if config is not None and config['success_pattern'] is not None:
+                value="${config['success_pattern'] | h}"
+% endif
+            />
+        </li>
+        <li>
+            <label for="warning_pattern">Warning pattern</label>
+            <input type="text" name="warning_pattern" size="30"
+% if config is not None and config['warning_pattern'] is not None:
+                value="${config['warning_pattern'] | h}"
+% endif
+            />
+        </li>
+        <li>
+            <label for="fail_pattern">Failure pattern</label>
+            <input type="text" name="fail_pattern" size="30"
+% if config is not None and config['fail_pattern'] is not None:
+                value="${config['fail_pattern'] | h}"
+% endif
+            />
+        </li>
+        <li>
+            <label for="note">Notes</label>
+% if config is not None and config['note'] is not None:
+            <textarea name="note" rows="5" cols="30">${config['note'] | h}</textarea>
+% else:
+            <textarea name="note" rows="5" cols="30"></textarea>
+% endif
         </li>
         <li>
             <label for="submit_config">&nbsp;</label>

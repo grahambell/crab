@@ -1,4 +1,4 @@
-# Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2012-2014 Science and Technology Facilities Council.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -110,6 +110,8 @@ class CrabWeb:
             submit_config=None, submit_relink=None,
             submit_confirm=None, submit_cancel=None,
             orphan=None, graceperiod=None, timeout=None,
+            success_pattern=None, warning_pattern=None, fail_pattern=None,
+            note=None,
             crabid=None,
 
             submit_notify=None, **kwargs):
@@ -330,10 +332,24 @@ class CrabWeb:
                         graceperiod = None
                     elif graceperiod is not None:
                         graceperiod = int(graceperiod)
+
+                    if success_pattern == '':
+                        success_pattern = None
+                    if warning_pattern == '':
+                        warning_pattern = None
+                    if fail_pattern == '':
+                        fail_pattern = None
+
+                    if note is not None:
+                        note = note.strip()
+                        if note == '':
+                            note = None
+
                 except ValueError:
                     raise HTTPError(400, 'Time not a number')
 
-                self.store.write_job_config(id_, graceperiod, timeout)
+                self.store.write_job_config(id_, graceperiod, timeout,
+                    success_pattern, warning_pattern, fail_pattern, note)
                 raise HTTPRedirect("/job/" + str(id_))
 
             else:
