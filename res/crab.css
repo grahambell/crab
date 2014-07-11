@@ -300,6 +300,7 @@ label {
     width: 10em;
     display: inline-block;
     text-align: right;
+    vertical-align: top;
 }
 
 a + a > .fa {
