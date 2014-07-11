@@ -83,9 +83,9 @@
         <li>
             <label for="note">Notes</label>
 % if config is not None and config['note'] is not None:
-            <textarea name="note" rows="5" cols="30">${config['note'] | h}</textarea>
+            <textarea name="note" rows="5" cols="40">${config['note'] | h}</textarea>
 % else:
-            <textarea name="note" rows="5" cols="30"></textarea>
+            <textarea name="note" rows="5" cols="40"></textarea>
 % endif
         </li>
         <li>
