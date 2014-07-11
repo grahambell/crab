@@ -111,12 +111,6 @@
         <td>${config["fail_pattern"] | h}</td>
     </tr>
 %    endif
-%     if config['note'] is not None:
-    <tr>
-        <th>Notes</th>
-        <td>${config["note"] | h}</td>
-    </tr>
-%    endif
 % endif
 </table>
 
@@ -129,6 +123,16 @@
     <a href="/job/${id | h}/clear"><span class="fa fa-check-circle"></span> Clear status.</a> (${CrabStatus.get_name(status['status']) | h})
 </p>
 % endif
+
+% if config is not None:
+%     if config["note"] is not None:
+<h2>Notes</h2>
+%         for noteline in config["note"].splitlines():
+${noteline | h}</br>
+%         endfor
+%    endif
+% endif
+
 
 <h2>Job History</h2>
 
