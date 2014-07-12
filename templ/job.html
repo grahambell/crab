@@ -118,7 +118,7 @@
     <a href="/job/${id | h}/config"><span class="fa fa-cog"></span> Edit configuration.</a>
     <a href="/job/${id | h}/notify"><span class="fa fa-envelope-o"></span> Edit notifications.</a>
 </p>
-% if not CrabStatus.is_ok(status['status']):
+% if status['status'] is not None and not CrabStatus.is_ok(status['status']):
 <p>
     <a href="/job/${id | h}/clear"><span class="fa fa-check-circle"></span> Clear status.</a> (${CrabStatus.get_name(status['status']) | h})
 </p>
