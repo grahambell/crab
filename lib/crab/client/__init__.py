@@ -1,4 +1,4 @@
-# Copyright (C) 2012-2013 Science and Technology Facilities Council.
+# Copyright (C) 2012-2014 Science and Technology Facilities Council.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,6 +65,7 @@ class CrabClient:
         self.config.add_section('server')
         self.config.set('server', 'host', 'localhost')
         self.config.set('server', 'port', '8000')
+        self.config.set('server', 'timeout', '30')
         self.config.add_section('client')
         self.config.set('client', 'hostname', socket.gethostname())
         self.config.set('client', 'username', pwd.getpwuid(os.getuid())[0])
@@ -149,8 +150,18 @@ class CrabClient:
     def _get_conn(self):
         """Opens an HTTP connection to the configured server."""
 
-        return HTTPConnection(self.config.get('server', 'host'),
-                              self.config.get('server', 'port'))
+        # Try first to construct the connection with a timeout.  However
+        # this feature was added in Python 2.6, so for older versions of
+        # Python, we must catch the TypeError and construct the object
+        # without a timeout.
+        try:
+            return HTTPConnection(self.config.get('server', 'host'),
+                                  self.config.get('server', 'port'),
+                                  timeout=int(self.config.get(
+                                                  'server', 'timeout')))
+        except TypeError:
+            return HTTPConnection(self.config.get('server', 'host'),
+                                  self.config.get('server', 'port'))
 
     def _read_json(self, url):
         """Performs an HTTP GET on the given URL and interprets the
