@@ -29,7 +29,7 @@ class CrabStoreSQLite(CrabStoreDB):
         conn = sqlite3.connect(filename, check_same_thread=False)
 
         c = conn.cursor()
-        c.execute("PRAGMA foreign_keys = ON");
+        c.execute("PRAGMA foreign_keys = ON")
         c.close()
 
         CrabStoreDB.__init__(self, conn, outputstore)
