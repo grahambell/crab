@@ -130,7 +130,33 @@ def main():
             return 0
 
     try:
-        client.start()
+        response = client.start()
+
+        # If the server sent an inhibit response, check the config to
+        # see whether crabsh.allow_inhibit is on or not.
+        if response.get('inhibit', False):
+            allow_inhibit = True
+            try:
+                allow_inhibit = true_string(
+                        client.config.get('crabsh', 'allow_inhibit'))
+            except:
+                # The configuration key might have been missing -- since this
+                # is a crabsh-specific option, the crab client will not have
+                # ensured it is present.
+                pass
+
+            if allow_inhibit:
+                try:
+                    client.finish(CrabStatus.INHIBITED)
+                #except CrabError as err:
+                except CrabError:
+                    err = sys.exc_info()[1]
+                    print('crabsh: ' + command)
+                    print('Failed to acknowledge inhibited job.')
+                    print('ERROR: ' + str(err) + '\n')
+
+                return 0
+
     #except CrabError as err:
     except CrabError:
         err = sys.exc_info()[1]
