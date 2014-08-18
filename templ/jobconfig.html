@@ -88,6 +88,19 @@
             <textarea name="note" rows="5" cols="40"></textarea>
 % endif
         </li>
+    </ol>
+    <p>
+    This setting requests that the job not be run.
+    </p>
+    <ol>
+        <li>
+            <label for="inhibit">Inhibit execution</label>
+% if config is not None and config['inhibit']:
+            <input name="inhibit" type="checkbox" checked="checked" />
+% else:
+            <input name="inhibit" type="checkbox" />
+% endif
+        </li>
         <li>
             <label for="submit_config">&nbsp;</label>
             <input type="submit" name="submit_config" value="Configure" />

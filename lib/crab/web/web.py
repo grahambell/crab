@@ -111,7 +111,7 @@ class CrabWeb:
             submit_confirm=None, submit_cancel=None,
             orphan=None, graceperiod=None, timeout=None,
             success_pattern=None, warning_pattern=None, fail_pattern=None,
-            note=None,
+            note=None, inhibit=None,
             crabid=None,
 
             submit_notify=None, **kwargs):
@@ -211,6 +211,18 @@ class CrabWeb:
                         'title': 'clear status',
                         'description': 'Reset the job status?',
                         'target': '/job/' + str(id_) + '/clear'})
+
+        elif command == 'uninhibit':
+            if submit_confirm:
+                self.store.disable_inhibit(id_)
+                raise HTTPRedirect('/job/' + str(id_))
+            elif submit_cancel:
+                raise HTTPRedirect('/job/' + str(id_))
+            else:
+                return self._write_template('confirm.html',
+                    {'id': id_, 'info': info, 'title': 'resume',
+                     'description': 'Resume inhibited job?',
+                     'target': '/job/' + str(id_) + '/uninhibit'})
 
         elif command == 'delete':
             notdeleted = info['deleted'] is None
@@ -345,11 +357,14 @@ class CrabWeb:
                         if note == '':
                             note = None
 
+                    inhibit = inhibit is not None
+
                 except ValueError:
                     raise HTTPError(400, 'Time not a number')
 
                 self.store.write_job_config(id_, graceperiod, timeout,
-                    success_pattern, warning_pattern, fail_pattern, note)
+                    success_pattern, warning_pattern, fail_pattern, note,
+                    inhibit)
                 raise HTTPRedirect("/job/" + str(id_))
 
             else:

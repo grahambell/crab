@@ -123,6 +123,11 @@
     <a href="/job/${id | h}/clear"><span class="fa fa-check-circle"></span> Clear status.</a> (${CrabStatus.get_name(status['status']) | h})
 </p>
 % endif
+% if config is not None and config['inhibit']:
+<p>
+    <a href="/job/${id | h}/uninhibit"><span class="fa fa-play"></span> Resume inhibited job.</a>
+</p>
+% endif
 
 % if config is not None:
 %     if config["note"] is not None:
