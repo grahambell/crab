@@ -180,22 +180,33 @@ class CrabStoreDB(CrabStore):
                 raise CrabError('database error: ' + str(err))
 
     def log_start(self, host, user, crabid, command):
-        """Inserts a job start record into the database."""
+        """Inserts a job start record into the database.
+
+        Returns a dictionary including a boolean value indicating
+        whether the job inhibit setting is active or not."""
+
+        data = {'inhibit': False}
 
         with self.lock:
-            id_ = self._check_job(host, user, crabid, command)
-
-            c = self.conn.cursor()
-
             try:
-                c.execute('INSERT INTO jobstart (jobid, command) VALUES (?, ?)',
-                          [id_, command])
+                id_ = self._check_job(host, user, crabid, command)
+
+                with closing(self.conn.cursor()) as c:
+                    c.execute('INSERT INTO jobstart (jobid, command) '
+                              'VALUES (?, ?)',
+                              [id_, command])
+
+                # Read the job configuration in order to determine whether
+                # this job is currently inhibited.
+                config = self._get_job_config(id_)
+
+                if config is not None and config['inhibit']:
+                    data['inhibit'] = True
 
             except DatabaseError as err:
                 raise CrabError('database error: ' + str(err))
 
-            finally:
-                c.close()
+        return data
 
     def log_finish(self, host, user, crabid, command, status,
                    stdout=None, stderr=None):

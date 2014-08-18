@@ -79,7 +79,9 @@ class CrabServer:
             if command is None:
                 raise CrabError('cron command not specified')
 
-            self.store.log_start(host, user, crabid, command)
+            data = self.store.log_start(host, user, crabid, command)
+
+            return json.dumps({'inhibit': data['inhibit']})
 
         except CrabError as err:
             cherrypy.log.error('CrabError: log error: ' + str(err))
