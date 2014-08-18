@@ -282,12 +282,12 @@ class CrabStoreDB(CrabStore):
         return self._query_to_dict(
             'SELECT id AS configid, graceperiod, timeout, ' +
                  'success_pattern, warning_pattern, fail_pattern, ' +
-                 'note ' +
+                 'note, inhibit ' +
             'FROM jobconfig WHERE jobid = ?', [id_])
 
     def write_job_config(self, id_, graceperiod=None, timeout=None,
             success_pattern=None, warning_pattern=None, fail_pattern=None,
-            note=None):
+            note=None, inhibit=False):
         """Writes configuration data for a job by ID number.
 
         Returns the configuration ID number."""
@@ -303,11 +303,11 @@ class CrabStoreDB(CrabStore):
                 if row is None:
                     c.execute('INSERT INTO jobconfig (jobid, graceperiod, '
                                   'timeout, success_pattern, warning_pattern, '
-                                  'fail_pattern, note) '
-                              'VALUES (?, ?, ?, ?, ?, ?, ?)',
+                                  'fail_pattern, note, inhibit) '
+                              'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                               [id_, graceperiod, timeout,
                               success_pattern, warning_pattern, fail_pattern,
-                              note])
+                              note, inhibit])
 
                     return c.lastrowid
                 else:
@@ -317,13 +317,34 @@ class CrabStoreDB(CrabStore):
 
                     c.execute('UPDATE jobconfig SET graceperiod=?, timeout=?, '
                                   'success_pattern=?, warning_pattern=?, '
-                                  'fail_pattern=?, note=? '
+                                  'fail_pattern=?, note=?, inhibit=? '
                               'WHERE id=?',
                               [graceperiod, timeout,
                               success_pattern, warning_pattern, fail_pattern,
-                              note, configid])
+                              note, inhibit, configid])
 
                     return configid
+
+            except DatabaseError as err:
+                raise CrabError('database error: ' + str(err))
+
+            finally:
+                c.close()
+
+    def disable_inhibit(self, id_):
+        """Disable the inhibit setting for a job.
+
+        This is a convenience routine to simply disable the inhibit
+        job configuration parameter without having to read and write
+        the rest of the configuration.
+        """
+
+        with self.lock:
+            c = self.conn.cursor()
+
+            try:
+                c.execute('UPDATE jobconfig SET inhibit=0 WHERE jobid=?',
+                          [id_])
 
             except DatabaseError as err:
                 raise CrabError('database error: ' + str(err))
