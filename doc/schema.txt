@@ -69,7 +69,8 @@ CREATE TABLE jobconfig (
     success_pattern VARCHAR(255) DEFAULT NULL,
     warning_pattern VARCHAR(255) DEFAULT NULL,
     fail_pattern VARCHAR(255) DEFAULT NULL,
-    note TEXT DEFAULT NULL
+    note TEXT DEFAULT NULL,
+    inhibit BOOLEAN NOT NULL DEFAULT 0
 );
 
 CREATE TABLE jobnotify (
