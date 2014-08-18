@@ -84,10 +84,14 @@ class CrabClient:
             self.config.set('server', 'port', env['CRABPORT'])
 
     def start(self):
-        """Notify the server that the job is starting."""
+        """Notify the server that the job is starting.
 
-        self._write_json(self._get_url('start'),
-                        {'command': self.command})
+        Return the decoded server response, which may include
+        an inhibit dictionary item."""
+
+        return self._write_json(self._get_url('start'),
+                               {'command': self.command},
+                               read=True)
 
     def finish(self, status=CrabStatus.UNKNOWN,
                stdoutdata='', stderrdata=''):
@@ -217,7 +221,15 @@ class CrabClient:
                     raise CrabError('server error: ' + self._read_error(res))
 
                 if read:
-                    return json.loads(latin_1_decode(res.read(), 'replace')[0])
+                    response = latin_1_decode(res.read(), 'replace')[0]
+
+                    # Check we got a response before attempting to decode
+                    # it as JSON.  (Some messages did not have responses
+                    # for previous server versions.)
+                    if response:
+                        return json.loads(response)
+                    else:
+                        return {}
 
             #except HTTPException as err:
             #except HTTPException, err:
