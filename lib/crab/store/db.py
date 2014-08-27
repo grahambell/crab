@@ -224,7 +224,10 @@ class CrabStoreDB(CrabStore):
                 # Fetch the configuration so that we can check the status.
                 config = self._get_job_config(id_)
                 if config is not None:
-                    status = check_status_patterns(status, config, stdout)
+                    status = check_status_patterns(
+                        status, config,
+                        '\n'.join((x for x in (stdout, stderr)
+                                   if x is not None)))
 
                 c.execute('INSERT INTO jobfinish (jobid, command, status) ' +
                           'VALUES (?, ?, ?)',

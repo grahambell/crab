@@ -392,8 +392,8 @@ values of 2 minutes grace period and 5 minutes time-out will be used.
 
 Regular expression patterns used to determine success or failure
 and to identify warnings can be given.  These patterns are compared
-to the standard output of the job when it finishes, but do not
-override a more severe status.  For example if a job is reported
+to the standard output and standard error of the job when it finishes,
+but do not override a more severe status.  For example if a job is reported
 as finishing with failure, then it will be logged as such even
 if the success or warning patterns match.  If none of the patterns
 match then the status is logged as it was reported, unless a

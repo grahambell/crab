@@ -17,10 +17,10 @@ import re
 
 from crab import CrabStatus
 
-def check_status_patterns(status, config, stdout):
+def check_status_patterns(status, config, output):
     """Function to update a job status based on the patterns.
 
-    Compares the given standard output with the patterns in the
+    Compares the given output with the patterns in the
     job configuration, and returns the updated status."""
 
     # Is this a special status which doesn't indicate job completion?
@@ -33,7 +33,7 @@ def check_status_patterns(status, config, stdout):
         return status
 
     fail_pattern = config['fail_pattern']
-    if fail_pattern is not None and re.search(fail_pattern, stdout):
+    if fail_pattern is not None and re.search(fail_pattern, output):
         return CrabStatus.FAIL
 
     # Check for warning status.
@@ -41,12 +41,12 @@ def check_status_patterns(status, config, stdout):
         return status
 
     warning_pattern = config['warning_pattern']
-    if warning_pattern is not None and re.search(warning_pattern, stdout):
+    if warning_pattern is not None and re.search(warning_pattern, output):
         return CrabStatus.WARNING
 
     # Check for good status.
     success_pattern = config['success_pattern']
-    if success_pattern is not None and re.search(success_pattern, stdout):
+    if success_pattern is not None and re.search(success_pattern, output):
         return CrabStatus.SUCCESS
 
     # No match -- decide what to do based on which patterns were defined.
