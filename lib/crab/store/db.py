@@ -391,13 +391,17 @@ class CrabStoreDB(CrabStore):
                 c.close()
 
     def get_job_finishes(self, id_, limit=100,
-                         finishid=None, before=None, after=None):
+                         finishid=None, before=None, after=None,
+                         include_alreadyrunning=False):
         """Retrieves a list of recent job finish events for the given job,
         most recent first.
 
         Can optionally find a particular finish, or finishes before
         or after a certain finish.  In the case of finishes after
-        a certain finish, the most recent event will be last."""
+        a certain finish, the most recent event will be last.
+
+        ALREADYRUNNING events are only reported if the include_alreadyrunning
+        argument is set."""
 
         conditions = ['jobid = ?']
         params = [id_]
@@ -415,6 +419,10 @@ class CrabStoreDB(CrabStore):
             conditions.append('id > ?')
             params.append(after)
             order = 'ASC'
+
+        if not include_alreadyrunning:
+            conditions.append('status <> ?')
+            params.append(CrabStatus.ALREADYRUNNING)
 
         if limit is not None:
             limit_clause = 'LIMIT ?'
