@@ -8,7 +8,7 @@ class ScheduleTestCase(TestCase):
     def test_events(self):
         lon = timezone('Europe/London')
         van = timezone('America/Vancouver') # GMT-8
-        syd = timezone('Australia/Sydney') # GMT+10
+        syd = timezone('Australia/Sydney') # GMT+11 (DST)
 
         qs = CrabSchedule('0 15 25 12 *', 'Europe/London')
         ar = CrabSchedule('0 11 11 11 *', 'America/Vancouver')
@@ -20,7 +20,7 @@ class ScheduleTestCase(TestCase):
                         'Queen on time in London')
         self.assertTrue(qs.match(van.localize(datetime(2011, 12, 25, 7, 0))),
                         'Queen on time in Vancouver last year')
-        self.assertTrue(qs.match(syd.localize(datetime(2013, 12, 26, 1, 0))),
+        self.assertTrue(qs.match(syd.localize(datetime(2013, 12, 26, 2, 0))),
                         'Queen on time in Sydney next year')
         self.assertTrue(qs.match(datetime(2020, 12, 25, 15, 0, tzinfo=UTC)),
                         'Queen on time in UTC')
@@ -29,7 +29,7 @@ class ScheduleTestCase(TestCase):
                         'Armistice correct time in Vancouver')
         self.assertTrue(ar.match(lon.localize(datetime(2012, 11, 11, 19, 0))),
                         'Vancouver Armistice correct time in London')
-        self.assertTrue(ar.match(syd.localize(datetime(2012, 11, 12, 5, 0))),
+        self.assertTrue(ar.match(syd.localize(datetime(2012, 11, 12, 6, 0))),
                         'Vancouver Armistice correct time in Sydney')
 
         # Check scheduling tests all date parts.
