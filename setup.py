@@ -56,7 +56,7 @@ def find_files(inst, base=None, path=[]):
 setup(name='crab',
       version='0.4.2',
       author='Graham Bell',
-      author_email='g.bell@jach.hawaii.edu',
+      author_email='g.bell@eaobservatory.org',
       url='http://github.com/grahambell/crab',
       description='Cron alert board',
       long_description=long_description,
