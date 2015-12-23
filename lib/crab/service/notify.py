@@ -70,8 +70,13 @@ class CrabNotifyService(CrabMinutely):
             else:
                 self.config[n_id] = notification
                 if notification['time'] is not None:
-                    schedule = CrabSchedule(notification['time'],
-                                            notification['timezone'])
+                    try:
+                        schedule = CrabSchedule(notification['time'],
+                                                notification['timezone'])
+                    except CrabError as err:
+                        schedule = None
+                        print('Warning: could not read notification schedule:',
+                              str(err))
                 else:
                     schedule = None
 
