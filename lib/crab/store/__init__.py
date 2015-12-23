@@ -1,4 +1,5 @@
 # Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2015 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +20,7 @@ import re
 
 from crab.util.string import remove_quotes, quote_multiword, \
                              split_crab_vars, true_string
+from crab.util.statuspattern import check_status_patterns
 
 
 class CrabStore:
@@ -51,6 +53,60 @@ class CrabStore:
         and can include: crabid, command, time, timezone."""
         with self.lock:
             self._update_job(id_, **kwargs)
+
+    def log_start(self, host, user, crabid, command):
+        """Inserts a job start record into the database.
+
+        Returns a dictionary including a boolean value indicating
+        whether the job inhibit setting is active or not."""
+
+        data = {'inhibit': False}
+
+        with self.lock:
+            id_ = self._check_job(host, user, crabid, command)
+
+            self._log_start(id_, command)
+
+            # Read the job configuration in order to determine whether
+            # this job is currently inhibited.
+            config = self._get_job_config(id_)
+
+            if config is not None and config['inhibit']:
+                data['inhibit'] = True
+
+        return data
+
+    def log_finish(self, host, user, crabid, command, status,
+                   stdout=None, stderr=None):
+        """Inserts a job finish record into the database.
+
+        The output will be passed to the write_job_output method,
+        unless both stdout and stderr are empty."""
+
+        with self.lock:
+            id_ = self._check_job(host, user, crabid, command)
+
+            # Fetch the configuration so that we can check the status.
+            config = self._get_job_config(id_)
+            if config is not None:
+                status = check_status_patterns(
+                    status, config,
+                    '\n'.join((x for x in (stdout, stderr)
+                               if x is not None)))
+
+            finishid = self._log_finish(id_, command, status)
+
+        if stdout or stderr:
+            # If a crabid was not specified, check whether the job
+            # actually has one.  This is to avoid sending misleading
+            # parameters to write_job_output, which can cause the
+            # file-based output store to default to a numeric directory name.
+            if crabid is None:
+                info = self.get_job_info(id_)
+                crabid = info['crabid']
+
+            self.write_job_output(finishid, host, user, id_, crabid,
+                                  stdout, stderr)
 
     def get_crontab(self, host, user):
         """Fetches the job entries for a particular host and user and builds

@@ -1,4 +1,5 @@
 # Copyright (C) 2012-2014 Science and Technology Facilities Council.
+# Copyright (C) 2015 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,7 +23,6 @@ from sqlite3 import DatabaseError
 
 from crab import CrabError, CrabStatus
 from crab.store import CrabStore
-from crab.util.statuspattern import check_status_patterns
 
 
 class CrabDBLock():
@@ -182,79 +182,39 @@ class CrabStoreDB(CrabStore):
             except DatabaseError as err:
                 raise CrabError('database error: ' + str(err))
 
-    def log_start(self, host, user, crabid, command):
+    def _log_start(self, id_, command):
         """Inserts a job start record into the database.
 
-        Returns a dictionary including a boolean value indicating
-        whether the job inhibit setting is active or not."""
+        Private method to perform only the actual insertion.  The lock
+        should already have been acquired."""
 
-        data = {'inhibit': False}
-
-        with self.lock:
+        with closing(self.conn.cursor()) as c:
             try:
-                id_ = self._check_job(host, user, crabid, command)
-
-                with closing(self.conn.cursor()) as c:
-                    c.execute('INSERT INTO jobstart (jobid, command) '
-                              'VALUES (?, ?)',
-                              [id_, command])
-
-                # Read the job configuration in order to determine whether
-                # this job is currently inhibited.
-                config = self._get_job_config(id_)
-
-                if config is not None and config['inhibit']:
-                    data['inhibit'] = True
+                c.execute('INSERT INTO jobstart (jobid, command) '
+                          'VALUES (?, ?)',
+                          [id_, command])
 
             except DatabaseError as err:
                 raise CrabError('database error: ' + str(err))
 
-        return data
-
-    def log_finish(self, host, user, crabid, command, status,
-                   stdout=None, stderr=None):
+    def _log_finish(self, id_, command, status):
         """Inserts a job finish record into the database.
 
-        The output will be passed to the write_job_output method,
-        unless both stdout and stderr are empty."""
+        Private method to perform only the actual insertion.  The lock
+        should already have been acquired.
 
-        with self.lock:
-            c = self.conn.cursor()
+        Returns the finish record ID."""
 
+        with closing(self.conn.cursor()) as c:
             try:
-                id_ = self._check_job(host, user, crabid, command)
-
-                # Fetch the configuration so that we can check the status.
-                config = self._get_job_config(id_)
-                if config is not None:
-                    status = check_status_patterns(
-                        status, config,
-                        '\n'.join((x for x in (stdout, stderr)
-                                   if x is not None)))
-
                 c.execute('INSERT INTO jobfinish (jobid, command, status) ' +
                           'VALUES (?, ?, ?)',
                           [id_, command, status])
 
-                finishid = c.lastrowid
+                return c.lastrowid
 
             except DatabaseError as err:
                 raise CrabError('database error: ' + str(err))
-
-            finally:
-                c.close()
-
-        if stdout or stderr:
-            # If a crabid was not specified, check whether the job
-            # actually has one.  This is to avoid sending misleading
-            # parameters to write_job_output, which can cause the
-            # file-based output store to default to a numeric directory name.
-            if crabid is None:
-                info = self.get_job_info(id_)
-                crabid = info['crabid']
-
-            self.write_job_output(finishid, host, user, id_, crabid,
-                                  stdout, stderr)
 
     def log_alarm(self, id_, status):
         """Inserts an alarm regarding a job into the database.
