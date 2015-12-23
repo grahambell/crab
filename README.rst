@@ -482,6 +482,7 @@ Copyright
 ---------
 
 Copyright (C) 2012-2014 Science and Technology Facilities Council.
+Copyright (C) 2015 East Asian Observatory.
 
 Crab is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
