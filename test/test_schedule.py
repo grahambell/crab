@@ -16,20 +16,20 @@ class ScheduleTestCase(TestCase):
 
         # Check scheduling correct for different timezones.
 
-        self.assertTrue(qs.match(datetime(2012, 12, 25, 15, 0, tzinfo=lon)),
+        self.assertTrue(qs.match(lon.localize(datetime(2012, 12, 25, 15, 0))),
                         'Queen on time in London')
-        self.assertTrue(qs.match(datetime(2011, 12, 25, 7, 0, tzinfo=van)),
+        self.assertTrue(qs.match(van.localize(datetime(2011, 12, 25, 7, 0))),
                         'Queen on time in Vancouver last year')
-        self.assertTrue(qs.match(datetime(2013, 12, 26, 1, 0, tzinfo=syd)),
+        self.assertTrue(qs.match(syd.localize(datetime(2013, 12, 26, 1, 0))),
                         'Queen on time in Sydney next year')
         self.assertTrue(qs.match(datetime(2020, 12, 25, 15, 0, tzinfo=UTC)),
                         'Queen on time in UTC')
 
-        self.assertTrue(ar.match(datetime(2012, 11, 11, 11, 0, tzinfo=van)),
+        self.assertTrue(ar.match(van.localize(datetime(2012, 11, 11, 11, 0))),
                         'Armistice correct time in Vancouver')
-        self.assertTrue(ar.match(datetime(2012, 11, 11, 19, 0, tzinfo=lon)),
+        self.assertTrue(ar.match(lon.localize(datetime(2012, 11, 11, 19, 0))),
                         'Vancouver Armistice correct time in London')
-        self.assertTrue(ar.match(datetime(2012, 11, 12, 5, 0, tzinfo=syd)),
+        self.assertTrue(ar.match(syd.localize(datetime(2012, 11, 12, 5, 0))),
                         'Vancouver Armistice correct time in Sydney')
 
         # Check scheduling tests all date parts.
