@@ -22,6 +22,7 @@ from crab.notify.email import CrabNotifyEmail
 
 CrabNotifyJob = namedtuple('CrabNotifyJob', ['n', 'start', 'end'])
 
+
 class CrabNotify:
     """Class for sending notification messages."""
 
@@ -60,7 +61,7 @@ class CrabNotify:
 
         Each item in the list consists of a tuple containing a tuple
         of CrabReportJob tuples and a set of (method, address) pairs.
-        This allows each distinct report to be generated once, 
+        This allows each distinct report to be generated once,
         and then sent to a number of recipients."""
 
         # First build a list of jobs to report on for each destination:

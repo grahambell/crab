@@ -20,6 +20,7 @@ import pytz
 import time
 from threading import Thread
 
+
 class CrabMinutely(Thread):
     """A thread which will call its run_minutely method for each minute
     which passes.
@@ -75,9 +76,11 @@ class CrabMinutely(Thread):
 
         pass
 
+
 def minute_equal(a, b):
     """Determine whether one time is in the same minute as another."""
     return a.timetuple()[0:5] == b.timetuple()[0:5]
+
 
 def minute_before(a, b):
     """Determine whether one time is in a minute before another."""

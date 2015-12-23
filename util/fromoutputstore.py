@@ -19,6 +19,7 @@ from crab.server.config import read_crabd_config, construct_store
 
 from tooutputstore import copy_data
 
+
 def main():
     config = read_crabd_config()
 
@@ -26,6 +27,7 @@ def main():
     outputstore = construct_store(config['outputstore'])
 
     copy_data(store, outputstore, store)
+
 
 if __name__ == "__main__":
     main()

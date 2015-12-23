@@ -34,10 +34,12 @@ from crab.util.filter import CrabEventFilter
 from crab.util.pid import pidfile_write, pidfile_running, pidfile_delete
 from crab.web.web import CrabWeb
 
+
 def main():
     # Handle command line arguments.
     parser = OptionParser()
-    parser.add_option('--pidfile',
+    parser.add_option(
+        '--pidfile',
         type='string', dest='pidfile',
         help='use PIDFILE to avoid re-running crabd', metavar='PIDFILE')
 
@@ -87,13 +89,13 @@ def main():
         CrabWeb(store, monitor,
                 config['crab']['home'],
                 {
-                    'Monitor' : monitor,
-                    'Notification' : notify,
+                    'Monitor': monitor,
+                    'Notification': notify,
                 },
                 {
                     'rss_enabled': (CrabRSS is not None),
                 }),
-         '/', config)
+        '/', config)
 
     cherrypy.tree.mount(CrabServer(store), '/api/0', {})
 

@@ -6,6 +6,7 @@ from distutils.core import setup
 with open('README.rst') as file:
     long_description = file.read()
 
+
 def find_packages(base, path=[]):
     """Search for Python pacakges in the directory 'base'.
     Package names are built from the path components given
@@ -24,6 +25,7 @@ def find_packages(base, path=[]):
             packages.extend(find_packages(base, pathname))
 
     return packages
+
 
 def find_files(inst, base=None, path=[]):
     """Search for data files in directory 'base', starting at 'path'.
@@ -53,40 +55,43 @@ def find_files(inst, base=None, path=[]):
 
     return subdirs
 
-setup(name='crab',
-      version='0.4.2',
-      author='Graham Bell',
-      author_email='g.bell@eaobservatory.org',
-      url='http://github.com/grahambell/crab',
-      description='Cron alert board',
-      long_description=long_description,
-      package_dir={'': 'lib'},
-      packages=find_packages('lib'),
-      scripts=[os.path.join('scripts', script) for script in [
+
+setup(
+    name='crab',
+    version='0.4.2',
+    author='Graham Bell',
+    author_email='g.bell@eaobservatory.org',
+    url='http://github.com/grahambell/crab',
+    description='Cron alert board',
+    long_description=long_description,
+    package_dir={'': 'lib'},
+    packages=find_packages('lib'),
+    scripts=[os.path.join('scripts', script) for script in [
                    'crab',
                    'crabd',
                    'crabd-check',
                    'crabsh',
               ]],
-      data_files=[(os.path.join('share', 'doc', 'crab'),
-                     [os.path.join('doc', doc) for doc in [
-                         'crab.ini',
-                         'crabd.ini',
-                         'schema.txt',
-                 ]])] +
-                 find_files(os.path.join('share', 'crab'), None, ['res']) +
-                 find_files(os.path.join('share', 'crab'), None, ['templ']),
-      requires=[
-                'CherryPy (>= 3.2.2)',
-                'crontab (>= 0.15)',
-                'Mako (>= 0.7.2)',
-                'pytz',
-               ],
-      classifiers=[
-                   'Development Status :: 3 - Alpha',
-                   'License :: OSI Approved :: GNU General Public License '
-                                               'v3 or later (GPLv3+)',
-                   'Programming Language :: Python',
-                   'Topic :: System :: Monitoring'
-                  ]
-     )
+    data_files=(
+        [(os.path.join('share', 'doc', 'crab'),
+         [os.path.join('doc', doc) for doc in [
+              'crab.ini',
+              'crabd.ini',
+              'schema.txt',
+           ]])] +
+        find_files(os.path.join('share', 'crab'), None, ['res']) +
+        find_files(os.path.join('share', 'crab'), None, ['templ'])),
+    requires=[
+        'CherryPy (>= 3.2.2)',
+        'crontab (>= 0.15)',
+        'Mako (>= 0.7.2)',
+        'pytz',
+        ],
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'License :: OSI Approved :: GNU General Public License'
+        ' v3 or later (GPLv3+)',
+        'Programming Language :: Python',
+        'Topic :: System :: Monitoring'
+    ]
+)

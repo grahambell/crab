@@ -19,6 +19,7 @@ from __future__ import print_function
 
 from crab.server.config import read_crabd_config, construct_store
 
+
 def main():
     config = read_crabd_config()
 
@@ -26,6 +27,7 @@ def main():
     outputstore = construct_store(config['outputstore'])
 
     copy_data(store, store, outputstore)
+
 
 def copy_data(indexstore, instore, outstore):
     """Copies data from the instore to the outstore, using the
@@ -40,14 +42,16 @@ def copy_data(indexstore, instore, outstore):
         print('Processing job:', job['id'])
 
         for finish in indexstore.get_job_finishes(job['id'], limit=None):
-            (stdout, stderr) = instore.get_job_output(finish['finishid'],
-                        job['host'], job['user'], job['id'], job['crabid'])
+            (stdout, stderr) = instore.get_job_output(
+                finish['finishid'], job['host'], job['user'],
+                job['id'], job['crabid'])
 
             if stdout or stderr:
 
-                outstore.write_job_output(finish['finishid'],
-                        job['host'], job['user'], job['id'], job['crabid'],
-                        stdout, stderr)
+                outstore.write_job_output(
+                    finish['finishid'], job['host'], job['user'],
+                    job['id'], job['crabid'],
+                    stdout, stderr)
 
     for (host, user) in hostuser:
         print('Processing crontab:', user, '@', host)
@@ -56,6 +60,7 @@ def copy_data(indexstore, instore, outstore):
 
         if crontab is not None:
             outstore.write_raw_crontab(host, user, crontab)
+
 
 if __name__ == "__main__":
     main()

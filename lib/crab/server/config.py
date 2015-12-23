@@ -22,6 +22,7 @@ from cherrypy.lib.reprconf import Config
 from crab.store.file import CrabStoreFile
 from crab.store.sqlite import CrabStoreSQLite
 
+
 def read_crabd_config():
     """Determine Crab server configuration.
 
@@ -56,7 +57,6 @@ def read_crabd_config():
     except IOError:
         pass
 
-
     try:
         config.update(os.path.join(userconfdir, 'crabd.ini'))
     except IOError:
@@ -69,10 +69,12 @@ def read_crabd_config():
                       'tools.staticdir.dir': config['crab']['home'] + '/res'}
 
     if 'base_url' not in config['crab'] or config['crab']['base_url'] is None:
-        config['crab']['base_url'] = ('http://' + socket.getfqdn() + ':' +
-                                   str(config['global']['server.socket_port']))
+        config['crab']['base_url'] = (
+            'http://' + socket.getfqdn() + ':' +
+            str(config['global']['server.socket_port']))
 
     return config
+
 
 def construct_store(storeconfig, outputstore=None):
     """Constructs a storage backend from the given dictionary."""

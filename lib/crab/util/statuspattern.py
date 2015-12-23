@@ -17,6 +17,7 @@ import re
 
 from crab import CrabStatus
 
+
 def check_status_patterns(status, config, output):
     """Function to update a job status based on the patterns.
 

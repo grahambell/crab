@@ -60,15 +60,15 @@ class CrabRSS:
         rss = RSS2('Crab failures', self.base + '/',
                    'List of recent cron job failures.',
                    lastBuildDate=datetime.datetime.now(),
-                   ttl = 30,
-                   items = rssitems)
+                   ttl=30,
+                   items=rssitems)
         return rss.to_xml()
 
     def event_to_rssitem(self, event):
         """Function converting an event (Python dict) to an RSSItem object."""
 
         title = (CrabStatus.get_name(event['status']) + ': ' +
-                    event['user'] + ' @ ' + event['host'])
+                 event['user'] + ' @ ' + event['host'])
         if event['command'] is not None:
             title += ': ' + event['command']
         link = self.base + '/job/' + str(event['id'])
@@ -84,8 +84,9 @@ class CrabRSS:
 
         date = self.store.parse_datetime(event['datetime'])
 
-        guid = ':'.join(['crab', self.fqdn, str(event['id']),
-               str(calendar.timegm(date.timetuple())), str(event['status'])])
+        guid = ':'.join([
+            'crab', self.fqdn, str(event['id']),
+            str(calendar.timegm(date.timetuple())), str(event['status'])])
 
         info = {}
 
@@ -95,6 +96,5 @@ class CrabRSS:
         return RSSItem(title=title,
                        link=link,
                        pubDate=date,
-                       guid=Guid(guid, isPermaLink = False),
+                       guid=Guid(guid, isPermaLink=False),
                        **info)
-

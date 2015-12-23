@@ -28,18 +28,23 @@ from crab.util.compat import subprocess_options
 from crab.util.pid import pidfile_write, pidfile_running, pidfile_delete
 from crab.util.string import split_crab_vars, true_string
 
+
 def main():
     parser = OptionParser()
-    parser.add_option('-c',
+    parser.add_option(
+        '-c',
         type='string', dest='command',
         help='specify the COMMAND to execute', metavar='COMMAND')
-    parser.add_option('--id',
+    parser.add_option(
+        '--id',
         type='string', dest='crabid',
         help='set Crab job ID', metavar='ID')
-    parser.add_option('--shell',
+    parser.add_option(
+        '--shell',
         type='string', dest='shell',
         help='use SHELL to execute COMMAND', metavar='SHELL')
-    parser.add_option('--pidfile',
+    parser.add_option(
+        '--pidfile',
         type='string', dest='pidfile',
         help='use PIDFILE to avoid re-running COMMAND', metavar='PIDFILE')
 
@@ -148,7 +153,7 @@ def main():
             if allow_inhibit:
                 try:
                     client.finish(CrabStatus.INHIBITED)
-                #except CrabError as err:
+                # except CrabError as err:
                 except CrabError:
                     err = sys.exc_info()[1]
                     print('crabsh: ' + command)
@@ -157,7 +162,7 @@ def main():
 
                 return 0
 
-    #except CrabError as err:
+    # except CrabError as err:
     except CrabError:
         err = sys.exc_info()[1]
         print('crabsh: ' + command)
@@ -195,7 +200,7 @@ def main():
                       (latin_1_decode(stdoutdata, 'replace'))[0],
                       (latin_1_decode(stderrdata, 'replace'))[0])
 
-    #except OSError as err:
+    # except OSError as err:
     except OSError:
         err = sys.exc_info()[1]
         try:
@@ -205,7 +210,7 @@ def main():
             print('Failed to notify that job could not start.')
             print('ERROR: ' + str(err))
 
-    #except CrabError as err:
+    # except CrabError as err:
     except CrabError:
         err = sys.exc_info()[1]
         # Print fall-back message for cron to send by email (to the

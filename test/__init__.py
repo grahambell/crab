@@ -2,6 +2,7 @@ from unittest import TestCase
 
 from crab.store.sqlite import CrabStoreSQLite
 
+
 class CrabDBTestCase(TestCase):
     def setUp(self):
         with open('doc/schema.txt') as file:

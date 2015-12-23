@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 class CrabError(Exception):
     """Base class for exceptions raised internally by crab.
 
@@ -20,6 +21,7 @@ class CrabError(Exception):
     CrabError to allow them to be trapped conveniently without
     accidentally trapping other errors."""
     pass
+
 
 class CrabStatus:
     """Helper class for status codes.
@@ -44,7 +46,7 @@ class CrabStatus:
 
     # Additional internal status values (it is not valid for
     # a client to send these).  Also some of these are less bad
-    # than the client statuses.  For example, if something has a 
+    # than the client statuses.  For example, if something has a
     # status of FAIL, you don't want to change it to just LATE.
     LATE = -1
     MISSED = -2
@@ -97,6 +99,7 @@ class CrabStatus:
         """True if the given status is an error, i.e. not OK and not a
         warning."""
         return not (CrabStatus.is_ok(status) or CrabStatus.is_warning(status))
+
 
 class CrabEvent:
     """Helper class for crab events.

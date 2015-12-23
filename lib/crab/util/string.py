@@ -15,6 +15,7 @@
 
 import re
 
+
 def remove_quotes(value):
     """If the given string starts and ends with matching quote marks,
     remove them from the returned value.
@@ -34,11 +35,12 @@ def remove_quotes(value):
     "echo'"
     """
 
-    if (value.startswith("'") and value.endswith("'")) \
-    or (value.startswith('"') and value.endswith('"')):
+    if ((value.startswith("'") and value.endswith("'")) or
+            (value.startswith('"') and value.endswith('"'))):
         return value[1:-1]
     else:
         return value
+
 
 def quote_multiword(value):
     """If the given string contains space characters, return it
@@ -54,6 +56,7 @@ def quote_multiword(value):
         return '"' + value + '"'
     else:
         return value
+
 
 def split_quoted_word(value):
     """Splits the given string on the first word boundary, unless it starts
@@ -76,6 +79,7 @@ def split_quoted_word(value):
         return value.split(None, 1)
 
     return (a, b.lstrip())
+
 
 def split_crab_vars(command):
     """Looks for Crab environment variables at the start of a command.
@@ -108,6 +112,7 @@ def split_crab_vars(command):
 
     return (command, vars)
 
+
 def alphanum(value):
     """Removes all non-alphanumeric characters from the string,
     replacing them with underscores.
@@ -117,6 +122,7 @@ def alphanum(value):
     """
 
     return re.sub('[^a-zA-Z0-9]', '_', value)
+
 
 def mergelines(text):
     """Merges the lines of a string by removing newline characters.
@@ -129,6 +135,7 @@ def mergelines(text):
     for line in text.split('\n'):
         output = output + line.strip()
     return output
+
 
 def true_string(text):
     """Tests whether the string represents a true value.

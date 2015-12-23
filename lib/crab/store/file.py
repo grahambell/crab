@@ -19,9 +19,10 @@ import os
 from crab import CrabError
 from crab.util.string import alphanum
 
+
 class CrabStoreFile:
     """Store class for cron job output.
-    
+
     This backend currently implements only the write_job_output and
     get_job_output methods, to allow it to be used as an
     "outputstore" along with CrabStoreDB."""
@@ -53,10 +54,10 @@ class CrabStoreFile:
                     os.mkdir(directory)
                 except OSError as err:
                     if err.errno != errno.EEXIST:
-                        raise CrabError('file store error: '
-                                        'could not make directory ' + directory +
-                                        ': ' + str(err))
-
+                        raise CrabError(
+                            'file store error: '
+                            'could not make directory ' + directory +
+                            ': ' + str(err))
 
     def write_job_output(self, finishid, host, user, id_, crabid,
                          stdout, stderr):
@@ -80,8 +81,9 @@ class CrabStoreFile:
                 os.makedirs(dir)
             except OSError as err:
                 if err.errno != errno.EEXIST:
-                    raise CrabError('file store error: could not make directory: ' +
-                                    str(err))
+                    raise CrabError(
+                        'file store error: could not make directory: ' +
+                        str(err))
 
         outfile = path + '.' + self.outext
         errfile = path + '.' + self.errext
@@ -159,8 +161,9 @@ class CrabStoreFile:
                 os.makedirs(dir)
             except OSError as err:
                 if err.errno != errno.EEXIST:
-                    raise CrabError('file store error: could not make directory: ' +
-                                    str(err))
+                    raise CrabError(
+                        'file store error: could not make directory: ' +
+                        str(err))
 
         try:
             with open(pathname, 'w') as file:
@@ -169,7 +172,6 @@ class CrabStoreFile:
         except IOError as err:
             raise CrabError('file store error: could not write crontab: ' +
                             str(err))
-
 
     def get_raw_crontab(self, host, user):
         """Reads the given user's crontab from a file."""
@@ -188,7 +190,6 @@ class CrabStoreFile:
                             str(err))
 
         return crontab.split('\n')
-
 
     def _make_output_path(self, finishid, host, user, id_, crabid):
         """Determine the full path to use to store output

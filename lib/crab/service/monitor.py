@@ -27,9 +27,11 @@ from crab.util.schedule import CrabSchedule
 
 HISTORY_COUNT = 10
 
+
 class JobDeleted(Exception):
     """Exception raised by _initialize_job if the job can not be found."""
     pass
+
 
 class CrabMonitor(CrabMinutely):
     """A class implementing the crab monitor thread."""
@@ -88,8 +90,9 @@ class CrabMonitor(CrabMinutely):
             time.sleep(5)
             datetime_ = datetime.datetime.now(pytz.UTC)
 
-            events = self.store.get_events_since(self.max_startid,
-                                self.max_alarmid, self.max_finishid)
+            events = self.store.get_events_since(
+                self.max_startid, self.max_alarmid, self.max_finishid)
+
             for event in events:
                 id_ = event['jobid']
                 self._update_max_id_values(event)
@@ -107,16 +110,16 @@ class CrabMonitor(CrabMinutely):
                 except JobDeleted:
                     pass
 
-            self.num_error = 0;
-            self.num_warning = 0;
+            self.num_error = 0
+            self.num_warning = 0
             for id_ in self.status:
                 jobstatus = self.status[id_]['status']
                 if (jobstatus is None or CrabStatus.is_ok(jobstatus)):
                     pass
                 elif (CrabStatus.is_warning(jobstatus)):
-                    self.num_warning += 1;
+                    self.num_warning += 1
                 else:
-                    self.num_error += 1;
+                    self.num_error += 1
 
             if events:
                 with self.new_event:
@@ -153,8 +156,8 @@ class CrabMonitor(CrabMinutely):
 
                     # Do not reset the miss timeout if it is already "running".
                     if id_ not in self.miss_timeout:
-                        self.miss_timeout[id_] = (datetime_ +
-                                self.config[id_]['graceperiod'])
+                        self.miss_timeout[id_] = (
+                            datetime_ + self.config[id_]['graceperiod'])
 
         # Look for new or deleted jobs.
         currentjobs = set(self.status.keys())
@@ -325,16 +328,16 @@ class CrabMonitor(CrabMinutely):
         # the MISSED alarm is not raised and the timeout period
         # is extended.
 
-        if (event['type'] == CrabEvent.START
-                or event['status'] == CrabStatus.ALREADYRUNNING):
+        if (event['type'] == CrabEvent.START or
+                event['status'] == CrabStatus.ALREADYRUNNING):
             self.status[id_]['running'] = True
             self.last_start[id_] = datetime_
             self.timeout[id_] = datetime_ + self.config[id_]['timeout']
             if id_ in self.miss_timeout:
                 del self.miss_timeout[id_]
 
-        elif (event['type'] == CrabEvent.FINISH
-                or event['status'] == CrabStatus.TIMEOUT):
+        elif (event['type'] == CrabEvent.FINISH or
+                event['status'] == CrabStatus.TIMEOUT):
             self.status[id_]['running'] = False
             if id_ in self.timeout:
                 del self.timeout[id_]
@@ -348,8 +351,8 @@ class CrabMonitor(CrabMinutely):
         if len(history) == 0:
             self.status[id_]['reliability'] = 0
         else:
-            self.status[id_]['reliability'] = int(100 *
-                len([x for x in history if x == CrabStatus.SUCCESS]) /
+            self.status[id_]['reliability'] = int(
+                100 * len([x for x in history if x == CrabStatus.SUCCESS]) /
                 len(history))
 
     def _write_alarm(self, id_, status):
@@ -387,12 +390,13 @@ class CrabMonitor(CrabMinutely):
 
         A random time up to 20s is added to the timeout to stagger requests."""
 
-        if (self.max_startid > startid or self.max_alarmid > alarmid or
-                                          self.max_finishid > finishid):
+        if (self.max_startid > startid or
+                self.max_alarmid > alarmid or
+                self.max_finishid > finishid):
             pass
         else:
             with self.new_event:
-                self.new_event.wait(timeout + self.random.randint(0,20))
+                self.new_event.wait(timeout + self.random.randint(0, 20))
 
         return {'startid': self.max_startid, 'alarmid': self.max_alarmid,
                 'finishid': self.max_finishid, 'status': self.status,

@@ -25,6 +25,7 @@ from crab.client import CrabClient
 from crab.util.compat import subprocess_options
 from crab.util.guesstimezone import guess_timezone
 
+
 def send_crontab(crontab):
     """Sends the given crontab to the server.
 
@@ -39,6 +40,7 @@ def send_crontab(crontab):
 
     client = CrabClient()
     return client.send_crontab(crontab, timezone=tz)
+
 
 def read_crontab():
     """Fetches the current user's crontab file.
@@ -58,9 +60,10 @@ def read_crontab():
         else:
             print(sys.argv[0] + ': failed to read crontab')
 
-    #except OSError as err:
+    # except OSError as err:
     except OSError:
         print(sys.argv[0] + ': could not execute crontab command')
+
 
 def read_file(path, silent=False):
     """Returns the contents of the given file.
@@ -91,6 +94,7 @@ def read_file(path, silent=False):
         if fh is not None:
             fh.close()
 
+
 def do_import(crontabfile=None):
     """Action for the "import" command.
 
@@ -115,7 +119,7 @@ def do_import(crontabfile=None):
 
             return 1
 
-    #except CrabError as err:
+    # except CrabError as err:
     except CrabError:
         err = sys.exc_info()[1]
         print(sys.argv[0] + ': failed to send crontab: ' + str(err))
@@ -123,8 +127,9 @@ def do_import(crontabfile=None):
 
     return 0
 
+
 def main():
-    parser = OptionParser(usage = """Usage: %prog [options] [command]
+    parser = OptionParser(usage="""Usage: %prog [options] [command]
 
 Commands:
   start, finish          - report cron job progress
@@ -136,25 +141,30 @@ Commands:
   edit                   - edit the crontab, and then import it
   info                   - print current configuration""")
 
-    parser.add_option('-c',
+    parser.add_option(
+        '-c',
         type='string', dest='command',
         help='specify the cron COMMAND being reported', metavar='COMMAND')
-    parser.add_option('--id',
+    parser.add_option(
+        '--id',
         type='string', dest='crabid',
         help='specify the Crab job ID to report', metavar='ID')
-    parser.add_option('--file',
+    parser.add_option(
+        '--file',
         type='string', dest='crontabfile',
         help='specify file name containing crontab to import')
-    parser.add_option('--raw',
+    parser.add_option(
+        '--raw',
         action="store_true", dest="raw", default=False,
         help="fetch crontab from server exactly as last imported")
-    parser.add_option('--stdout',
+    parser.add_option(
+        '--stdout',
         type="string", dest='stdoutfile',
         help='file containg standard output to send')
-    parser.add_option('--stderr',
+    parser.add_option(
+        '--stderr',
         type="string", dest='stderrfile',
         help='file containg standard error to send')
-
 
     (options, args) = parser.parse_args()
 
@@ -200,11 +210,10 @@ Commands:
                             if CrabStatus.is_ok(status):
                                 status = CrabStatus.WARNING
 
-
                     client.finish(status,
                                   stdoutdata=stdoutdata, stderrdata=stderrdata)
 
-            #except CrabError as err:
+            # except CrabError as err:
             except CrabError:
                 err = sys.exc_info()[1]
                 print(sys.argv[0] + ': ' + str(err))
@@ -229,7 +238,7 @@ Commands:
             crontab = client.fetch_crontab(raw=options.raw)
             print(crontab)
 
-        #except CrabError as err:
+        # except CrabError as err:
         except CrabError:
             err = sys.exc_info()[1]
             print(sys.argv[0] + ': failed to fetch crontab: ' + str(err))
@@ -246,6 +255,7 @@ Commands:
         parser.error('command not recognised')
 
     return 0
+
 
 if __name__ == '__main__':
     sys.exit(main())

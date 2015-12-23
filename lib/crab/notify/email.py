@@ -23,6 +23,7 @@ from smtplib import SMTP
 from crab.report.text import report_to_text
 from crab.report.html import report_to_html
 
+
 class CrabNotifyEmail:
     """Class to send notification messages by email."""
 

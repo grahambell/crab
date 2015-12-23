@@ -15,6 +15,7 @@
 
 from crab import CrabEvent, CrabStatus
 
+
 def report_to_text(report, event_list=True):
     lines = []
     sections = ['error', 'warning', 'ok']
@@ -60,12 +61,15 @@ def report_to_text(report, event_list=True):
 
 def _summary_line(report, id_):
     info = report.info[id_]
-    return '{0:10} {1:10} {2}'.format(info['host'], info['user'], info['title'])
+    return '{0:10} {1:10} {2}'.format(info['host'], info['user'],
+                                      info['title'])
+
 
 def _event_line(event):
     return '{0:10} {1:10} {2}'.format(CrabEvent.get_name(event['type']),
-                                CrabStatus.get_name(event['status']),
-                                event['datetime'])
+                                      CrabStatus.get_name(event['status']),
+                                      event['datetime'])
+
 
 def _output_lines(indent, title, text):
     lines = []

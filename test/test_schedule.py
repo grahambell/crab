@@ -4,11 +4,12 @@ from unittest import main, TestCase
 
 from crab.util.schedule import CrabSchedule
 
+
 class ScheduleTestCase(TestCase):
     def test_events(self):
         lon = timezone('Europe/London')
-        van = timezone('America/Vancouver') # GMT-8
-        syd = timezone('Australia/Sydney') # GMT+11 (DST)
+        van = timezone('America/Vancouver')  # GMT-8
+        syd = timezone('Australia/Sydney')  # GMT+11 (DST)
 
         qs = CrabSchedule('0 15 25 12 *', 'Europe/London')
         ar = CrabSchedule('0 11 11 11 *', 'America/Vancouver')
@@ -60,7 +61,7 @@ class ScheduleTestCase(TestCase):
         thu = CrabSchedule('* * * * 4', 'UTC')
         fri = CrabSchedule('* * * * fri', 'UTC')
         sat = CrabSchedule('* * * * 6', 'UTC')
-        sun7= CrabSchedule('* * * * 7', 'UTC')
+        sun7 = CrabSchedule('* * * * 7', 'UTC')
 
         d = datetime(2012, 8, 10, 12, 0, tzinfo=UTC)
         day = timedelta(days=1)

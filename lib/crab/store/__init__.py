@@ -20,6 +20,7 @@ import re
 from crab.util.string import remove_quotes, quote_multiword, \
                              split_crab_vars, true_string
 
+
 class CrabStore:
     def get_jobs(self, host=None, user=None, **kwargs):
         """Fetches a list of all of the cron jobs,
@@ -78,14 +79,16 @@ class CrabStore:
                 timezone = job['timezone']
                 crontab.append('CRON_TZ=' + quote_multiword(timezone))
 
-            elif job['timezone'] is None and (timezone is not None or firstrow):
+            elif (job['timezone'] is None and
+                    (timezone is not None or firstrow)):
                 crontab.append('### CRAB: UNKNOWN TIMEZONE ###')
                 timezone = None
 
             # Include the crabid in the command if present.
             command = job['command']
             if job['crabid'] is not None:
-                command = 'CRABID=' + quote_multiword(job['crabid']) + ' ' + command
+                command = ('CRABID=' + quote_multiword(job['crabid']) +
+                           ' ' + command)
 
             crontab.append(time + ' ' + command)
 
@@ -167,16 +170,16 @@ class CrabStore:
 
                 warning.append('Did not recognise line: ' + job)
 
-
             # Set any jobs remaining in the id set to deleted
             # because we did not see them in the current crontab
 
             for id_ in idset:
-                self._delete_job(id_);
+                self._delete_job(id_)
 
             return warning
 
-    def _check_job(self, host, user, crabid, command, time=None, timezone=None):
+    def _check_job(self, host, user, crabid, command,
+                   time=None, timezone=None):
         """Ensure that a job exists in the store.
 
         Tries to find (and update if necessary) the corresponding job.

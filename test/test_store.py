@@ -1,5 +1,6 @@
 from . import CrabDBTestCase
 
+
 class JobIdentifyTestCase(CrabDBTestCase):
     def test_identify(self):
         """Test that _check_job correctly identifies jobs."""
@@ -26,7 +27,7 @@ class JobIdentifyTestCase(CrabDBTestCase):
         self.assertEqual(id_, 1, 'Original job should have ID 1 by crabid')
 
         id_ = self.store._check_job('host1', 'user1', None, 'command3')
-        self.assertEqual(id_, 1, 'Original job should have ID 1 by new command')
+        self.assertEqual(id_, 1, 'Original job should have ID 1 by new cmd')
 
         id_ = self.store._check_job('host1', 'user1', None, 'command1')
         self.assertEqual(id_, 5, 'Original command should now be a new job')

@@ -22,6 +22,7 @@ from cherrypy import HTTPError
 
 from crab import CrabError, CrabStatus
 
+
 class CrabServer:
     """Crab server class, used for interaction with the client."""
 
@@ -59,8 +60,8 @@ class CrabServer:
                 if crontab is None:
                     raise CrabError('no crontab received')
 
-                warning = self.store.save_crontab(host, user, crontab,
-                             timezone=data.get('timezone'))
+                warning = self.store.save_crontab(
+                    host, user, crontab, timezone=data.get('timezone'))
 
                 return json.dumps({'warning': warning})
 
@@ -125,4 +126,3 @@ class CrabServer:
         except ValueError:
             cherrypy.log.error('CrabError: Failed to read JSON: ' + message)
             raise HTTPError(400, message='Did not understand JSON')
-

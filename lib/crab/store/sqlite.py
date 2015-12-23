@@ -21,6 +21,7 @@ import sqlite3
 
 from crab.store.db import CrabStoreDB
 
+
 class CrabStoreSQLite(CrabStoreDB):
     def __init__(self, filename, outputstore=None):
         if filename != ':memory:' and not os.path.exists(filename):
@@ -44,8 +45,8 @@ class CrabStoreSQLite(CrabStoreDB):
         guess which fields are timestamps and automatically run this
         method on them."""
 
-        return datetime.datetime.strptime(timestamp,
-                        '%Y-%m-%d %H:%M:%S').replace(tzinfo=pytz.UTC)
+        return datetime.datetime.strptime(
+            timestamp, '%Y-%m-%d %H:%M:%S').replace(tzinfo=pytz.UTC)
 
     def format_datetime(self, datetime_):
         """Converts a datetime into a timestamp string for the database.

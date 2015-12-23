@@ -43,6 +43,7 @@ except:
 
 from crab import CrabError, CrabStatus
 
+
 class CrabClient:
     """Crab client class, used for interaction with the server."""
 
@@ -90,18 +91,18 @@ class CrabClient:
         an inhibit dictionary item."""
 
         return self._write_json(self._get_url('start'),
-                               {'command': self.command},
-                               read=True)
+                                {'command': self.command},
+                                read=True)
 
     def finish(self, status=CrabStatus.UNKNOWN,
                stdoutdata='', stderrdata=''):
         """Notify the server that the job is finishing."""
 
         self._write_json(self._get_url('finish'),
-                        {'command': self.command,
-                         'status':   status,
-                         'stdout':   stdoutdata,
-                         'stderr':   stderrdata})
+                         {'command': self.command,
+                          'status':   status,
+                          'stdout':   stdoutdata,
+                          'stderr':   stderrdata})
 
     def send_crontab(self, crontab, timezone=None):
         """Takes the crontab as a string, breaks it into lines,
@@ -126,17 +127,17 @@ class CrabClient:
         data = self._read_json(url)
 
         if data['crontab'] is None:
-            return  ''
+            return ''
         else:
             return '\n'.join(data['crontab'])
 
     def get_info(self):
         info = []
-        info.append('Server: ' + self.config.get('server', 'host')
-                         + ':' + self.config.get('server', 'port'))
-        info.append('Client: ' + self.config.get('client', 'username')
-                         + '@' + self.config.get('client', 'hostname'))
-        info.append('Files: '  + ', '.join(self.configfiles))
+        info.append('Server: ' + self.config.get('server', 'host') +
+                    ':' + self.config.get('server', 'port'))
+        info.append('Client: ' + self.config.get('client', 'username') +
+                    '@' + self.config.get('client', 'hostname'))
+        info.append('Files: ' + ', '.join(self.configfiles))
         return '\n'.join(info)
 
     def _get_url(self, action):
@@ -183,20 +184,17 @@ class CrabClient:
 
                 return json.loads(latin_1_decode(res.read(), 'replace')[0])
 
-            #except HTTPException as err:
-            #except HTTPException, err:
+            # except HTTPException as err:
             except HTTPException:
                 err = sys.exc_info()[1]
                 raise CrabError('HTTP error: ' + str(err))
 
-            #except socket.error as err:
-            #except socket.error, err:
+            # except socket.error as err:
             except socket.error:
                 err = sys.exc_info()[1]
                 raise CrabError('socket error: ' + str(err))
 
-            #except ValueError as err:
-            #except ValueError, err:
+            # except ValueError as err:
             except ValueError:
                 err = sys.exc_info()[1]
                 raise CrabError('did not understand response: ' + str(err))
@@ -231,20 +229,17 @@ class CrabClient:
                     else:
                         return {}
 
-            #except HTTPException as err:
-            #except HTTPException, err:
+            # except HTTPException as err:
             except HTTPException:
                 err = sys.exc_info()[1]
                 raise CrabError('HTTP error: ' + str(err))
 
-            #except socket.error as err:
-            #except socket.error, err:
+            # except socket.error as err:
             except socket.error:
                 err = sys.exc_info()[1]
                 raise CrabError('socket error: ' + str(err))
 
-            #except ValueError as err:
-            #except ValueError, err:
+            # except ValueError as err:
             except ValueError:
                 err = sys.exc_info()[1]
                 raise CrabError('did not understand response: ' + str(err))

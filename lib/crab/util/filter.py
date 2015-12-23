@@ -17,6 +17,7 @@ import pytz
 
 from crab import CrabEvent, CrabStatus
 
+
 class CrabEventFilter:
     """Class implementing an event filtering action."""
 
@@ -76,10 +77,10 @@ class CrabEventFilter:
                 if skip_start:
                     continue
             else:
-                if (skip_trivial and CrabStatus.is_trivial(e['status'])
-                or skip_ok and CrabStatus.is_ok(e['status'])
-                or skip_warning and CrabStatus.is_warning(e['status'])
-                or skip_error and CrabStatus.is_error(e['status'])):
+                if (skip_trivial and CrabStatus.is_trivial(e['status']) or
+                        skip_ok and CrabStatus.is_ok(e['status']) or
+                        skip_warning and CrabStatus.is_warning(e['status']) or
+                        skip_error and CrabStatus.is_error(e['status'])):
                     continue
 
                 if CrabStatus.is_error(e['status']):
@@ -91,8 +92,9 @@ class CrabEventFilter:
                 start = _find_previous_start(events, i)
                 if start is not None:
                     squash.add(start)
-                    delta = (self.store.parse_datetime(e['datetime'])
-                        - self.store.parse_datetime(events[start]['datetime']))
+                    delta = (
+                        self.store.parse_datetime(e['datetime']) -
+                        self.store.parse_datetime(events[start]['datetime']))
                     e['duration'] = str(delta)
 
             e['datetime'] = self.in_timezone(e['datetime'])

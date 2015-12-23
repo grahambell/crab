@@ -15,6 +15,7 @@
 
 import markupsafe
 
+
 def abbr(text, limit=60, tolerance=10):
     """Returns an abbreviated and HTML-escaped version of the specified text.
 

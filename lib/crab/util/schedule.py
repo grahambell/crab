@@ -22,6 +22,7 @@ from crontab import CronTab
 
 from crab import CrabError
 
+
 class CrabSchedule(CronTab):
     """Class handling the schedule of a cron job."""
 
@@ -49,7 +50,6 @@ class CrabSchedule(CronTab):
                 self.timezone = pytz.timezone(timezone)
             except pytz.UnknownTimeZoneError:
                 print('Warning: unknown time zone', timezone)
-
 
     def match(self, datetime):
         """Determines whether the given datetime matches the scheduling
@@ -89,4 +89,3 @@ class CrabSchedule(CronTab):
         else:
             # Currently assume UTC.
             return datetime
-

@@ -24,6 +24,7 @@ import pytz
 # The Perl module DateTime::TimeZone::Local::Unix uses this method, among
 # others.  TODO: implement some of the other methods.
 
+
 def guess_timezone():
     """Function to try to determine the operating system's timezone setting.
 

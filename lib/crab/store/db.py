@@ -24,6 +24,7 @@ from crab import CrabError, CrabStatus
 from crab.store import CrabStore
 from crab.util.statuspattern import check_status_patterns
 
+
 class CrabDBLock():
     def __init__(self, conn):
         self.lock = Lock()
@@ -41,6 +42,7 @@ class CrabDBLock():
             self.conn.rollback()
 
         self.lock.release()
+
 
 class CrabStoreDB(CrabStore):
     """Crab storage backend using a database.
@@ -94,7 +96,8 @@ class CrabStoreDB(CrabStore):
 
         if without_crabid:
             if crabid is not None:
-                raise CrabError('_get_jobs called with crabid and without_crabid')
+                raise CrabError(
+                    '_get_jobs called with crabid and without_crabid')
 
             conditions.append('crabid IS NULL')
 
@@ -105,7 +108,7 @@ class CrabStoreDB(CrabStore):
 
         return self._query_to_dict_list(
             'SELECT id, host, user, crabid, command, time, '
-                'timezone, installed, deleted '
+            'timezone, installed, deleted '
             'FROM job ' + where_clause + ' '
             'ORDER BY host ASC, user ASC, crabid ASC, installed ASC', params)
 
@@ -116,8 +119,8 @@ class CrabStoreDB(CrabStore):
 
         try:
             c.execute('INSERT INTO job (host, user, crabid, ' +
-                          'time, command, timezone)' +
-                          'VALUES (?, ?, ?, ?, ?, ?)',
+                      'time, command, timezone)' +
+                      'VALUES (?, ?, ?, ?, ?, ?)',
                       [host, user, crabid, time, command, timezone])
 
             return c.lastrowid
@@ -280,8 +283,8 @@ class CrabStoreDB(CrabStore):
         with self.lock:
             return self._query_to_dict(
                 'SELECT host, user, command, crabid, time, timezone, ' +
-                    'installed, deleted ' +
-                    'FROM job WHERE id = ?', [id_])
+                'installed, deleted ' +
+                'FROM job WHERE id = ?', [id_])
 
     def get_job_config(self, id_):
         """Retrieve configuration data for a job by ID number."""
@@ -295,11 +298,12 @@ class CrabStoreDB(CrabStore):
 
         return self._query_to_dict(
             'SELECT id AS configid, graceperiod, timeout, ' +
-                 'success_pattern, warning_pattern, fail_pattern, ' +
-                 'note, inhibit ' +
+            'success_pattern, warning_pattern, fail_pattern, ' +
+            'note, inhibit ' +
             'FROM jobconfig WHERE jobid = ?', [id_])
 
-    def write_job_config(self, id_, graceperiod=None, timeout=None,
+    def write_job_config(
+            self, id_, graceperiod=None, timeout=None,
             success_pattern=None, warning_pattern=None, fail_pattern=None,
             note=None, inhibit=False):
         """Writes configuration data for a job by ID number.
@@ -316,12 +320,12 @@ class CrabStoreDB(CrabStore):
             try:
                 if row is None:
                     c.execute('INSERT INTO jobconfig (jobid, graceperiod, '
-                                  'timeout, success_pattern, warning_pattern, '
-                                  'fail_pattern, note, inhibit) '
+                              'timeout, success_pattern, warning_pattern, '
+                              'fail_pattern, note, inhibit) '
                               'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
                               [id_, graceperiod, timeout,
-                              success_pattern, warning_pattern, fail_pattern,
-                              note, inhibit])
+                               success_pattern, warning_pattern, fail_pattern,
+                               note, inhibit])
 
                     return c.lastrowid
                 else:
@@ -330,12 +334,12 @@ class CrabStoreDB(CrabStore):
                         raise CrabError('job config: got null id')
 
                     c.execute('UPDATE jobconfig SET graceperiod=?, timeout=?, '
-                                  'success_pattern=?, warning_pattern=?, '
-                                  'fail_pattern=?, note=?, inhibit=? '
+                              'success_pattern=?, warning_pattern=?, '
+                              'fail_pattern=?, note=?, inhibit=? '
                               'WHERE id=?',
                               [graceperiod, timeout,
-                              success_pattern, warning_pattern, fail_pattern,
-                              note, inhibit, configid])
+                               success_pattern, warning_pattern, fail_pattern,
+                               note, inhibit, configid])
 
                     return configid
 
@@ -372,7 +376,7 @@ class CrabStoreDB(CrabStore):
         with self.lock:
             return self._query_to_dict_list(
                 'SELECT jobconfig.id AS configid, job.id AS id, '
-                    'host, user, job.crabid AS crabid, command '
+                'host, user, job.crabid AS crabid, command '
                 'FROM jobconfig JOIN job ON jobconfig.jobid = job.id '
                 'WHERE job.deleted IS NOT NULL')
 
@@ -433,9 +437,9 @@ class CrabStoreDB(CrabStore):
         with self.lock:
             return self._query_to_dict_list(
                 'SELECT id AS finishid, datetime, command, status '
-                    'FROM jobfinish '
-                    'WHERE ' + ' AND '.join(conditions) + ' '
-                    'ORDER BY datetime ' + order + ' ' + limit_clause,
+                'FROM jobfinish '
+                'WHERE ' + ' AND '.join(conditions) + ' '
+                'ORDER BY datetime ' + order + ' ' + limit_clause,
                 params)
 
     def get_job_events(self, id_, limit=100, start=None, end=None):
@@ -469,17 +473,17 @@ class CrabStoreDB(CrabStore):
         with self.lock:
             return self._query_to_dict_list(
                 'SELECT ' +
-                    'id AS eventid, 1 AS type, ' +
-                    'datetime, command, NULL AS status FROM jobstart ' +
-                        where_clause + ' ' +
+                '    id AS eventid, 1 AS type, ' +
+                '    datetime, command, NULL AS status ' +
+                '    FROM jobstart ' + where_clause + ' ' +
                 'UNION SELECT ' +
-                    'id AS eventid, 2 AS type, ' +
-                        'datetime, NULL AS command, status FROM jobalarm ' +
-                        where_clause + ' ' +
+                '    id AS eventid, 2 AS type, ' +
+                '    datetime, NULL AS command, status ' +
+                '    FROM jobalarm ' + where_clause + ' ' +
                 'UNION SELECT ' +
-                    'id AS eventid, 3 AS type, ' +
-                        'datetime, command, status FROM jobfinish ' +
-                        where_clause + ' ' +
+                '    id AS eventid, 3 AS type, ' +
+                '    datetime, command, status ' +
+                '    FROM jobfinish ' + where_clause + ' ' +
                 'ORDER BY datetime DESC, type DESC ' + limit_clause,
                 params)
 
@@ -490,17 +494,17 @@ class CrabStoreDB(CrabStore):
         with self.lock:
             return self._query_to_dict_list(
                 'SELECT ' +
-                    'jobid, id AS eventid, 1 AS type, ' +
-                    'datetime, NULL AS status FROM jobstart ' +
-                    'WHERE id > ? ' +
+                '    jobid, id AS eventid, 1 AS type, ' +
+                '    datetime, NULL AS status FROM jobstart ' +
+                '    WHERE id > ? ' +
                 'UNION SELECT ' +
-                    'jobid, id AS eventid, 2 AS type, ' +
-                    'datetime, status FROM jobalarm ' +
-                    'WHERE id > ? ' +
+                '    jobid, id AS eventid, 2 AS type, ' +
+                '    datetime, status FROM jobalarm ' +
+                '    WHERE id > ? ' +
                 'UNION SELECT ' +
-                    'jobid, id AS eventid, 3 AS type, ' +
-                    'datetime, status FROM jobfinish ' +
-                    'WHERE id > ? ' +
+                '    jobid, id AS eventid, 3 AS type, ' +
+                '    datetime, status FROM jobfinish ' +
+                '    WHERE id > ? ' +
                 'ORDER BY datetime ASC, type ASC',
                 [startid, alarmid, finishid])
 
@@ -515,17 +519,17 @@ class CrabStoreDB(CrabStore):
         with self.lock:
             return self._query_to_dict_list(
                 'SELECT ' +
-                    'job.id AS id, status, datetime, host, user, ' +
-                    'job.crabid AS crabid, jobfinish.command AS command, ' +
-                    'jobfinish.id AS finishid ' +
-                    'FROM jobfinish JOIN job ON jobfinish.jobid = job.id ' +
-                    'WHERE status NOT IN (?, ?) ' +
+                '    job.id AS id, status, datetime, host, user, ' +
+                '    job.crabid AS crabid, jobfinish.command AS command, ' +
+                '    jobfinish.id AS finishid ' +
+                '    FROM jobfinish JOIN job ON jobfinish.jobid = job.id ' +
+                '    WHERE status NOT IN (?, ?) ' +
                 'UNION SELECT ' +
-                    'job.id AS id, status, datetime, host, user, ' +
-                    'job.crabid AS crabid, job.command AS command, ' +
-                    'NULL as finishid ' +
-                    'FROM jobalarm JOIN job ON jobalarm.jobid = job.id ' +
-                    'WHERE status NOT IN (?, ?) ' +
+                '    job.id AS id, status, datetime, host, user, ' +
+                '    job.crabid AS crabid, job.command AS command, ' +
+                '    NULL as finishid ' +
+                '    FROM jobalarm JOIN job ON jobalarm.jobid = job.id ' +
+                '    WHERE status NOT IN (?, ?) ' +
                 'ORDER BY datetime DESC, status DESC LIMIT ?',
                 [CrabStatus.SUCCESS, CrabStatus.LATE,
                  CrabStatus.SUCCESS, CrabStatus.LATE, limit])
@@ -585,8 +589,8 @@ class CrabStoreDB(CrabStore):
         with the database."""
 
         if self.outputstore is not None:
-            return self.outputstore.write_job_output(finishid, host, user,
-                                    id_, crabid, stdout, stderr)
+            return self.outputstore.write_job_output(
+                finishid, host, user, id_, crabid, stdout, stderr)
 
         with self.lock:
             c = self.conn.cursor()
@@ -687,25 +691,21 @@ class CrabStoreDB(CrabStore):
         with self.lock:
             return self._query_to_dict_list(
                 'SELECT jobnotify.id AS notifyid, method, address, '
-                        'skip_ok, skip_warning, skip_error, include_output, '
-                        'jobconfig.jobid AS id, jobnotify.time AS time, '
-                        'COALESCE(jobnotify.timezone, job.timezone) '
-                            'AS timezone '
-                    'FROM jobnotify '
-                        'JOIN jobconfig '
-                            'ON jobnotify.configid = jobconfig.id '
-                        'JOIN job '
-                            'ON job.id = jobconfig.jobid '
-                    'WHERE configid IS NOT NULL AND job.deleted IS NULL '
+                '    skip_ok, skip_warning, skip_error, include_output, '
+                '    jobconfig.jobid AS id, jobnotify.time AS time, '
+                '    COALESCE(jobnotify.timezone, job.timezone) AS timezone '
+                '    FROM jobnotify '
+                '    JOIN jobconfig ON jobnotify.configid = jobconfig.id '
+                '    JOIN job ON job.id = jobconfig.jobid '
+                '    WHERE configid IS NOT NULL AND job.deleted IS NULL '
                 'UNION SELECT jobnotify.id AS notifyid, method, address, '
-                        'skip_ok, skip_warning, skip_error, include_output, '
-                        'job.id AS id, jobnotify.time AS time, '
-                        'COALESCE(jobnotify.timezone, job.timezone) '
-                            'AS timezone '
-                    'FROM jobnotify JOIN job '
-                        'ON COALESCE(job.user = jobnotify.user, 1) '
-                        'AND COALESCE(job.host = jobnotify.host, 1) '
-                    'WHERE configid IS NULL AND job.deleted IS NULL',
+                '    skip_ok, skip_warning, skip_error, include_output, '
+                '    job.id AS id, jobnotify.time AS time, '
+                '    COALESCE(jobnotify.timezone, job.timezone) AS timezone '
+                '    FROM jobnotify JOIN job '
+                '        ON COALESCE(job.user = jobnotify.user, 1) '
+                '        AND COALESCE(job.host = jobnotify.host, 1) '
+                '    WHERE configid IS NULL AND job.deleted IS NULL',
                 [])
 
     def get_job_notifications(self, configid):
@@ -761,8 +761,8 @@ class CrabStoreDB(CrabStore):
                               'skip_warning, skip_error, include_output) '
                               'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                               [configid, host, user, method, address,
-                              time, timezone, skip_ok,
-                              skip_warning, skip_error, include_output])
+                               time, timezone, skip_ok,
+                               skip_warning, skip_error, include_output])
                 else:
                     c.execute('UPDATE jobnotify SET configid=?, host=?, '
                               'user=?, method=?, address=?, time=?, '
@@ -770,9 +770,9 @@ class CrabStoreDB(CrabStore):
                               'skip_error=?, include_output=? '
                               'WHERE id=?',
                               [configid, host, user, method, address,
-                              time, timezone, skip_ok,
-                              skip_warning, skip_error, include_output,
-                              notifyid])
+                               time, timezone, skip_ok,
+                               skip_warning, skip_error, include_output,
+                               notifyid])
 
             except DatabaseError as err:
                 raise CrabError('database error: ' + str(err))

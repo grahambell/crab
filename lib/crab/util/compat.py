@@ -16,6 +16,7 @@
 import signal
 import sys
 
+
 def restore_signals():
     """Restore signals which Python otherwise ignores.
 
@@ -24,6 +25,7 @@ def restore_signals():
 
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     signal.signal(signal.SIGXFSZ, signal.SIG_DFL)
+
 
 # Determine which options should be given to the subprocess module
 # when starting new processes.  The "restore_signals" option was

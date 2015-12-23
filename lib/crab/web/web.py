@@ -29,11 +29,13 @@ from mako.template import Template
 from crab import CrabError, CrabStatus
 from crab.util.filter import CrabEventFilter
 
+
 def empty_to_none(value):
     if value == '':
         return None
 
     return value
+
 
 class CrabWebQuery:
     """CherryPy handler class for the JSON query part of the crab web
@@ -61,7 +63,6 @@ class CrabWebQuery:
         except ValueError:
             raise HTTPError(400, 'Query parameter not an integer')
 
-
     @cherrypy.expose
     def jobinfo(self, id_):
         """CherryPy handler returning the job information for the given job."""
@@ -74,6 +75,7 @@ class CrabWebQuery:
 
         info["id"] = id_
         return json.dumps(info)
+
 
 class CrabWeb:
     """CherryPy handler for the HTML part of the crab web interface."""
@@ -167,9 +169,10 @@ class CrabWeb:
                             skip_trivial=squash_start)
 
             if barerows is not None:
-                return self._write_template('jobevents.html',
-                           {'id': id_, 'events': events,
-                            'lastdatetime': lastdatetime})
+                return self._write_template(
+                    'jobevents.html',
+                    {'id': id_, 'events': events,
+                     'lastdatetime': lastdatetime})
 
             # Try to convert the times to the timezone shown on the page.
             info['installed'] = filter.in_timezone(info['installed'])
@@ -185,11 +188,12 @@ class CrabWeb:
             else:
                 notification = None
 
-            return self._write_template('job.html',
-                       {'id': id_, 'info': info, 'config': config,
-                        'status': self.monitor.get_job_status(id_),
-                        'notification': notification, 'events': events,
-                        'lastdatetime': lastdatetime})
+            return self._write_template(
+                'job.html',
+                {'id': id_, 'info': info, 'config': config,
+                 'status': self.monitor.get_job_status(id_),
+                 'notification': notification, 'events': events,
+                 'lastdatetime': lastdatetime})
 
         elif command == 'clear':
             if submit_confirm:
@@ -206,11 +210,12 @@ class CrabWeb:
                 raise HTTPRedirect("/job/" + str(id_))
 
             else:
-                return self._write_template('confirm.html',
-                       {'id': id_, 'info': info,
-                        'title': 'clear status',
-                        'description': 'Reset the job status?',
-                        'target': '/job/' + str(id_) + '/clear'})
+                return self._write_template(
+                    'confirm.html',
+                    {'id': id_, 'info': info,
+                     'title': 'clear status',
+                     'description': 'Reset the job status?',
+                     'target': '/job/' + str(id_) + '/clear'})
 
         elif command == 'uninhibit':
             if submit_confirm:
@@ -219,7 +224,8 @@ class CrabWeb:
             elif submit_cancel:
                 raise HTTPRedirect('/job/' + str(id_))
             else:
-                return self._write_template('confirm.html',
+                return self._write_template(
+                    'confirm.html',
                     {'id': id_, 'info': info, 'title': 'resume',
                      'description': 'Resume inhibited job?',
                      'target': '/job/' + str(id_) + '/uninhibit'})
@@ -238,19 +244,22 @@ class CrabWeb:
                 raise HTTPRedirect('/job/' + str(id_))
 
             else:
-                return self._write_template('confirm.html',
-                       {'id': id_, 'info': info,
-                       'title': 'delete' if notdeleted else 'undelete',
-                       'description': ('Delete' if notdeleted else 'Undelete') +
-                                       ' this job from the server?',
-                       'target': '/job/' + str(id_) + '/delete'})
+                return self._write_template(
+                    'confirm.html',
+                    {'id': id_, 'info': info,
+                     'title': 'delete' if notdeleted else 'undelete',
+                     'description': (('Delete' if notdeleted else 'Undelete') +
+                                     ' this job from the server?'),
+                     'target': '/job/' + str(id_) + '/delete'})
 
         elif command == 'changeid':
             if submit_confirm:
                 if crabid != '':
-                    if self.store.get_jobs(info['host'], info['user'],
+                    if self.store.get_jobs(
+                            info['host'], info['user'],
                             include_deleted=True, crabid=crabid):
-                        raise HTTPError(400, 'Specified job ID already exists.')
+                        raise HTTPError(
+                            400, 'Specified job ID already exists.')
                     else:
                         self.store.update_job(id_, crabid=crabid)
                         raise HTTPRedirect('/job/' + str(id_))
@@ -261,20 +270,21 @@ class CrabWeb:
                 raise HTTPRedirect('/job/' + str(id_))
 
             else:
-                return self._write_template('confirm.html',
-                       {'id': id_, 'info': info,
-                       'title': 'change identifier',
-                       'description': 'Change Job ID for this job?  Please note '
-                                      'that the ID which will be used to report '
-                                      'events related to this job should be '
-                                      'updated at the same time to ensure that '
-                                      'the job continues to be correctly '
-                                      'identified.  This should be done in the '
-                                      'crontab if the CRABID variable is used, '
-                                      'or in the cron job itself in the case '
-                                      'of Crab-aware cron jobs.',
-                       'target': '/job/' + str(id_) + '/changeid',
-                       'data': {'crabid': crabid}})
+                return self._write_template(
+                    'confirm.html',
+                    {'id': id_, 'info': info,
+                     'title': 'change identifier',
+                     'description': 'Change Job ID for this job?  Please note '
+                                    'that the ID which will be used to report '
+                                    'events related to this job should be '
+                                    'updated at the same time to ensure that '
+                                    'the job continues to be correctly '
+                                    'identified.  This should be done in the '
+                                    'crontab if the CRABID variable is used, '
+                                    'or in the cron job itself in the case '
+                                    'of Crab-aware cron jobs.',
+                     'target': '/job/' + str(id_) + '/changeid',
+                     'data': {'crabid': crabid}})
 
         elif command == 'output':
             finishid_next = None
@@ -313,16 +323,17 @@ class CrabWeb:
                 if finishes:
                     finishid_next = finishes[0]['finishid']
 
-            (stdout, stderr) = self.store.get_job_output(finishid,
-                    info['host'], info['user'], id_, info['crabid'])
+            (stdout, stderr) = self.store.get_job_output(
+                finishid, info['host'], info['user'], id_, info['crabid'])
 
             filter = CrabEventFilter(self.store, info['timezone'])
             finish['datetime'] = filter.in_timezone(finish['datetime'])
 
-            return self._write_template('joboutput.html',
-                       {'id': id_, 'info': info, 'finish': finish,
-                        'stdout': stdout, 'stderr': stderr,
-                        'next': finishid_next, 'prev': finishid_prev})
+            return self._write_template(
+                'joboutput.html',
+                {'id': id_, 'info': info, 'finish': finish,
+                 'stdout': stdout, 'stderr': stderr,
+                 'next': finishid_next, 'prev': finishid_prev})
 
         elif command == 'config':
             if submit_relink:
@@ -362,7 +373,8 @@ class CrabWeb:
                 except ValueError:
                     raise HTTPError(400, 'Time not a number')
 
-                self.store.write_job_config(id_, graceperiod, timeout,
+                self.store.write_job_config(
+                    id_, graceperiod, timeout,
                     success_pattern, warning_pattern, fail_pattern, note,
                     inhibit)
                 raise HTTPRedirect("/job/" + str(id_))
@@ -375,9 +387,10 @@ class CrabWeb:
                 else:
                     orphan = None
 
-                return self._write_template('jobconfig.html',
-                           {'id': id_, 'info': info, 'config': config,
-                            'orphan': orphan})
+                return self._write_template(
+                    'jobconfig.html',
+                    {'id': id_, 'info': info, 'config': config,
+                     'orphan': orphan})
 
         elif command == 'notify':
             if submit_notify:
@@ -437,10 +450,11 @@ class CrabWeb:
                 else:
                     notifications = None
 
-                return self._write_template('editnotify.html',
-                            {'match_mode': False,
-                             'id': id_, 'info': info,
-                             'notifications': notifications})
+                return self._write_template(
+                    'editnotify.html',
+                    {'match_mode': False,
+                     'id': id_, 'info': info,
+                     'notifications': notifications})
 
         else:
             raise HTTPError(404, 'Unknown job command')
@@ -556,4 +570,3 @@ class CrabWeb:
             return template.render(options=self.options, **dict)
         except:
             return exceptions.html_error_template().render()
-

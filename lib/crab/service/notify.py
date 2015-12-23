@@ -23,6 +23,7 @@ from crab.notify import CrabNotify, CrabNotifyJob
 from crab.service import CrabMinutely
 from crab.util.schedule import CrabSchedule
 
+
 class CrabNotifyService(CrabMinutely):
     """Service to send notifications as required.
 
@@ -64,10 +65,10 @@ class CrabNotifyService(CrabMinutely):
         for notification in notifications:
             n_id = notification['notifyid']
 
-            if (n_id in self.config and n_id in self.sched
-                and notification['time'] == self.config[n_id]['time']
-                and notification['timezone'] == self.config[n_id]['timezone']):
-                    schedule = self.sched[n_id]
+            if (n_id in self.config and n_id in self.sched and
+                    notification['time'] == self.config[n_id]['time'] and
+                    notification['timezone'] == self.config[n_id]['timezone']):
+                schedule = self.sched[n_id]
             else:
                 self.config[n_id] = notification
                 if notification['time'] is not None:

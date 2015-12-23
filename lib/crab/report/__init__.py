@@ -18,12 +18,15 @@ from collections import namedtuple
 from crab import CrabError, CrabStatus, CrabEvent
 from crab.util.filter import CrabEventFilter
 
-CrabReportJob = namedtuple('CrabReportJob', ['id_', 'start', 'end',
-                           'skip_ok', 'skip_warning', 'skip_error',
-                           'include_output'])
+CrabReportJob = namedtuple(
+    'CrabReportJob',
+    ['id_', 'start', 'end', 'skip_ok', 'skip_warning', 'skip_error',
+     'include_output'])
 
-CrabReport = namedtuple('CrabReport', ['num', 'error', 'warning', 'ok',
-                                       'info', 'events', 'stdout', 'stderr'])
+CrabReport = namedtuple(
+    'CrabReport',
+    ['num', 'error', 'warning', 'ok', 'info', 'events', 'stdout', 'stderr'])
+
 
 class CrabReportGenerator:
     """Class for generating reports on the operation of cron jobs.

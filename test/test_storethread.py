@@ -6,8 +6,9 @@ import sys
 
 from . import CrabDBTestCase
 
-DUPLICATES=200
-ITERATIONS=10
+DUPLICATES = 200
+ITERATIONS = 10
+
 
 class StoreThreadsTestCase(CrabDBTestCase):
     def test_thread(self):
@@ -42,19 +43,20 @@ class RandomTester(Thread):
         self.exceptions = 0
         self.store = store
         self.user = sample(['usera', 'userb', 'userc', 'userd',
-                              'usere', 'userf', 'userg', 'userh'], 1)[0]
+                            'usere', 'userf', 'userg', 'userh'], 1)[0]
         self.host = sample(['hosta', 'hostb', 'hostc', 'hostd',
-                              'hoste', 'hostf', 'hostg', 'hosth'], 1)[0]
+                            'hoste', 'hostf', 'hostg', 'hosth'], 1)[0]
 
     def run(self):
         for i in range(ITERATIONS):
             try:
                 self.run_iteration()
             except:
-                self.exceptions += 1;
+                self.exceptions += 1
                 raise
             print('.', end='')
             sys.stdout.flush()
+
 
 class CronTabTester(RandomTester):
     def run_iteration(self):
@@ -72,6 +74,7 @@ class CronTabTester(RandomTester):
                             '0 0 * * 1-5 gnubeep',
                             '* * * * * CRABID=minutely /bin/minutely.sh'], 3))
 
+
 class CronJobTester(RandomTester):
     def run_iteration(self):
         self.store.get_jobs()
@@ -79,8 +82,9 @@ class CronJobTester(RandomTester):
         self.store.get_jobs(self.host, self.user, include_deleted=True)
         with self.store.lock:
             self.store._check_job(self.host, self.user, None, sample([
-                              'command1', 'command2', 'command3'],1)[0])
+                              'command1', 'command2', 'command3'], 1)[0])
         self.store.get_notifications()
+
 
 class CronLogTester(RandomTester):
     def __init__(self, store):
@@ -90,13 +94,13 @@ class CronLogTester(RandomTester):
         self.f = 0
 
     def run_iteration(self):
-        c = [ 'command1', 'command2', 'command3', 'command4']
+        c = ['command1', 'command2', 'command3', 'command4']
         self.store.log_start(self.host, self.user, None, sample(c, 1)[0])
         self.store.log_finish(self.host, self.user, None, sample(c, 1)[0],
                               1, 'stdout', 'stderr')
         with self.store.lock:
             id_ = self.store._check_job(self.host, self.user,
-                                    None, sample(c, 1)[0])
+                                        None, sample(c, 1)[0])
         self.store.log_alarm(id_, -1)
         self.store.get_job_info(id_)
         # Need to add the write_config method when implemented
