@@ -108,6 +108,25 @@ schema provided::
 
     % sqlite3 crab.db < doc/schema.sql
 
+Alternatively if you are going to be using MySQL for your
+Crab database, create the database::
+
+    % mysqladmin -u root -p create crab
+
+and create a user account for crab, changing the password
+(the "identified by" clause) to something suitable::
+
+    % mysql -u root -p mysql
+    > create user 'crab'@'localhost' identified by 'crab';
+    > grant all on crab.* to 'crab'@'localhost';
+    > flush privileges;
+
+You can prepare a table creation script suitable for MySQL
+using the Makefile in the `doc` directory of the source package::
+
+    % make -C doc schema_mysql.sql
+    % mysql -u crab -p crab < doc/schema_mysql.sql
+
 Configuration
 ~~~~~~~~~~~~~
 
