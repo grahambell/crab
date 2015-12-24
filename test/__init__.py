@@ -5,7 +5,7 @@ from crab.store.sqlite import CrabStoreSQLite
 
 class CrabDBTestCase(TestCase):
     def setUp(self):
-        with open('doc/schema.txt') as file:
+        with open('doc/schema.sql') as file:
             schema = file.read()
 
         self.store = CrabStoreSQLite(':memory:')

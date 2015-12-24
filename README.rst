@@ -106,7 +106,7 @@ Database Creation
 A SQLite database file can be prepared for Crab using the
 schema provided::
 
-    % sqlite3 crab.db < doc/schema.txt
+    % sqlite3 crab.db < doc/schema.sql
 
 Configuration
 ~~~~~~~~~~~~~

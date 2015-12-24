@@ -77,7 +77,7 @@ setup(
          [os.path.join('doc', doc) for doc in [
               'crab.ini',
               'crabd.ini',
-              'schema.txt',
+              'schema.sql',
            ]])] +
         find_files(os.path.join('share', 'crab'), None, ['res']) +
         find_files(os.path.join('share', 'crab'), None, ['templ'])),
