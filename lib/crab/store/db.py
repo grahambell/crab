@@ -17,7 +17,10 @@
 from __future__ import print_function
 
 from contextlib import closing
+from datetime import datetime
 from threading import Lock
+
+import pytz
 
 from crab import CrabError, CrabStatus
 from crab.store import CrabStore
@@ -107,8 +110,9 @@ class CrabStoreDB(CrabStore):
             where_clause = ''
 
         return self._query_to_dict_list(
-            'SELECT id, host, user, crabid, command, time, '
-            'timezone, installed, deleted '
+            'SELECT id, host, user, crabid, command, time, timezone, '
+            'installed AS "installed [timestamp]", '
+            'deleted AS "deleted [timestamp]" '
             'FROM job ' + where_clause + ' '
             'ORDER BY host ASC, user ASC, crabid ASC, installed ASC', params)
 
@@ -229,8 +233,9 @@ class CrabStoreDB(CrabStore):
 
         with self.lock:
             return self._query_to_dict(
-                'SELECT host, user, command, crabid, time, timezone, ' +
-                'installed, deleted ' +
+                'SELECT host, user, command, crabid, time, timezone, '
+                'installed AS "installed [timestamp]", '
+                'deleted AS "deleted [timestamp]" '
                 'FROM job WHERE id = ?', [id_])
 
     def get_job_config(self, id_):
@@ -372,7 +377,8 @@ class CrabStoreDB(CrabStore):
 
         with self.lock:
             return self._query_to_dict_list(
-                'SELECT id AS finishid, datetime, command, status '
+                'SELECT id AS finishid, datetime AS "datetime [timestamp]", '
+                'command, status '
                 'FROM jobfinish '
                 'WHERE ' + ' AND '.join(conditions) + ' '
                 'ORDER BY datetime ' + order + ' ' + limit_clause,
@@ -391,11 +397,11 @@ class CrabStoreDB(CrabStore):
 
         if start is not None:
             conditions.append('datetime>=?')
-            params.append(self.format_datetime(start))
+            params.append(start.astimezone(pytz.UTC))
 
         if end is not None:
             conditions.append('datetime<?')
-            params.append(self.format_datetime(end))
+            params.append(end.astimezone(pytz.UTC))
 
         where_clause = 'WHERE ' + ' AND '.join(conditions)
         params = params * 3
@@ -410,15 +416,18 @@ class CrabStoreDB(CrabStore):
             return self._query_to_dict_list(
                 'SELECT ' +
                 '    id AS eventid, 1 AS type, ' +
-                '    datetime, command, NULL AS status ' +
+                '    datetime AS "datetime [timestamp]", ' +
+                '    command, NULL AS status ' +
                 '    FROM jobstart ' + where_clause + ' ' +
                 'UNION SELECT ' +
                 '    id AS eventid, 2 AS type, ' +
-                '    datetime, NULL AS command, status ' +
+                '    datetime AS "datetime [timestamp]", ' +
+                '    NULL AS command, status ' +
                 '    FROM jobalarm ' + where_clause + ' ' +
                 'UNION SELECT ' +
                 '    id AS eventid, 3 AS type, ' +
-                '    datetime, command, status ' +
+                '    datetime AS "datetime [timestamp]", ' +
+                '    command, status ' +
                 '    FROM jobfinish ' + where_clause + ' ' +
                 'ORDER BY datetime DESC, type DESC ' + limit_clause,
                 params)
@@ -431,15 +440,18 @@ class CrabStoreDB(CrabStore):
             return self._query_to_dict_list(
                 'SELECT ' +
                 '    jobid, id AS eventid, 1 AS type, ' +
-                '    datetime, NULL AS status FROM jobstart ' +
+                '    datetime AS "datetime [timestamp]", ' +
+                '    NULL AS status FROM jobstart ' +
                 '    WHERE id > ? ' +
                 'UNION SELECT ' +
                 '    jobid, id AS eventid, 2 AS type, ' +
-                '    datetime, status FROM jobalarm ' +
+                '    datetime AS "datetime [timestamp]", ' +
+                '    status FROM jobalarm ' +
                 '    WHERE id > ? ' +
                 'UNION SELECT ' +
                 '    jobid, id AS eventid, 3 AS type, ' +
-                '    datetime, status FROM jobfinish ' +
+                '    datetime AS "datetime [timestamp]", ' +
+                '    status FROM jobfinish ' +
                 '    WHERE id > ? ' +
                 'ORDER BY datetime ASC, type ASC',
                 [startid, alarmid, finishid])
@@ -455,13 +467,17 @@ class CrabStoreDB(CrabStore):
         with self.lock:
             return self._query_to_dict_list(
                 'SELECT ' +
-                '    job.id AS id, status, datetime, host, user, ' +
+                '    job.id AS id, status, ' +
+                '    datetime AS "datetime [timestamp]", ' +
+                '    host, user, ' +
                 '    job.crabid AS crabid, jobfinish.command AS command, ' +
                 '    jobfinish.id AS finishid ' +
                 '    FROM jobfinish JOIN job ON jobfinish.jobid = job.id ' +
                 '    WHERE status NOT IN (?, ?) ' +
                 'UNION SELECT ' +
-                '    job.id AS id, status, datetime, host, user, ' +
+                '    job.id AS id, status, ' +
+                '    datetime AS "datetime [timestamp]", ' +
+                '    host, user, ' +
                 '    job.crabid AS crabid, job.command AS command, ' +
                 '    NULL as finishid ' +
                 '    FROM jobalarm JOIN job ON jobalarm.jobid = job.id ' +
@@ -487,7 +503,9 @@ class CrabStoreDB(CrabStore):
         Python dict objects.
 
         The dict keys are retrieved from the SQL result using the
-        description method of the DB cursor object."""
+        description method of the DB cursor object.
+
+        Any datetime values retieved have their timezone info set to UTC."""
 
         output = []
 
@@ -503,7 +521,10 @@ class CrabStoreDB(CrabStore):
                     dict = {}
 
                     for (i, coldescription) in enumerate(c.description):
-                        dict[coldescription[0]] = row[i]
+                        value = row[i]
+                        if isinstance(value, datetime):
+                            value = value.replace(tzinfo=pytz.UTC)
+                        dict[coldescription[0]] = value
 
                     output.append(dict)
 

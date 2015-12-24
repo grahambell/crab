@@ -1,4 +1,5 @@
 # Copyright (C) 2012-13 Science and Technology Facilities Council.
+# Copyright (C) 2015 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -168,8 +169,7 @@ class CrabMonitor(CrabMinutely):
                 currentjobs.discard(id_)
 
                 # Compare installed timestamp is case we need to
-                # reload the schedule.  NOTE: assumes database
-                # datetimes compare in the correct order.
+                # reload the schedule.
                 if job['installed'] > self.status[id_]['installed']:
                     self._schedule_job(id_)
                     self.status[id_]['installed'] = job['installed']
@@ -294,7 +294,7 @@ class CrabMonitor(CrabMinutely):
         """Processes the given event, updating the instance data
         structures accordingly."""
 
-        datetime_ = self.store.parse_datetime(event['datetime'])
+        datetime_ = event['datetime']
 
         if event['status'] is not None:
             status = event['status']

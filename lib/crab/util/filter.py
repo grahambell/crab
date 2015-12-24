@@ -1,4 +1,5 @@
 # Copyright (C) 2012-2013 Science and Technology Facilities Council.
+# Copyright (C) 2015 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -92,9 +93,7 @@ class CrabEventFilter:
                 start = _find_previous_start(events, i)
                 if start is not None:
                     squash.add(start)
-                    delta = (
-                        self.store.parse_datetime(e['datetime']) -
-                        self.store.parse_datetime(events[start]['datetime']))
+                    delta = e['datetime'] - events[start]['datetime']
                     e['duration'] = str(delta)
 
             e['datetime'] = self.in_timezone(e['datetime'])
@@ -112,9 +111,9 @@ class CrabEventFilter:
 
         if datetime_ is None:
             return None
-        else:
-            return self.store.parse_datetime(datetime_).astimezone(
-                        self.zoneinfo).strftime('%Y-%m-%d %H:%M:%S %Z')
+
+        return datetime_.astimezone(
+            self.zoneinfo).strftime('%Y-%m-%d %H:%M:%S %Z')
 
 
 def _find_previous_start(events, i):

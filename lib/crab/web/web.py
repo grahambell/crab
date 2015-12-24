@@ -1,4 +1,5 @@
 # Copyright (C) 2012-2014 Science and Technology Facilities Council.
+# Copyright (C) 2015 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,8 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import datetime
-import json
+from datetime import datetime
+from json import JSONEncoder
 import mimetypes
 import os
 import re
@@ -28,6 +29,7 @@ from mako.template import Template
 
 from crab import CrabError, CrabStatus
 from crab.util.filter import CrabEventFilter
+from crab.util.string import format_datetime, parse_datetime
 
 
 def empty_to_none(value):
@@ -49,6 +51,13 @@ class CrabWebQuery:
         self.monitor = monitor
         self.service = service
 
+        def to_json(obj):
+            if isinstance(obj, datetime):
+                return format_datetime(obj)
+            raise TypeError('Cannot JSON-encode object')
+
+        self.json_encoder = JSONEncoder(default=to_json)
+
     @cherrypy.expose
     def jobstatus(self, startid, alarmid, finishid):
         """CherryPy handler returning the job status dict fetched
@@ -59,7 +68,7 @@ class CrabWebQuery:
                                                   int(alarmid), int(finishid))
             s['service'] = dict((s, self.service[s].is_alive())
                                 for s in self.service)
-            return json.dumps(s)
+            return self.json_encoder.encode(s)
         except ValueError:
             raise HTTPError(400, 'Query parameter not an integer')
 
@@ -74,7 +83,7 @@ class CrabWebQuery:
             raise HTTPError(404, 'Job not found')
 
         info["id"] = id_
-        return json.dumps(info)
+        return self.json_encoder.encode(info)
 
 
 class CrabWeb:
@@ -152,14 +161,14 @@ class CrabWeb:
 
             if enddate is not None:
                 try:
-                    enddate = self.store.parse_datetime(enddate)
+                    enddate = parse_datetime(enddate)
                 except ValueError:
                     raise HTTPError(400, 'Start date format is invalid')
 
             events = self.store.get_job_events(id_, limit, end=enddate)
 
             if events:
-                lastdatetime = events[-1]['datetime']
+                lastdatetime = format_datetime(events[-1]['datetime'])
             else:
                 lastdatetime = None
 

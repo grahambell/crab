@@ -1,4 +1,5 @@
 # Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2015 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -82,7 +83,7 @@ class CrabRSS:
                 output += '\n\nStandard Error:\n\n'
             output += event['stderr']
 
-        date = self.store.parse_datetime(event['datetime'])
+        date = event['datetime']
 
         guid = ':'.join([
             'crab', self.fqdn, str(event['id']),

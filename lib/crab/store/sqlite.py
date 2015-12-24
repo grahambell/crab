@@ -29,30 +29,12 @@ class CrabStoreSQLite(CrabStoreDB):
         if filename != ':memory:' and not os.path.exists(filename):
             raise Exception('SQLite file does not exist')
 
-        conn = sqlite3.connect(filename, check_same_thread=False)
+        conn = sqlite3.connect(
+            filename, check_same_thread=False,
+            detect_types=sqlite3.PARSE_COLNAMES)
 
         with closing(conn.cursor()) as c:
             c.execute("PRAGMA foreign_keys = ON")
 
         CrabStoreDB.__init__(self, conn, error_class=sqlite3.DatabaseError,
                              outputstore=outputstore)
-
-    def parse_datetime(self, timestamp):
-        """Parses the timestamp strings used by the database.
-
-        The returned datetime object will include the correct timezone:
-        for SQLite this is always UTC.
-
-        An alternative thing to do would be to have _query_to_dict_list
-        guess which fields are timestamps and automatically run this
-        method on them."""
-
-        return datetime.datetime.strptime(
-            timestamp, '%Y-%m-%d %H:%M:%S').replace(tzinfo=pytz.UTC)
-
-    def format_datetime(self, datetime_):
-        """Converts a datetime into a timestamp string for the database.
-
-        Includes conversion to UTC as used by SQLite."""
-
-        return datetime_.astimezone(pytz.UTC).strftime('%Y-%m-%d %H:%M:%S')
