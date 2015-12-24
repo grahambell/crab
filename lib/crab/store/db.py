@@ -49,7 +49,7 @@ class CrabStoreDB(CrabStore):
     it should be possible to generalize it by altering the queries
     based on the database type where necessary."""
 
-    def __init__(self, conn, error_class, outputstore=None):
+    def __init__(self, conn, error_class, cursor_args={}, outputstore=None):
         """Constructor for CrabDB.
 
         Records the reference to the database connection for future reference.
@@ -63,6 +63,7 @@ class CrabStoreDB(CrabStore):
         self.conn = conn
         self.outputstore = outputstore
         self.error_class = error_class
+        self.cursor_args = cursor_args
 
         self.lock = CrabDBLock(conn)
 
@@ -114,7 +115,7 @@ class CrabStoreDB(CrabStore):
     def _insert_job(self, host, user, crabid, time, command, timezone):
         """Inserts a job record into the database."""
 
-        with closing(self.conn.cursor()) as c:
+        with closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 c.execute('INSERT INTO job (host, user, crabid, ' +
                           'time, command, timezone)' +
@@ -129,7 +130,7 @@ class CrabStoreDB(CrabStore):
     def _delete_job(self, id_):
         """Marks a job as deleted in the database."""
 
-        with closing(self.conn.cursor()) as c:
+        with closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 c.execute('UPDATE job SET deleted=CURRENT_TIMESTAMP ' +
                           'WHERE id=?',
@@ -165,7 +166,7 @@ class CrabStoreDB(CrabStore):
 
         params.append(id_)
 
-        with closing(self.conn.cursor()) as c:
+        with closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 c.execute('UPDATE job SET ' + ', '.join(fields) + ' '
                           'WHERE id=?', params)
@@ -179,7 +180,7 @@ class CrabStoreDB(CrabStore):
         Private method to perform only the actual insertion.  The lock
         should already have been acquired."""
 
-        with closing(self.conn.cursor()) as c:
+        with closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 c.execute('INSERT INTO jobstart (jobid, command) '
                           'VALUES (?, ?)',
@@ -196,7 +197,7 @@ class CrabStoreDB(CrabStore):
 
         Returns the finish record ID."""
 
-        with closing(self.conn.cursor()) as c:
+        with closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 c.execute('INSERT INTO jobfinish (jobid, command, status) ' +
                           'VALUES (?, ?, ?)',
@@ -215,7 +216,7 @@ class CrabStoreDB(CrabStore):
         in an separate table and do not have any associated output
         records."""
 
-        with self.lock, closing(self.conn.cursor()) as c:
+        with self.lock, closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 c.execute('INSERT INTO jobalarm (jobid, status) VALUES (?, ?)',
                           [id_, status])
@@ -261,7 +262,7 @@ class CrabStoreDB(CrabStore):
                                       'FROM jobconfig '
                                       'WHERE jobid = ?', [id_])
 
-            with closing(self.conn.cursor()) as c:
+            with closing(self.conn.cursor(**self.cursor_args)) as c:
                 try:
                     if row is None:
                         c.execute(
@@ -302,7 +303,7 @@ class CrabStoreDB(CrabStore):
         the rest of the configuration.
         """
 
-        with self.lock, closing(self.conn.cursor()) as c:
+        with self.lock, closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 c.execute('UPDATE jobconfig SET inhibit=0 WHERE jobid=?',
                           [id_])
@@ -321,7 +322,7 @@ class CrabStoreDB(CrabStore):
                 'WHERE job.deleted IS NOT NULL')
 
     def relink_job_config(self, configid, id_):
-        with self.lock, closing(self.conn.cursor()) as c:
+        with self.lock, closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 c.execute('UPDATE jobconfig SET jobid = ? '
                           'WHERE id = ?', [id_, configid])
@@ -490,7 +491,7 @@ class CrabStoreDB(CrabStore):
 
         output = []
 
-        with closing(self.conn.cursor()) as c:
+        with closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 c.execute(sql, param)
 
@@ -524,7 +525,7 @@ class CrabStoreDB(CrabStore):
             return self.outputstore.write_job_output(
                 finishid, host, user, id_, crabid, stdout, stderr)
 
-        with self.lock, closing(self.conn.cursor()) as c:
+        with self.lock, closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 c.execute('INSERT INTO joboutput (finishid, stdout, stderr) ' +
                           'VALUES (?, ?, ?)',
@@ -549,7 +550,7 @@ class CrabStoreDB(CrabStore):
             return self.outputstore.get_job_output(finishid, host, user,
                                                    id_, crabid)
 
-        with self.lock, closing(self.conn.cursor()) as c:
+        with self.lock, closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 c.execute('SELECT stdout, stderr FROM joboutput ' +
                           'WHERE finishid=?', [finishid])
@@ -574,7 +575,7 @@ class CrabStoreDB(CrabStore):
                                         'WHERE host = ? AND user = ?',
                                         [host, user])
 
-            with closing(self.conn.cursor()) as c:
+            with closing(self.conn.cursor(**self.cursor_args)) as c:
                 try:
                     if entry is None:
                         c.execute(
@@ -671,7 +672,7 @@ class CrabStoreDB(CrabStore):
             raise CrabError('writing notification: job config and match '
                             'parameters both specified')
 
-        with self.lock, closing(self.conn.cursor()) as c:
+        with self.lock, closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 if notifyid is None:
                     c.execute('INSERT INTO jobnotify (configid, host, user, '
@@ -698,7 +699,7 @@ class CrabStoreDB(CrabStore):
     def delete_notification(self, notifyid):
         """Removes a notification from the database."""
 
-        with self.lock, closing(self.conn.cursor()) as c:
+        with self.lock, closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 c.execute('DELETE FROM jobnotify WHERE id=?', [notifyid])
 
