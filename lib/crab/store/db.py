@@ -19,8 +19,6 @@ from __future__ import print_function
 from contextlib import closing
 from threading import Lock
 
-from sqlite3 import DatabaseError
-
 from crab import CrabError, CrabStatus
 from crab.store import CrabStore
 
@@ -51,7 +49,7 @@ class CrabStoreDB(CrabStore):
     it should be possible to generalize it by altering the queries
     based on the database type where necessary."""
 
-    def __init__(self, conn, outputstore=None):
+    def __init__(self, conn, error_class, outputstore=None):
         """Constructor for CrabDB.
 
         Records the reference to the database connection for future reference.
@@ -64,6 +62,7 @@ class CrabStoreDB(CrabStore):
 
         self.conn = conn
         self.outputstore = outputstore
+        self.error_class = error_class
 
         self.lock = CrabDBLock(conn)
 
@@ -125,7 +124,7 @@ class CrabStoreDB(CrabStore):
 
             return c.lastrowid
 
-        except DatabaseError as err:
+        except self.error_class as err:
             raise CrabError('database error: ' + str(err))
 
         finally:
@@ -141,7 +140,7 @@ class CrabStoreDB(CrabStore):
                       'WHERE id=?',
                       [id_])
 
-        except DatabaseError as err:
+        except self.error_class as err:
             raise CrabError('database error: ' + str(err))
 
         finally:
@@ -179,7 +178,7 @@ class CrabStoreDB(CrabStore):
                 c.execute('UPDATE job SET ' + ', '.join(fields) + ' '
                           'WHERE id=?', params)
 
-            except DatabaseError as err:
+            except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
 
     def _log_start(self, id_, command):
@@ -194,7 +193,7 @@ class CrabStoreDB(CrabStore):
                           'VALUES (?, ?)',
                           [id_, command])
 
-            except DatabaseError as err:
+            except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
 
     def _log_finish(self, id_, command, status):
@@ -213,7 +212,7 @@ class CrabStoreDB(CrabStore):
 
                 return c.lastrowid
 
-            except DatabaseError as err:
+            except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
 
     def log_alarm(self, id_, status):
@@ -231,7 +230,7 @@ class CrabStoreDB(CrabStore):
                 c.execute('INSERT INTO jobalarm (jobid, status) VALUES (?, ?)',
                           [id_, status])
 
-            except DatabaseError as err:
+            except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
 
             finally:
@@ -303,7 +302,7 @@ class CrabStoreDB(CrabStore):
 
                     return configid
 
-            except DatabaseError as err:
+            except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
 
             finally:
@@ -324,7 +323,7 @@ class CrabStoreDB(CrabStore):
                 c.execute('UPDATE jobconfig SET inhibit=0 WHERE jobid=?',
                           [id_])
 
-            except DatabaseError as err:
+            except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
 
             finally:
@@ -531,7 +530,7 @@ class CrabStoreDB(CrabStore):
 
                 output.append(dict)
 
-        except DatabaseError as err:
+        except self.error_class as err:
             raise CrabError('database error: ' + str(err))
 
         finally:
@@ -560,7 +559,7 @@ class CrabStoreDB(CrabStore):
                           'VALUES (?, ?, ?)',
                           [finishid, stdout, stderr])
 
-            except DatabaseError as err:
+            except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
 
             finally:
@@ -596,7 +595,7 @@ class CrabStoreDB(CrabStore):
 
                 return row
 
-            except DatabaseError as err:
+            except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
 
             finally:
@@ -623,7 +622,7 @@ class CrabStoreDB(CrabStore):
                     c.execute('UPDATE rawcrontab SET crontab = ? WHERE id = ?',
                               ['\n'.join(crontab), entry['id']])
 
-            except DatabaseError as err:
+            except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
 
             finally:
@@ -734,7 +733,7 @@ class CrabStoreDB(CrabStore):
                                skip_warning, skip_error, include_output,
                                notifyid])
 
-            except DatabaseError as err:
+            except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
 
             finally:
@@ -748,5 +747,5 @@ class CrabStoreDB(CrabStore):
                 try:
                     c.execute('DELETE FROM jobnotify WHERE id=?', [notifyid])
 
-                except DatabaseError as err:
+                except self.error_class as err:
                     raise CrabError('database error: ' + str(err))

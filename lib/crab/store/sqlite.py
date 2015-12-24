@@ -1,4 +1,5 @@
 # Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2015 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -33,7 +34,8 @@ class CrabStoreSQLite(CrabStoreDB):
         c.execute("PRAGMA foreign_keys = ON")
         c.close()
 
-        CrabStoreDB.__init__(self, conn, outputstore)
+        CrabStoreDB.__init__(self, conn, error_class=sqlite3.DatabaseError,
+                             outputstore=outputstore)
 
     def parse_datetime(self, timestamp):
         """Parses the timestamp strings used by the database.
