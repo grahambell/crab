@@ -114,37 +114,29 @@ class CrabStoreDB(CrabStore):
     def _insert_job(self, host, user, crabid, time, command, timezone):
         """Inserts a job record into the database."""
 
-        c = self.conn.cursor()
+        with closing(self.conn.cursor()) as c:
+            try:
+                c.execute('INSERT INTO job (host, user, crabid, ' +
+                          'time, command, timezone)' +
+                          'VALUES (?, ?, ?, ?, ?, ?)',
+                          [host, user, crabid, time, command, timezone])
 
-        try:
-            c.execute('INSERT INTO job (host, user, crabid, ' +
-                      'time, command, timezone)' +
-                      'VALUES (?, ?, ?, ?, ?, ?)',
-                      [host, user, crabid, time, command, timezone])
+                return c.lastrowid
 
-            return c.lastrowid
-
-        except self.error_class as err:
-            raise CrabError('database error: ' + str(err))
-
-        finally:
-            c.close()
+            except self.error_class as err:
+                raise CrabError('database error: ' + str(err))
 
     def _delete_job(self, id_):
         """Marks a job as deleted in the database."""
 
-        c = self.conn.cursor()
+        with closing(self.conn.cursor()) as c:
+            try:
+                c.execute('UPDATE job SET deleted=CURRENT_TIMESTAMP ' +
+                          'WHERE id=?',
+                          [id_])
 
-        try:
-            c.execute('UPDATE job SET deleted=CURRENT_TIMESTAMP ' +
-                      'WHERE id=?',
-                      [id_])
-
-        except self.error_class as err:
-            raise CrabError('database error: ' + str(err))
-
-        finally:
-            c.close()
+            except self.error_class as err:
+                raise CrabError('database error: ' + str(err))
 
     def _update_job(self, id_,
                     crabid=None, command=None, time=None, timezone=None):
@@ -223,18 +215,13 @@ class CrabStoreDB(CrabStore):
         in an separate table and do not have any associated output
         records."""
 
-        with self.lock:
-            c = self.conn.cursor()
-
+        with self.lock, closing(self.conn.cursor()) as c:
             try:
                 c.execute('INSERT INTO jobalarm (jobid, status) VALUES (?, ?)',
                           [id_, status])
 
             except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
-
-            finally:
-                c.close()
 
     def get_job_info(self, id_):
         """Retrieve information about a job by ID number."""
@@ -274,39 +261,38 @@ class CrabStoreDB(CrabStore):
                                       'FROM jobconfig '
                                       'WHERE jobid = ?', [id_])
 
-            c = self.conn.cursor()
+            with closing(self.conn.cursor()) as c:
+                try:
+                    if row is None:
+                        c.execute(
+                            'INSERT INTO jobconfig (jobid, graceperiod, '
+                            'timeout, success_pattern, warning_pattern, '
+                            'fail_pattern, note, inhibit) '
+                            'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+                            [id_, graceperiod, timeout,
+                             success_pattern, warning_pattern, fail_pattern,
+                             note, inhibit])
 
-            try:
-                if row is None:
-                    c.execute('INSERT INTO jobconfig (jobid, graceperiod, '
-                              'timeout, success_pattern, warning_pattern, '
-                              'fail_pattern, note, inhibit) '
-                              'VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-                              [id_, graceperiod, timeout,
-                               success_pattern, warning_pattern, fail_pattern,
-                               note, inhibit])
+                        return c.lastrowid
 
-                    return c.lastrowid
-                else:
-                    configid = row['configid']
-                    if configid is None:
-                        raise CrabError('job config: got null id')
+                    else:
+                        configid = row['configid']
+                        if configid is None:
+                            raise CrabError('job config: got null id')
 
-                    c.execute('UPDATE jobconfig SET graceperiod=?, timeout=?, '
-                              'success_pattern=?, warning_pattern=?, '
-                              'fail_pattern=?, note=?, inhibit=? '
-                              'WHERE id=?',
-                              [graceperiod, timeout,
-                               success_pattern, warning_pattern, fail_pattern,
-                               note, inhibit, configid])
+                        c.execute(
+                            'UPDATE jobconfig SET graceperiod=?, timeout=?, '
+                            'success_pattern=?, warning_pattern=?, '
+                            'fail_pattern=?, note=?, inhibit=? '
+                            'WHERE id=?',
+                            [graceperiod, timeout,
+                             success_pattern, warning_pattern, fail_pattern,
+                             note, inhibit, configid])
 
-                    return configid
+                        return configid
 
-            except self.error_class as err:
-                raise CrabError('database error: ' + str(err))
-
-            finally:
-                c.close()
+                except self.error_class as err:
+                    raise CrabError('database error: ' + str(err))
 
     def disable_inhibit(self, id_):
         """Disable the inhibit setting for a job.
@@ -316,18 +302,13 @@ class CrabStoreDB(CrabStore):
         the rest of the configuration.
         """
 
-        with self.lock:
-            c = self.conn.cursor()
-
+        with self.lock, closing(self.conn.cursor()) as c:
             try:
                 c.execute('UPDATE jobconfig SET inhibit=0 WHERE jobid=?',
                           [id_])
 
             except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
-
-            finally:
-                c.close()
 
     def get_orphan_configs(self):
         """Make a list of orphaned job configuration records."""
@@ -340,18 +321,13 @@ class CrabStoreDB(CrabStore):
                 'WHERE job.deleted IS NOT NULL')
 
     def relink_job_config(self, configid, id_):
-        with self.lock:
-            c = self.conn.cursor()
-
+        with self.lock, closing(self.conn.cursor()) as c:
             try:
                 c.execute('UPDATE jobconfig SET jobid = ? '
                           'WHERE id = ?', [id_, configid])
 
             except DatabseError as err:
                 raise CrabError('database error: ' + str(err))
-
-            finally:
-                c.close()
 
     def get_job_finishes(self, id_, limit=100,
                          finishid=None, before=None, after=None,
@@ -512,29 +488,26 @@ class CrabStoreDB(CrabStore):
         The dict keys are retrieved from the SQL result using the
         description method of the DB cursor object."""
 
-        c = self.conn.cursor()
         output = []
 
-        try:
-            c.execute(sql, param)
+        with closing(self.conn.cursor()) as c:
+            try:
+                c.execute(sql, param)
 
-            while True:
-                row = c.fetchone()
-                if row is None:
-                    break
+                while True:
+                    row = c.fetchone()
+                    if row is None:
+                        break
 
-                dict = {}
+                    dict = {}
 
-                for (i, coldescription) in enumerate(c.description):
-                    dict[coldescription[0]] = row[i]
+                    for (i, coldescription) in enumerate(c.description):
+                        dict[coldescription[0]] = row[i]
 
-                output.append(dict)
+                    output.append(dict)
 
-        except self.error_class as err:
-            raise CrabError('database error: ' + str(err))
-
-        finally:
-            c.close()
+            except self.error_class as err:
+                raise CrabError('database error: ' + str(err))
 
         return output
 
@@ -551,9 +524,7 @@ class CrabStoreDB(CrabStore):
             return self.outputstore.write_job_output(
                 finishid, host, user, id_, crabid, stdout, stderr)
 
-        with self.lock:
-            c = self.conn.cursor()
-
+        with self.lock, closing(self.conn.cursor()) as c:
             try:
                 c.execute('INSERT INTO joboutput (finishid, stdout, stderr) ' +
                           'VALUES (?, ?, ?)',
@@ -561,9 +532,6 @@ class CrabStoreDB(CrabStore):
 
             except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
-
-            finally:
-                c.close()
 
     def get_job_output(self, finishid, host, user, id_, crabid):
         """Fetches the standard output and standard error for the
@@ -581,9 +549,7 @@ class CrabStoreDB(CrabStore):
             return self.outputstore.get_job_output(finishid, host, user,
                                                    id_, crabid)
 
-        with self.lock:
-            c = self.conn.cursor()
-
+        with self.lock, closing(self.conn.cursor()) as c:
             try:
                 c.execute('SELECT stdout, stderr FROM joboutput ' +
                           'WHERE finishid=?', [finishid])
@@ -598,9 +564,6 @@ class CrabStoreDB(CrabStore):
             except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
 
-            finally:
-                c.close()
-
     def write_raw_crontab(self, host, user, crontab):
         if self.outputstore is not None and hasattr(self.outputstore,
                                                     'write_raw_crontab'):
@@ -611,22 +574,20 @@ class CrabStoreDB(CrabStore):
                                         'WHERE host = ? AND user = ?',
                                         [host, user])
 
-            c = self.conn.cursor()
+            with closing(self.conn.cursor()) as c:
+                try:
+                    if entry is None:
+                        c.execute(
+                            'INSERT INTO rawcrontab (host, user, crontab) '
+                            'VALUES (?, ?, ?)',
+                            [host, user, '\n'.join(crontab)])
+                    else:
+                        c.execute(
+                            'UPDATE rawcrontab SET crontab = ? WHERE id = ?',
+                            ['\n'.join(crontab), entry['id']])
 
-            try:
-                if entry is None:
-                    c.execute('INSERT INTO rawcrontab (host, user, crontab) '
-                              'VALUES (?, ?, ?)',
-                              [host, user, '\n'.join(crontab)])
-                else:
-                    c.execute('UPDATE rawcrontab SET crontab = ? WHERE id = ?',
-                              ['\n'.join(crontab), entry['id']])
-
-            except self.error_class as err:
-                raise CrabError('database error: ' + str(err))
-
-            finally:
-                c.close()
+                except self.error_class as err:
+                    raise CrabError('database error: ' + str(err))
 
     def get_raw_crontab(self, host, user):
         if self.outputstore is not None and hasattr(self.outputstore,
@@ -710,9 +671,7 @@ class CrabStoreDB(CrabStore):
             raise CrabError('writing notification: job config and match '
                             'parameters both specified')
 
-        with self.lock:
-            c = self.conn.cursor()
-
+        with self.lock, closing(self.conn.cursor()) as c:
             try:
                 if notifyid is None:
                     c.execute('INSERT INTO jobnotify (configid, host, user, '
@@ -736,16 +695,12 @@ class CrabStoreDB(CrabStore):
             except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
 
-            finally:
-                c.close()
-
     def delete_notification(self, notifyid):
         """Removes a notification from the database."""
 
-        with self.lock:
-            with closing(self.conn.cursor()) as c:
-                try:
-                    c.execute('DELETE FROM jobnotify WHERE id=?', [notifyid])
+        with self.lock, closing(self.conn.cursor()) as c:
+            try:
+                c.execute('DELETE FROM jobnotify WHERE id=?', [notifyid])
 
-                except self.error_class as err:
-                    raise CrabError('database error: ' + str(err))
+            except self.error_class as err:
+                raise CrabError('database error: ' + str(err))

@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from contextlib import closing
 import datetime
 import os
 import pytz
@@ -30,9 +31,8 @@ class CrabStoreSQLite(CrabStoreDB):
 
         conn = sqlite3.connect(filename, check_same_thread=False)
 
-        c = conn.cursor()
-        c.execute("PRAGMA foreign_keys = ON")
-        c.close()
+        with closing(conn.cursor()) as c:
+            c.execute("PRAGMA foreign_keys = ON")
 
         CrabStoreDB.__init__(self, conn, error_class=sqlite3.DatabaseError,
                              outputstore=outputstore)
