@@ -1,4 +1,5 @@
 # Copyright (C) 2012-2013 Science and Technology Facilities Council.
+# Copyright (C) 2015 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -81,6 +82,16 @@ def construct_store(storeconfig, outputstore=None):
 
     if storeconfig['type'] == 'sqlite':
         store = CrabStoreSQLite(storeconfig['file'], outputstore)
+
+    elif storeconfig['type'] == 'mysql':
+        # Only import the MySQL store module when required in case the
+        # mysql.connector module isn't installed.
+        from crab.store.mysql import CrabStoreMySQL
+        store = CrabStoreMySQL(host=storeconfig['host'],
+                               database=storeconfig['database'],
+                               user=storeconfig['user'],
+                               password=storeconfig['password'],
+                               outputstore=outputstore)
 
     elif storeconfig['type'] == 'file':
         store = CrabStoreFile(storeconfig['dir'])

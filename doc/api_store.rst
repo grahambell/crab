@@ -25,6 +25,14 @@ crab.store.file
    :member-order: bysource
    :undoc-members:
 
+crab.store.mysql
+----------------
+
+.. automodule:: crab.store.mysql
+   :members:
+   :member-order: bysource
+   :undoc-members:
+
 crab.store.sqlite
 -----------------
 
