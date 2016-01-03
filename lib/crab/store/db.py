@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2014 Science and Technology Facilities Council.
-# Copyright (C) 2015 East Asian Observatory.
+# Copyright (C) 2015-2016 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -462,7 +462,7 @@ class CrabStoreDB(CrabStore):
 
         This method has to include a list of status codes to exclude
         since the filtering is done in the SQL.  The codes skipped
-        are LATE and SUCCESS."""
+        are CLEARED, LATE, SUCCESS, ALREADYRUNNING and INHIBITED."""
 
         with self.lock:
             return self._query_to_dict_list(
@@ -473,7 +473,7 @@ class CrabStoreDB(CrabStore):
                 '    job.crabid AS crabid, jobfinish.command AS command, ' +
                 '    jobfinish.id AS finishid ' +
                 '    FROM jobfinish JOIN job ON jobfinish.jobid = job.id ' +
-                '    WHERE status NOT IN (?, ?) ' +
+                '    WHERE status NOT IN (?, ?, ?) ' +
                 'UNION SELECT ' +
                 '    job.id AS id, status, ' +
                 '    datetime AS "datetime [timestamp]", ' +
@@ -483,8 +483,10 @@ class CrabStoreDB(CrabStore):
                 '    FROM jobalarm JOIN job ON jobalarm.jobid = job.id ' +
                 '    WHERE status NOT IN (?, ?) ' +
                 'ORDER BY datetime DESC, status DESC LIMIT ?',
-                [CrabStatus.SUCCESS, CrabStatus.LATE,
-                 CrabStatus.SUCCESS, CrabStatus.LATE, limit])
+                [CrabStatus.SUCCESS, CrabStatus.ALREADYRUNNING,
+                 CrabStatus.INHIBITED,
+                 CrabStatus.CLEARED, CrabStatus.LATE,
+                 limit])
 
     def _query_to_dict(self, sql, param=[]):
         """Convenience method which returns a single row from
