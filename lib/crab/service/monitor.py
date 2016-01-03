@@ -1,5 +1,5 @@
 # Copyright (C) 2012-13 Science and Technology Facilities Council.
-# Copyright (C) 2015 East Asian Observatory.
+# Copyright (C) 2015-16 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,14 +37,22 @@ class JobDeleted(Exception):
 class CrabMonitor(CrabMinutely):
     """A class implementing the crab monitor thread."""
 
-    def __init__(self, store):
+    def __init__(self, store, passive=False):
         """Constructor.
 
         Saves the given storage backend and prepares the instance
-        data."""
+        data.
+
+        If "passive" mode is requested, then the monitor will watch the
+        job status but will not write alarms into the store.  This could
+        be used, for example, to implement a web interface (which requires
+        a monitor) separately from the active monitor.
+        """
+
         CrabMinutely.__init__(self)
 
         self.store = store
+        self.passive = passive
         self.sched = {}
         self.status = {}
         self.status_ready = Event()
@@ -148,17 +156,19 @@ class CrabMonitor(CrabMinutely):
 
         At this stage we also check for new / deleted / updated jobs."""
 
-        for id_ in self.sched:
-            if self.sched[id_].match(datetime_):
-                if ((id_ not in self.last_start) or
-                        (self.last_start[id_] +
-                         self.config[id_]['graceperiod'] < datetime_)):
-                    self._write_alarm(id_, CrabStatus.LATE)
+        if not self.passive:
+            for id_ in self.sched:
+                if self.sched[id_].match(datetime_):
+                    if ((id_ not in self.last_start) or
+                            (self.last_start[id_] +
+                             self.config[id_]['graceperiod'] < datetime_)):
+                        self._write_alarm(id_, CrabStatus.LATE)
 
-                    # Do not reset the miss timeout if it is already "running".
-                    if id_ not in self.miss_timeout:
-                        self.miss_timeout[id_] = (
-                            datetime_ + self.config[id_]['graceperiod'])
+                        # Do not reset the miss timeout if it is already
+                        # "running".
+                        if id_ not in self.miss_timeout:
+                            self.miss_timeout[id_] = (
+                                datetime_ + self.config[id_]['graceperiod'])
 
         # Look for new or deleted jobs.
         currentjobs = set(self.status.keys())
@@ -331,16 +341,18 @@ class CrabMonitor(CrabMinutely):
         if (event['type'] == CrabEvent.START or
                 event['status'] == CrabStatus.ALREADYRUNNING):
             self.status[id_]['running'] = True
-            self.last_start[id_] = datetime_
-            self.timeout[id_] = datetime_ + self.config[id_]['timeout']
-            if id_ in self.miss_timeout:
-                del self.miss_timeout[id_]
+            if not self.passive:
+                self.last_start[id_] = datetime_
+                self.timeout[id_] = datetime_ + self.config[id_]['timeout']
+                if id_ in self.miss_timeout:
+                    del self.miss_timeout[id_]
 
         elif (event['type'] == CrabEvent.FINISH or
                 event['status'] == CrabStatus.TIMEOUT):
             self.status[id_]['running'] = False
-            if id_ in self.timeout:
-                del self.timeout[id_]
+            if not self.passive:
+                if id_ in self.timeout:
+                    del self.timeout[id_]
 
     def _compute_reliability(self, id_):
         """Uses the history list of the specified job to recalculate its
@@ -357,6 +369,11 @@ class CrabMonitor(CrabMinutely):
 
     def _write_alarm(self, id_, status):
         """Inserts an alarm into the storage backend."""
+
+        if self.passive:
+            print('Warning: trying to write alarm in passive mode')
+            return
+
         try:
             self.store.log_alarm(id_, status)
         except CrabError as err:
