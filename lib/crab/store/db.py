@@ -482,53 +482,6 @@ class CrabStoreDB(CrabStore):
                  CrabStatus.CLEARED, CrabStatus.LATE,
                  limit])
 
-    def _query_to_dict(self, sql, param=[]):
-        """Convenience method which returns a single row from
-        _query_to_dict_list.
-
-        Returns None if the result does not have exactly one row."""
-
-        result = self._query_to_dict_list(sql, param)
-        if len(result) == 1:
-            return result[0]
-        else:
-            return None
-
-    def _query_to_dict_list(self, sql, param=[]):
-        """Execute an SQL query and return the result as a list of
-        Python dict objects.
-
-        The dict keys are retrieved from the SQL result using the
-        description method of the DB cursor object.
-
-        Any datetime values retieved have their timezone info set to UTC."""
-
-        output = []
-
-        with closing(self.conn.cursor(**self.cursor_args)) as c:
-            try:
-                c.execute(sql, param)
-
-                while True:
-                    row = c.fetchone()
-                    if row is None:
-                        break
-
-                    dict = {}
-
-                    for (i, coldescription) in enumerate(c.description):
-                        value = row[i]
-                        if isinstance(value, datetime):
-                            value = value.replace(tzinfo=pytz.UTC)
-                        dict[coldescription[0]] = value
-
-                    output.append(dict)
-
-            except self.error_class as err:
-                raise CrabError('database error: ' + str(err))
-
-        return output
-
     def write_job_output(self, finishid, host, user, id_, crabid,
                          stdout, stderr):
         """Writes the job output to the database.
@@ -722,3 +675,50 @@ class CrabStoreDB(CrabStore):
 
             except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
+
+    def _query_to_dict(self, sql, param=[]):
+        """Convenience method which returns a single row from
+        _query_to_dict_list.
+
+        Returns None if the result does not have exactly one row."""
+
+        result = self._query_to_dict_list(sql, param)
+        if len(result) == 1:
+            return result[0]
+        else:
+            return None
+
+    def _query_to_dict_list(self, sql, param=[]):
+        """Execute an SQL query and return the result as a list of
+        Python dict objects.
+
+        The dict keys are retrieved from the SQL result using the
+        description method of the DB cursor object.
+
+        Any datetime values retieved have their timezone info set to UTC."""
+
+        output = []
+
+        with closing(self.conn.cursor(**self.cursor_args)) as c:
+            try:
+                c.execute(sql, param)
+
+                while True:
+                    row = c.fetchone()
+                    if row is None:
+                        break
+
+                    dict = {}
+
+                    for (i, coldescription) in enumerate(c.description):
+                        value = row[i]
+                        if isinstance(value, datetime):
+                            value = value.replace(tzinfo=pytz.UTC)
+                        dict[coldescription[0]] = value
+
+                    output.append(dict)
+
+            except self.error_class as err:
+                raise CrabError('database error: ' + str(err))
+
+        return output
