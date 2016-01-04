@@ -1,5 +1,5 @@
-# Copyright (C) 2012-13 Science and Technology Facilities Council.
-# Copyright (C) 2015-16 East Asian Observatory.
+# Copyright (C) 2012-2013 Science and Technology Facilities Council.
+# Copyright (C) 2015-2016 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ from crab.service import CrabMinutely
 from crab.util.schedule import CrabSchedule
 
 HISTORY_COUNT = 10
+LATE_GRACE_PERIOD = timedelta(seconds=30)
 
 
 class JobDeleted(Exception):
@@ -59,6 +60,7 @@ class CrabMonitor(CrabMinutely):
         self.config = {}
         self.last_start = {}
         self.timeout = {}
+        self.late_timeout = {}
         self.miss_timeout = {}
         self.max_startid = 0
         self.max_alarmid = 0
@@ -141,6 +143,11 @@ class CrabMonitor(CrabMinutely):
             # Check status of timeouts - need to get a list of keys
             # so that we can delete from the dict while iterating.
 
+            for id_ in list(self.late_timeout.keys()):
+                if self.late_timeout[id_] < datetime_:
+                    self._write_alarm(id_, CrabStatus.LATE)
+                    del self.late_timeout[id_]
+
             for id_ in list(self.miss_timeout.keys()):
                 if self.miss_timeout[id_] < datetime_:
                     self._write_alarm(id_, CrabStatus.MISSED)
@@ -162,7 +169,10 @@ class CrabMonitor(CrabMinutely):
                     if ((id_ not in self.last_start) or
                             (self.last_start[id_] +
                              self.config[id_]['graceperiod'] < datetime_)):
-                        self._write_alarm(id_, CrabStatus.LATE)
+                        # No need to check if the late timeout is already
+                        # running as the grace period is currently less
+                        # than the minimum scheduling interval.
+                        self.late_timeout[id_] = datetime_ + LATE_GRACE_PERIOD
 
                         # Do not reset the miss timeout if it is already
                         # "running".
@@ -281,6 +291,8 @@ class CrabMonitor(CrabMinutely):
                 del self.last_start[id_]
             if id_ in self.timeout:
                 del self.timeout[id_]
+            if id_ in self.late_timeout:
+                del self.late_timeout[id_]
             if id_ in self.miss_timeout:
                 del self.miss_timeout[id_]
         except KeyError:
@@ -344,6 +356,8 @@ class CrabMonitor(CrabMinutely):
             if not self.passive:
                 self.last_start[id_] = datetime_
                 self.timeout[id_] = datetime_ + self.config[id_]['timeout']
+                if id_ in self.late_timeout:
+                    del self.late_timeout[id_]
                 if id_ in self.miss_timeout:
                     del self.miss_timeout[id_]
 
