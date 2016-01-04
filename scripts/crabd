@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # Copyright (C) 2012-2013 Science and Technology Facilities Council.
+# Copyright (C) 2016 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,6 +20,7 @@ import atexit
 import cherrypy
 from optparse import OptionParser
 import os
+import sys
 
 from crab.notify import CrabNotify
 from crab.service.monitor import CrabMonitor
@@ -42,6 +44,14 @@ def main():
         '--pidfile',
         type='string', dest='pidfile',
         help='use PIDFILE to avoid re-running crabd', metavar='PIDFILE')
+    parser.add_option(
+        '--import',
+        type='string', dest='import_',
+        help='import jobs and settings from file', metavar='JSONFILE')
+    parser.add_option(
+        '--export',
+        type='string', dest='export',
+        help='export jobs and settings to file', metavar='JSONFILE')
 
     (options, args) = parser.parse_args()
     if len(args) != 0:
@@ -66,6 +76,27 @@ def main():
         outputstore = None
 
     store = construct_store(config['store'], outputstore)
+
+    # Perform import/export operations if requested.
+    if options.import_:
+        if options.export:
+            parser.error('import and export operations both requested')
+        from crab.server.io import import_config
+        if options.import_ == '-':
+            import_config(store=store, file_=sys.stdin)
+        else:
+            with open(options.import_, 'r') as file_:
+                import_config(store=store, file_=file_)
+        return
+
+    elif options.export:
+        from crab.server.io import export_config
+        if options.export == '-':
+            export_config(store=store, file_=sys.stdout)
+        else:
+            with open(options.export, 'w') as file_:
+                export_config(store=store, file_=file_)
+        return
 
     # Set a default timezone: applies to times shown in
     # notifications and on the web interface.

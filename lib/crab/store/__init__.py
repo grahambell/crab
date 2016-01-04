@@ -1,5 +1,5 @@
 # Copyright (C) 2012 Science and Technology Facilities Council.
-# Copyright (C) 2015 East Asian Observatory.
+# Copyright (C) 2015-2016 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -233,6 +233,14 @@ class CrabStore:
                 self._delete_job(id_)
 
             return warning
+
+    def check_job(self, **kwargs):
+        """Ensure that a job exists in the store.
+
+        Acquires the lock and then calls the private _check_job method."""
+
+        with self.lock:
+            return self._check_job(**kwargs)
 
     def _check_job(self, host, user, crabid, command,
                    time=None, timezone=None):
