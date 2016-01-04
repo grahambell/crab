@@ -108,6 +108,12 @@ class CrabStore:
             self.write_job_output(finishid, host, user, id_, crabid,
                                   stdout, stderr)
 
+    def get_job_config(self, id_):
+        """Retrieve configuration data for a job by ID number."""
+
+        with self.lock:
+            return self._get_job_config(id_)
+
     def get_crontab(self, host, user):
         """Fetches the job entries for a particular host and user and builds
         a crontab style representation.

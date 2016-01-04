@@ -238,12 +238,6 @@ class CrabStoreDB(CrabStore):
                 'deleted AS "deleted [timestamp]" '
                 'FROM job WHERE id = ?', [id_])
 
-    def get_job_config(self, id_):
-        """Retrieve configuration data for a job by ID number."""
-
-        with self.lock:
-            return self._get_job_config(id_)
-
     def _get_job_config(self, id_):
         """Private/protected version of get_job_config which does
         not acquire the lock."""
