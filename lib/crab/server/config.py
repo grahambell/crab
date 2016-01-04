@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Science and Technology Facilities Council.
-# Copyright (C) 2015 East Asian Observatory.
+# Copyright (C) 2015-2016 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -66,8 +66,20 @@ def read_crabd_config():
     if 'CRABHOME' in env:
         config['crab']['home'] = env['CRABHOME']
 
-    config['/res'] = {'tools.staticdir.on': True,
-                      'tools.staticdir.dir': config['crab']['home'] + '/res'}
+    config['/res'] = {
+        'tools.staticdir.on': True,
+        'tools.staticdir.dir': config['crab']['home'] + '/res',
+        'tools.staticdir.content_types': {
+            'css': 'text/css',
+            'eot': 'application/vnd.ms-fontobject',
+            'js': 'application/javascript',
+            'png': 'image/png',
+            'svg': 'image/svg+xml',
+            'ttf': 'application/x-font-ttf',
+            'woff': 'application/font-woff',
+            'woff2': 'font/woff2',
+        },
+    }
 
     if 'base_url' not in config['crab'] or config['crab']['base_url'] is None:
         config['crab']['base_url'] = (
