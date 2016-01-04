@@ -1,4 +1,5 @@
 # Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2016 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -64,7 +65,8 @@ class CrabMinutely(Thread):
 
             if not minute_equal(previous, self._previous):
                 try:
-                    self.run_minutely(previous)
+                    self.run_minutely(previous.replace(second=0,
+                                                       microsecond=0))
                 except Exception as e:
                     print("Error: run_minutely raised exception:", str(e))
 
@@ -72,7 +74,10 @@ class CrabMinutely(Thread):
 
     def run_minutely(self, datetime_):
         """This is the method which will be called each minute.  It should
-        be overridden by subclasses."""
+        be overridden by subclasses.
+
+        Will be called with a datetime object for the relevant minute
+        with the seconds and microseconds set to zero."""
 
         pass
 

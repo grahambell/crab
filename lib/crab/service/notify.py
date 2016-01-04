@@ -45,11 +45,10 @@ class CrabNotifyService(CrabMinutely):
         """Issues notifications if any are scheduled for the given minute."""
 
         current = []
-        end = datetime_.replace(second=0, microsecond=0)
         match_daily = self.schedule.match(datetime_)
 
         if match_daily:
-            daily_start = self.schedule.previous_datetime(end)
+            daily_start = self.schedule.previous_datetime(datetime_)
         else:
             daily_start = None
 
@@ -85,11 +84,12 @@ class CrabNotifyService(CrabMinutely):
             if schedule is None:
                 if match_daily:
                     current.append(CrabNotifyJob(
-                        notification, daily_start, end))
+                        notification, daily_start, datetime_))
             else:
                 if schedule.match(datetime_):
                     current.append(CrabNotifyJob(
-                        notification, schedule.previous_datetime(end), end))
+                        notification, schedule.previous_datetime(datetime_),
+                        datetime_))
 
         if current:
             self.notify(current)
