@@ -15,7 +15,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import calendar
-import datetime
+from datetime import datetime
 import socket
 
 import cherrypy
@@ -60,7 +60,7 @@ class CrabRSS:
 
         rss = RSS2('Crab failures', self.base + '/',
                    'List of recent cron job failures.',
-                   lastBuildDate=datetime.datetime.now(),
+                   lastBuildDate=datetime.now(),
                    ttl=30,
                    items=rssitems)
         return rss.to_xml()

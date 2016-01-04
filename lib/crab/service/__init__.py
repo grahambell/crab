@@ -15,7 +15,7 @@
 
 from __future__ import print_function
 
-import datetime
+from datetime import datetime, timedelta
 import pytz
 import time
 from threading import Thread
@@ -37,7 +37,7 @@ class CrabMinutely(Thread):
         we record the start time here."""
 
         Thread.__init__(self)
-        self._previous = datetime.datetime.now(pytz.UTC)
+        self._previous = datetime.now(pytz.UTC)
 
     def run(self):
         """Thread run function.
@@ -55,8 +55,8 @@ class CrabMinutely(Thread):
         If a subclass needs to implements its own run method, it should
         call this method regularly."""
 
-        delta = datetime.timedelta(seconds=55)
-        current = datetime.datetime.now(pytz.UTC)
+        delta = timedelta(seconds=55)
+        current = datetime.now(pytz.UTC)
         previous = self._previous
 
         while minute_before(previous, current):

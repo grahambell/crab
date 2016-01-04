@@ -16,7 +16,7 @@
 
 from __future__ import print_function
 
-import datetime
+from datetime import datetime, timedelta
 import pytz
 import time
 from random import Random
@@ -97,7 +97,7 @@ class CrabMonitor(CrabMinutely):
 
         while True:
             time.sleep(5)
-            datetime_ = datetime.datetime.now(pytz.UTC)
+            datetime_ = datetime.now(pytz.UTC)
 
             events = self.store.get_events_since(
                 self.max_startid, self.max_alarmid, self.max_finishid)
@@ -262,10 +262,10 @@ class CrabMonitor(CrabMinutely):
 
         for parameter in default_time:
             if dbconfig is not None and dbconfig[parameter] is not None:
-                self.config[id_][parameter] = datetime.timedelta(
+                self.config[id_][parameter] = timedelta(
                                               minutes=dbconfig[parameter])
             else:
-                self.config[id_][parameter] = datetime.timedelta(
+                self.config[id_][parameter] = timedelta(
                                               minutes=default_time[parameter])
 
     def _remove_job(self, id_):

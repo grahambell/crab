@@ -15,7 +15,7 @@
 
 from __future__ import print_function
 
-import datetime
+from datetime import timedelta
 import pytz
 
 from crontab import CronTab
@@ -51,7 +51,7 @@ class CrabSchedule(CronTab):
             except pytz.UnknownTimeZoneError:
                 print('Warning: unknown time zone', timezone)
 
-    def match(self, datetime):
+    def match(self, datetime_):
         """Determines whether the given datetime matches the scheduling
         rules stored in the class instance.
 
@@ -59,7 +59,7 @@ class CrabSchedule(CronTab):
         components of the time are checked against the matchers
         in the CronTab superclass."""
 
-        localtime = self._localtime(datetime)
+        localtime = self._localtime(datetime_)
 
         return (self.matchers.minute(localtime.minute, localtime) and
                 self.matchers.hour(localtime.hour, localtime) and
@@ -72,20 +72,18 @@ class CrabSchedule(CronTab):
         seconds."""
 
         localtime = self._localtime(datetime_)
-        return datetime_ + datetime.timedelta(
-                               seconds=int(self.next(localtime)))
+        return datetime_ + timedelta(seconds=int(self.next(localtime)))
 
     def previous_datetime(self, datetime_):
         """return a datetime rather than number of
         seconds."""
 
         localtime = self._localtime(datetime_)
-        return datetime_ + datetime.timedelta(
-                               seconds=int(self.previous(localtime)))
+        return datetime_ + timedelta(seconds=int(self.previous(localtime)))
 
-    def _localtime(self, datetime):
+    def _localtime(self, datetime_):
         if self.timezone is not None:
-            return datetime.astimezone(self.timezone)
+            return datetime_.astimezone(self.timezone)
         else:
             # Currently assume UTC.
-            return datetime
+            return datetime_

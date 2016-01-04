@@ -16,8 +16,6 @@
 
 from __future__ import print_function
 
-import datetime
-
 from crab import CrabError
 from crab.notify import CrabNotify, CrabNotifyJob
 from crab.service import CrabMinutely
