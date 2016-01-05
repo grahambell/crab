@@ -101,8 +101,14 @@ class CrabMonitor(CrabMinutely):
             time.sleep(5)
             datetime_ = datetime.now(pytz.UTC)
 
-            events = self.store.get_events_since(
-                self.max_startid, self.max_alarmid, self.max_finishid)
+            # Retrieve events.  Trap exceptions in case of database
+            # disconnection.
+            events = []
+            try:
+                events = self.store.get_events_since(
+                    self.max_startid, self.max_alarmid, self.max_finishid)
+            except Exception as e:
+                print('Error: monitor exception getting events:', str(e))
 
             for event in events:
                 id_ = event['jobid']
@@ -121,6 +127,13 @@ class CrabMonitor(CrabMinutely):
                 except JobDeleted:
                     pass
 
+                # Also trap other exceptions, in case a database disconnection
+                # causes a failure from _initialize_job.  Do this separately,
+                # inside the events loop so that we keep the max_id_values
+                # up to date with the other events.
+                except Exception as e:
+                    print('Error: monitor exception handling event:', str(e))
+
             self.num_error = 0
             self.num_warning = 0
             for id_ in self.status:
@@ -137,12 +150,13 @@ class CrabMonitor(CrabMinutely):
                     self.new_event.notify_all()
 
             # Allow superclass CrabMinutely to call our run_minutely
-            # method as required.
+            # method as required.  Note: the call back to run_minutely
+            # is protected by a try-except block in the superclass.
             self._check_minute()
 
             # Check status of timeouts - need to get a list of keys
             # so that we can delete from the dict while iterating.
-
+            # Note: _write_alarm uses a try-except block for CrabErrors.
             for id_ in list(self.late_timeout.keys()):
                 if self.late_timeout[id_] < datetime_:
                     self._write_alarm(id_, CrabStatus.LATE)
