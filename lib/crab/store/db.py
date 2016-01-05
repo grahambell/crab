@@ -26,11 +26,12 @@ from crab.store import CrabStore
 
 
 class CrabDBLock():
-    def __init__(self, conn, error_class, cursor_args={}):
+    def __init__(self, conn, error_class, cursor_args={}, ping=False):
         self.lock = Lock()
         self.conn = conn
         self.error_class = error_class
         self.cursor_args = cursor_args
+        self.ping = ping
 
     def __enter__(self):
         self.lock.acquire(True)
@@ -38,6 +39,9 @@ class CrabDBLock():
         # Open a cursor, but be sure to release the lock again if this
         # fails.
         try:
+            if self.ping:
+                self.conn.ping(reconnect=True, attempts=2, delay=5)
+
             self.cursor = self.conn.cursor(**self.cursor_args)
 
         except self.error_class as err:

@@ -17,7 +17,7 @@ import re
 import pytz
 
 import mysql.connector
-from mysql.connector.errors import DatabaseError
+from mysql.connector.errors import Error as _MySQLError
 from mysql.connector.cursor import MySQLCursor
 
 from crab.store.db import CrabStoreDB, CrabDBLock
@@ -57,6 +57,7 @@ class CrabStoreMySQL(CrabStoreDB):
         CrabStoreDB.__init__(
             self,
             lock=CrabDBLock(
-                conn, error_class=DatabaseError,
-                cursor_args={'cursor_class': CrabStoreMySQLCursor}),
+                conn, error_class=_MySQLError,
+                cursor_args={'cursor_class': CrabStoreMySQLCursor},
+                ping=True),
             outputstore=outputstore)
