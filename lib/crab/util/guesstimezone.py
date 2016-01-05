@@ -1,4 +1,5 @@
 # Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2016 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -15,6 +16,7 @@
 
 import os
 import pytz
+import re
 
 # There really ought to be a better way of doing this!  You could read
 # /etc/sysconfig/clock but that would only work on certain systems.  The
@@ -29,13 +31,26 @@ def guess_timezone():
     """Function to try to determine the operating system's timezone setting.
 
     Currently this checks for a TZ environment variable.  Otherwise
-    it reads /etc/localtime and tries to find the file in
+    it checks if /etc/localtime is a link or tries to find the file in
     /usr/share/zoneinfo which matches.  It uses pytz to get a list of
     common timezones to try."""
 
     if 'TZ' in os.environ:
         return os.environ['TZ']
 
+    # Before reading /etc/localtime, see if it is a symlink.
+    try:
+        link = os.readlink('/etc/localtime')
+        m = re.search('/share/zoneinfo/([-_A-Za-z0-9/]+)$', link)
+        if m:
+            zone = m.group(1)
+            if zone in pytz.all_timezones:
+                return zone
+    except:
+        pass
+
+    # Final method: read /etc/localtime and look for the same file in
+    # /usr/share/zoneinfo/.
     try:
         f = open('/etc/localtime', 'rb')
         localtime = f.read()
