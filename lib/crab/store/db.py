@@ -35,23 +35,61 @@ class CrabDBLock():
     def __enter__(self):
         self.lock.acquire(True)
 
-        self.cursor = self.conn.cursor(**self.cursor_args)
+        # Open a cursor, but be sure to release the lock again if this
+        # fails.
+        try:
+            self.cursor = self.conn.cursor(**self.cursor_args)
+
+        except self.error_class as err:
+            self.lock.release()
+            raise CrabError('database error (opening cursor): ' + str(err))
+
+        except:
+            self.lock.release()
+            raise
 
         return self.cursor
 
     def __exit__(self, type_, value, tb):
-        self.cursor.close()
-        del self.cursor
+        new_exception = None
 
-        if type_ is None:
-            self.conn.commit()
-        else:
-            self.conn.rollback()
+        # Use try-finally block to ensure we release the lock whatever
+        # happens (for extra safety -- the try-except blocks should
+        # allow us to keep going anyway).
+        try:
+            # Close and delete cursor.
+            try:
+                self.cursor.close()
+                del self.cursor
 
-        self.lock.release()
+            except Exception as err:
+                new_exception = CrabError(
+                    'database error (closing cursor): ' + str(err))
 
-        if type_ is not None and issubclass(type_, self.error_class):
-            raise CrabError('database error: ' + str(value))
+            # Commit the transaction, or roll back if an exception occurred
+            # during the transaction.
+            try:
+                if type_ is None:
+                    self.conn.commit()
+                else:
+                    self.conn.rollback()
+
+            except Exception as err:
+                new_exception = CrabError(
+                    'database error (ending transaction): ' + str(err))
+
+        finally:
+            self.lock.release()
+
+        # If an exception happened during the transaction, raise if it was
+        # database error, otherwise leave it alone (do nothing).  If there
+        # wasn't an exception, but we have a new one, raise it.
+        if type_ is not None:
+            if issubclass(type_, self.error_class):
+                raise CrabError('database error: ' + str(value))
+
+        elif new_exception is not None:
+            raise new_exception
 
 
 class CrabStoreDB(CrabStore):
