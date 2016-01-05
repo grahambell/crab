@@ -33,26 +33,26 @@ class CrabStore:
         crabid, command, without_crabid) are passed to the
         _get_jobs method."""
 
-        with self.lock:
-            return self._get_jobs(host, user, **kwargs)
+        with self.lock as c:
+            return self._get_jobs(c, host, user, **kwargs)
 
     def delete_job(self, id_):
         """Mark a job as deleted."""
-        with self.lock:
-            self._delete_job(id_)
+        with self.lock as c:
+            self._delete_job(c, id_)
 
     def undelete_job(self, id_):
         """Remove deletion mark from a job."""
-        with self.lock:
-            self._update_job(id_)
+        with self.lock as c:
+            self._update_job(c, id_)
 
     def update_job(self, id_, **kwargs):
         """Updates job information.
 
         Keyword arguments are passed on to the private _update_job method,
         and can include: crabid, command, time, timezone."""
-        with self.lock:
-            self._update_job(id_, **kwargs)
+        with self.lock as c:
+            self._update_job(c, id_, **kwargs)
 
     def log_start(self, host, user, crabid, command):
         """Inserts a job start record into the database.
@@ -62,14 +62,14 @@ class CrabStore:
 
         data = {'inhibit': False}
 
-        with self.lock:
-            id_ = self._check_job(host, user, crabid, command)
+        with self.lock as c:
+            id_ = self._check_job(c, host, user, crabid, command)
 
-            self._log_start(id_, command)
+            self._log_start(c, id_, command)
 
             # Read the job configuration in order to determine whether
             # this job is currently inhibited.
-            config = self._get_job_config(id_)
+            config = self._get_job_config(c, id_)
 
             if config is not None and config['inhibit']:
                 data['inhibit'] = True
@@ -83,18 +83,18 @@ class CrabStore:
         The output will be passed to the write_job_output method,
         unless both stdout and stderr are empty."""
 
-        with self.lock:
-            id_ = self._check_job(host, user, crabid, command)
+        with self.lock as c:
+            id_ = self._check_job(c, host, user, crabid, command)
 
             # Fetch the configuration so that we can check the status.
-            config = self._get_job_config(id_)
+            config = self._get_job_config(c, id_)
             if config is not None:
                 status = check_status_patterns(
                     status, config,
                     '\n'.join((x for x in (stdout, stderr)
                                if x is not None)))
 
-            finishid = self._log_finish(id_, command, status)
+            finishid = self._log_finish(c, id_, command, status)
 
         if stdout or stderr:
             # If a crabid was not specified, check whether the job
@@ -111,8 +111,8 @@ class CrabStore:
     def get_job_config(self, id_):
         """Retrieve configuration data for a job by ID number."""
 
-        with self.lock:
-            return self._get_job_config(id_)
+        with self.lock as c:
+            return self._get_job_config(c, id_)
 
     def write_job_output(self, finishid, host, user, id_, crabid,
                          stdout, stderr):
@@ -125,9 +125,9 @@ class CrabStore:
             return self.outputstore.write_job_output(
                 finishid, host, user, id_, crabid, stdout, stderr)
 
-        with self.lock:
+        with self.lock as c:
             return self._write_job_output(
-                finishid, host, user, id_, crabid, stdout, stderr)
+                c, finishid, host, user, id_, crabid, stdout, stderr)
 
     def get_job_output(self, finishid, host, user, id_, crabid):
         """Fetches the standard output and standard error for the
@@ -143,9 +143,9 @@ class CrabStore:
             return self.outputstore.get_job_output(
                 finishid, host, user, id_, crabid)
 
-        with self.lock:
+        with self.lock as c:
             return self._get_job_output(
-                finishid, host, user, id_, crabid)
+                c, finishid, host, user, id_, crabid)
 
     def get_crontab(self, host, user):
         """Fetches the job entries for a particular host and user and builds
@@ -219,7 +219,7 @@ class CrabStore:
         for job in self.get_jobs(host, user):
             idset.add(job['id'])
 
-        with self.lock:
+        with self.lock as c:
             # Iterate over the supplied cron jobs, removing each
             # job from the idset set as we encounter it.
 
@@ -250,7 +250,7 @@ class CrabStore:
 
                     command = command.rstrip()
 
-                    id_ = self._check_job(host, user, vars.get('CRABID'),
+                    id_ = self._check_job(c, host, user, vars.get('CRABID'),
                                           command, time, timezone)
 
                     if id_ in idsaved:
@@ -269,19 +269,19 @@ class CrabStore:
             # because we did not see them in the current crontab
 
             for id_ in idset:
-                self._delete_job(id_)
+                self._delete_job(c, id_)
 
             return warning
 
-    def check_job(self, **kwargs):
+    def check_job(self, *args, **kwargs):
         """Ensure that a job exists in the store.
 
         Acquires the lock and then calls the private _check_job method."""
 
-        with self.lock:
-            return self._check_job(**kwargs)
+        with self.lock as c:
+            return self._check_job(c, *args, **kwargs)
 
-    def _check_job(self, host, user, crabid, command,
+    def _check_job(self, c, host, user, crabid, command,
                    time=None, timezone=None):
         """Ensure that a job exists in the store.
 
@@ -298,7 +298,7 @@ class CrabStore:
         # We know the crabid, so use it to search
 
         if crabid is not None:
-            jobs = self._get_jobs(host, user, include_deleted=True,
+            jobs = self._get_jobs(c, host, user, include_deleted=True,
                                   crabid=crabid)
 
             if jobs:
@@ -312,22 +312,22 @@ class CrabStore:
                     pass
 
                 else:
-                    self._update_job(id_, None, command, time, timezone)
+                    self._update_job(c, id_, None, command, time, timezone)
 
             else:
                 # Need to check if the job already existed without
                 # a job ID, in which case we update it to add the job ID.
 
-                jobs = self._get_jobs(host, user, include_deleted=True,
+                jobs = self._get_jobs(c, host, user, include_deleted=True,
                                       command=command, without_crabid=True)
                 if jobs:
                     job = jobs[0]
                     id_ = job['id']
 
-                    self._update_job(id_, crabid, None, time, timezone)
+                    self._update_job(c, id_, crabid, None, time, timezone)
 
                 else:
-                    id_ = self._insert_job(host, user, crabid, time,
+                    id_ = self._insert_job(c, host, user, crabid, time,
                                            command, timezone)
 
         # We don't know the crabid, so we must search by command.
@@ -337,7 +337,7 @@ class CrabStore:
         # time ranges / steps.
 
         else:
-            jobs = self._get_jobs(host, user, include_deleted=True,
+            jobs = self._get_jobs(c, host, user, include_deleted=True,
                                   command=command)
 
             if jobs:
@@ -350,10 +350,10 @@ class CrabStore:
                     pass
 
                 else:
-                    self._update_job(id_, None, None, time, timezone)
+                    self._update_job(c, id_, None, None, time, timezone)
 
             else:
-                id_ = self._insert_job(host, user, crabid,
+                id_ = self._insert_job(c, host, user, crabid,
                                        time, command, timezone)
 
         if id_ is None:
@@ -366,13 +366,13 @@ class CrabStore:
                                                     'write_raw_crontab'):
             return self.outputstore.write_raw_crontab(host, user, crontab)
 
-        with self.lock:
-            return self._write_raw_crontab(host, user, crontab)
+        with self.lock as c:
+            return self._write_raw_crontab(c, host, user, crontab)
 
     def get_raw_crontab(self, host, user):
         if self.outputstore is not None and hasattr(self.outputstore,
                                                     'get_raw_crontab'):
             return self.outputstore.get_raw_crontab(host, user)
 
-        with self.lock:
-            return self._get_raw_crontab(host, user)
+        with self.lock as c:
+            return self._get_raw_crontab(c, host, user)

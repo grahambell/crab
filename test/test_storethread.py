@@ -80,9 +80,8 @@ class CronJobTester(RandomTester):
         self.store.get_jobs()
         self.store.get_jobs(self.host, self.user)
         self.store.get_jobs(self.host, self.user, include_deleted=True)
-        with self.store.lock:
-            self.store._check_job(self.host, self.user, None, sample([
-                              'command1', 'command2', 'command3'], 1)[0])
+        self.store.check_job(self.host, self.user, None, sample([
+                             'command1', 'command2', 'command3'], 1)[0])
         self.store.get_notifications()
 
 
@@ -98,9 +97,7 @@ class CronLogTester(RandomTester):
         self.store.log_start(self.host, self.user, None, sample(c, 1)[0])
         self.store.log_finish(self.host, self.user, None, sample(c, 1)[0],
                               1, 'stdout', 'stderr')
-        with self.store.lock:
-            id_ = self.store._check_job(self.host, self.user,
-                                        None, sample(c, 1)[0])
+        id_ = self.store.check_job(self.host, self.user, None, sample(c, 1)[0])
         self.store.log_alarm(id_, -1)
         self.store.get_job_info(id_)
         # Need to add the write_config method when implemented

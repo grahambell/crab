@@ -9,7 +9,7 @@ class CrabDBTestCase(TestCase):
             schema = file.read()
 
         self.store = CrabStoreSQLite(':memory:')
-        self.store.conn.executescript(schema)
+        self.store.lock.conn.executescript(schema)
 
     def tearDown(self):
-        self.store.conn.close()
+        self.store.lock.conn.close()
