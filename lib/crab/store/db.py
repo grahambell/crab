@@ -26,7 +26,7 @@ from crab.store import CrabStore
 
 
 class CrabDBLock():
-    def __init__(self, conn, error_class, cursor_args):
+    def __init__(self, conn, error_class, cursor_args={}):
         self.lock = Lock()
         self.conn = conn
         self.error_class = error_class
@@ -99,7 +99,7 @@ class CrabStoreDB(CrabStore):
     it should be possible to generalize it by altering the queries
     based on the database type where necessary."""
 
-    def __init__(self, conn, error_class, cursor_args={}, outputstore=None):
+    def __init__(self, lock, outputstore=None):
         """Constructor for CrabDB.
 
         Records the reference to the database connection for future reference.
@@ -110,9 +110,8 @@ class CrabStoreDB(CrabStore):
         writing the stdout and stderr from the cron jobs to the database.
         The outputstore should only raise instances of CrabError."""
 
+        self.lock = lock
         self.outputstore = outputstore
-
-        self.lock = CrabDBLock(conn, error_class, cursor_args)
 
     def _get_jobs(self, c, host, user, include_deleted=False,
                   crabid=None, command=None, without_crabid=False):

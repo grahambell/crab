@@ -1,4 +1,4 @@
-# Copyright (C) 2015 East Asian Observatory.
+# Copyright (C) 2015-2016 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ import mysql.connector
 from mysql.connector.errors import DatabaseError
 from mysql.connector.cursor import MySQLCursor
 
-from crab.store.db import CrabStoreDB
+from crab.store.db import CrabStoreDB, CrabDBLock
 
 
 class CrabStoreMySQLCursor(MySQLCursor):
@@ -55,6 +55,8 @@ class CrabStoreMySQL(CrabStoreDB):
             time_zone='+00:00')
 
         CrabStoreDB.__init__(
-            self, conn, error_class=DatabaseError,
-            cursor_args={'cursor_class': CrabStoreMySQLCursor},
+            self,
+            lock=CrabDBLock(
+                conn, error_class=DatabaseError,
+                cursor_args={'cursor_class': CrabStoreMySQLCursor}),
             outputstore=outputstore)

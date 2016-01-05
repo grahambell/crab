@@ -1,5 +1,5 @@
 # Copyright (C) 2012 Science and Technology Facilities Council.
-# Copyright (C) 2015 East Asian Observatory.
+# Copyright (C) 2015-2016 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ import pytz
 
 import sqlite3
 
-from crab.store.db import CrabStoreDB
+from crab.store.db import CrabStoreDB, CrabDBLock
 
 
 class CrabStoreSQLite(CrabStoreDB):
@@ -35,5 +35,7 @@ class CrabStoreSQLite(CrabStoreDB):
         with closing(conn.cursor()) as c:
             c.execute("PRAGMA foreign_keys = ON")
 
-        CrabStoreDB.__init__(self, conn, error_class=sqlite3.DatabaseError,
-                             outputstore=outputstore)
+        CrabStoreDB.__init__(
+            self,
+            lock=CrabDBLock(conn, error_class=sqlite3.DatabaseError),
+            outputstore=outputstore)
