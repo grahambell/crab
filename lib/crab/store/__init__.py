@@ -114,6 +114,39 @@ class CrabStore:
         with self.lock:
             return self._get_job_config(id_)
 
+    def write_job_output(self, finishid, host, user, id_, crabid,
+                         stdout, stderr):
+        """Writes the job output to the store.
+
+        This will use the outputstore's corresponding method if it is defined,
+        otherwise it writes to this store."""
+
+        if self.outputstore is not None:
+            return self.outputstore.write_job_output(
+                finishid, host, user, id_, crabid, stdout, stderr)
+
+        with self.lock:
+            return self._write_job_output(
+                finishid, host, user, id_, crabid, stdout, stderr)
+
+    def get_job_output(self, finishid, host, user, id_, crabid):
+        """Fetches the standard output and standard error for the
+        given finish ID.
+
+        The result is returned as a two element list.  Returns a pair of empty
+        strings if no output is found.
+
+        This will use the outputstore's corresponding method if it is defined,
+        otherwise it reads from this store."""
+
+        if self.outputstore is not None:
+            return self.outputstore.get_job_output(
+                finishid, host, user, id_, crabid)
+
+        with self.lock:
+            return self._get_job_output(
+                finishid, host, user, id_, crabid)
+
     def get_crontab(self, host, user):
         """Fetches the job entries for a particular host and user and builds
         a crontab style representation.
@@ -327,3 +360,19 @@ class CrabStore:
             raise CrabError('store error: failed to identify job')
 
         return id_
+
+    def write_raw_crontab(self, host, user, crontab):
+        if self.outputstore is not None and hasattr(self.outputstore,
+                                                    'write_raw_crontab'):
+            return self.outputstore.write_raw_crontab(host, user, crontab)
+
+        with self.lock:
+            return self._write_raw_crontab(host, user, crontab)
+
+    def get_raw_crontab(self, host, user):
+        if self.outputstore is not None and hasattr(self.outputstore,
+                                                    'get_raw_crontab'):
+            return self.outputstore.get_raw_crontab(host, user)
+
+        with self.lock:
+            return self._get_raw_crontab(host, user)

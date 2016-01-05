@@ -482,20 +482,15 @@ class CrabStoreDB(CrabStore):
                  CrabStatus.CLEARED, CrabStatus.LATE,
                  limit])
 
-    def write_job_output(self, finishid, host, user, id_, crabid,
-                         stdout, stderr):
+    def _write_job_output(self, finishid, host, user, id_, crabid,
+                          stdout, stderr):
         """Writes the job output to the database.
 
-        This method does not require the host, user, or job ID
-        number, but will pass them to the outputstore's corresponding
-        method if it is defined rather than performing this action
-        with the database."""
+        This method does not require the host, user, job ID number or Crab ID,
+        but these arguments are accepted for compatability with stores which
+        may require them."""
 
-        if self.outputstore is not None:
-            return self.outputstore.write_job_output(
-                finishid, host, user, id_, crabid, stdout, stderr)
-
-        with self.lock, closing(self.conn.cursor(**self.cursor_args)) as c:
+        with closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 c.execute('INSERT INTO joboutput (finishid, stdout, stderr) ' +
                           'VALUES (?, ?, ?)',
@@ -504,23 +499,15 @@ class CrabStoreDB(CrabStore):
             except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
 
-    def get_job_output(self, finishid, host, user, id_, crabid):
+    def _get_job_output(self, finishid, host, user, id_, crabid):
         """Fetches the standard output and standard error for the
         given finish ID.
 
-        The result is returned as a two element list.  The parameters
-        host, user and id number are passed on to the outputstore's
-        get_job_output method if an outputstore was provided to the
-        contructor, allowing the outputstore to organise its
-        information hierarchically if desired.  Otherwise this method
-        does not make use of those parameters.  Returns a pair of empty
-        strings if no output is found."""
+        This method does not require the host, user, job ID number or Crab ID,
+        but these arguments are accepted for compatability with stores which
+        may require them."""
 
-        if self.outputstore is not None:
-            return self.outputstore.get_job_output(finishid, host, user,
-                                                   id_, crabid)
-
-        with self.lock, closing(self.conn.cursor(**self.cursor_args)) as c:
+        with closing(self.conn.cursor(**self.cursor_args)) as c:
             try:
                 c.execute('SELECT stdout, stderr FROM joboutput ' +
                           'WHERE finishid=?', [finishid])
@@ -535,40 +522,30 @@ class CrabStoreDB(CrabStore):
             except self.error_class as err:
                 raise CrabError('database error: ' + str(err))
 
-    def write_raw_crontab(self, host, user, crontab):
-        if self.outputstore is not None and hasattr(self.outputstore,
-                                                    'write_raw_crontab'):
-            return self.outputstore.write_raw_crontab(host, user, crontab)
+    def _write_raw_crontab(self, host, user, crontab):
+        entry = self._query_to_dict('SELECT id FROM rawcrontab ' +
+                                    'WHERE host = ? AND user = ?',
+                                    [host, user])
 
-        with self.lock:
-            entry = self._query_to_dict('SELECT id FROM rawcrontab ' +
-                                        'WHERE host = ? AND user = ?',
-                                        [host, user])
+        with closing(self.conn.cursor(**self.cursor_args)) as c:
+            try:
+                if entry is None:
+                    c.execute(
+                        'INSERT INTO rawcrontab (host, user, crontab) '
+                        'VALUES (?, ?, ?)',
+                        [host, user, '\n'.join(crontab)])
+                else:
+                    c.execute(
+                        'UPDATE rawcrontab SET crontab = ? WHERE id = ?',
+                        ['\n'.join(crontab), entry['id']])
 
-            with closing(self.conn.cursor(**self.cursor_args)) as c:
-                try:
-                    if entry is None:
-                        c.execute(
-                            'INSERT INTO rawcrontab (host, user, crontab) '
-                            'VALUES (?, ?, ?)',
-                            [host, user, '\n'.join(crontab)])
-                    else:
-                        c.execute(
-                            'UPDATE rawcrontab SET crontab = ? WHERE id = ?',
-                            ['\n'.join(crontab), entry['id']])
+            except self.error_class as err:
+                raise CrabError('database error: ' + str(err))
 
-                except self.error_class as err:
-                    raise CrabError('database error: ' + str(err))
-
-    def get_raw_crontab(self, host, user):
-        if self.outputstore is not None and hasattr(self.outputstore,
-                                                    'get_raw_crontab'):
-            return self.outputstore.get_raw_crontab(host, user)
-
-        with self.lock:
-            entry = self._query_to_dict('SELECT crontab FROM rawcrontab ' +
-                                        'WHERE host = ? AND user = ?',
-                                        [host, user])
+    def _get_raw_crontab(self, host, user):
+        entry = self._query_to_dict('SELECT crontab FROM rawcrontab ' +
+                                    'WHERE host = ? AND user = ?',
+                                    [host, user])
 
         if entry is None:
             return None
