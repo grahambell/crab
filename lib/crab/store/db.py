@@ -496,6 +496,14 @@ class CrabStoreDB(CrabStore):
                  CrabStatus.CLEARED, CrabStatus.LATE,
                  limit])
 
+    def delete_old_events(self, datetime_):
+        """Delete events older than the given datetime."""
+
+        with self.lock as c:
+            c.execute('DELETE FROM jobalarm WHERE datetime<?', [datetime_])
+            c.execute('DELETE FROM jobstart WHERE datetime<?', [datetime_])
+            c.execute('DELETE FROM jobfinish WHERE datetime<?', [datetime_])
+
     def _write_job_output(self, c, finishid, host, user, id_, crabid,
                           stdout, stderr):
         """Writes the job output to the database.
