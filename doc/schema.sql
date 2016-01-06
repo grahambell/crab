@@ -75,7 +75,7 @@ CREATE TABLE joboutput (
 
     UNIQUE (finishid),
     FOREIGN KEY (finishid) REFERENCES jobfinish(id)
-        ON DELETE RESTRICT ON UPDATE RESTRICT
+        ON DELETE CASCADE ON UPDATE RESTRICT
 )
 -- MySQL: ENGINE=InnoDB
 ;
