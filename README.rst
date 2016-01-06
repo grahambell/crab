@@ -177,6 +177,30 @@ With the server running, the Crab dashboard should be visible from
 a web browser, by default on port 8000.  The Crab clients will use this
 same web service to communicate with the server.
 
+Migrating Job Information
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Crab server has the ability to export and import cron job information,
+including:
+
+* The list of cron jobs.
+* The configuration and notifications attached to each job.
+* General host/user-based notifications.
+* Raw crontabs.
+
+You can write this information to a JSON file using the ``--export``
+option::
+
+    % crabd --export job_information.json
+
+Similarly you can read information with the ``--import`` option::
+
+    % crabd --import job_information.json
+
+This merges the information from the file with the server's existing
+configuration.  You can also give a file name of ``-`` to export
+to standard output or read from standard input.
+
 .. endcrabserver
 
 Monitoring Cron Jobs
