@@ -219,10 +219,12 @@ def main():
         print('Failed to notify job finish.')
         print('ERROR: ' + str(err))
         print('\nRETURN CODE: ' + str(returncode))
-        print('\nSTDOUT:')
-        print(stdoutdata)
-        print('\n\nSTDERR:')
-        print(stderrdata)
+        if stdoutdata != '':
+            print('\nSTDOUT:')
+            print(stdoutdata)
+        if stderrdata != '':
+            print('\nSTDERR:')
+            print(stderrdata)
 
     else:
         # Echo the output only if we didn't already print it due
