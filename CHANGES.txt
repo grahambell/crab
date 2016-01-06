@@ -1,3 +1,21 @@
+0.5.0, in preparation
+
+    - Job configuration expanded to include status patterns and a note.
+      These patterns are regular expressions to be compared to the job output.
+      (A SQLite update script is provided: util/update_2014-07-09.sql.)
+    - Client timeout added for communication with server (Python 2.6+ only).
+    - Ability to "inhibit" the execution of Cron jobs added.
+      (A SQLite update script is provided: util/update_2014-08-05.sql.)
+    - Support for MySQL added as an alternative to SQLite.
+    - Added crabd options to import and export job configuration.
+    - Added 30 second delay before marking jobs as "late".
+    - Check if /etc/localtime is a symlink when trying to guess a client's
+      timezone in case the system has multiple identical timezones.
+    - A new clean service can remove old events from storage.
+      (When job output is stored in the database, this requires a
+      minor schema update.  SQLite and MySQL update scripts are provided:
+      util/update_2016-01-06_sqlite.sql and util/update_2016-01-06_mysql.sql.)
+
 0.4.2, 2014-02-21
 
     - Now support Font Awesome version 4.  Since this version breaks
