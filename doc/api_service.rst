@@ -9,6 +9,14 @@ crab.service
    :member-order: bysource
    :undoc-members:
 
+crab.service.clean
+------------------
+
+.. automodule:: crab.service.clean
+   :members:
+   :member-order: bysource
+   :undoc-members:
+
 crab.service.monitor
 --------------------
 

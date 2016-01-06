@@ -41,6 +41,14 @@ crab.util.schedule
    :member-order: bysource
    :undoc-members:
 
+crab.util.statuspattern
+-----------------------
+
+.. automodule:: crab.util.statuspattern
+   :members:
+   :member-order: bysource
+   :undoc-members:
+
 crab.util.string
 ----------------
 
