@@ -187,6 +187,8 @@ def main():
 
         (stdoutdata, stderrdata) = p.communicate()
         returncode = p.returncode
+        stdoutdata = (latin_1_decode(stdoutdata, 'replace'))[0]
+        stderrdata = (latin_1_decode(stderrdata, 'replace'))[0]
 
         if pidfile is not None:
             pidfile_delete(pidfile)
@@ -196,9 +198,7 @@ def main():
         if returncode:
             status = CrabStatus.FAIL
 
-        client.finish(status,
-                      (latin_1_decode(stdoutdata, 'replace'))[0],
-                      (latin_1_decode(stderrdata, 'replace'))[0])
+        client.finish(status, stdoutdata, stderrdata)
 
     # except OSError as err:
     except OSError:
