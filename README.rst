@@ -148,6 +148,14 @@ file.  This allows the output from cron jobs and raw crontab files
 to be stored separately, and can be used to prevent the main
 database from becoming excessively large.
 
+If you would like to have Crab delete the history of job events over
+a certain age, you can have it run a cleaning service by enabling the
+``[clean]`` section of the server configuration file.  Here you can
+select the cleaning schedule and length of history to keep.  A fairly
+frequent cleaning schedule is recommended to avoid the accumulation
+of a large number of old events so that each cleaning operation does
+not take long.
+
 Running
 ~~~~~~~
 
