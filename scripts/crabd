@@ -23,6 +23,7 @@ import os
 import sys
 
 from crab.notify import CrabNotify
+from crab.service.clean import CrabCleanService
 from crab.service.monitor import CrabMonitor
 from crab.service.notify import CrabNotifyService
 # crab.web.rss imports the optional PyRSS2Gen requirement
@@ -98,6 +99,9 @@ def main():
                 export_config(store=store, file_=file_)
         return
 
+    # Create dictionary of services to be passed to the CrabWeb constructor.
+    service = {}
+
     # Set a default timezone: applies to times shown in
     # notifications and on the web interface.
     CrabEventFilter.set_default_timezone(config['notify']['timezone'])
@@ -105,6 +109,7 @@ def main():
     monitor = CrabMonitor(store)
     monitor.daemon = True
     monitor.start()
+    service['Monitor'] = monitor
 
     # Pass whole configuration to CrabNotify to allow it to
     # construct notification method objects.
@@ -113,16 +118,21 @@ def main():
     notify = CrabNotifyService(config['notify'], store, notifier)
     notify.daemon = True
     notify.start()
+    service['Notification'] = notify
+
+    # Construct cleaning service if requested.
+    if 'clean' in config:
+        clean = CrabCleanService(config['clean'], store)
+        clean.daemon = True
+        clean.start()
+        service['Clean'] = clean
 
     cherrypy.config.update(config)
 
     cherrypy.tree.mount(
         CrabWeb(store, monitor,
                 config['crab']['home'],
-                {
-                    'Monitor': monitor,
-                    'Notification': notify,
-                },
+                service,
                 {
                     'rss_enabled': (CrabRSS is not None),
                 }),
