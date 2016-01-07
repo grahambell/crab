@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 # Copyright (C) 2012-2013 Science and Technology Facilities Council.
+# Copyright (C) 2016 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -83,17 +84,7 @@ def main():
 
     # Check CRABIGNORE variable from command if present.
 
-    if 'CRABIGNORE' in vars and true_string(vars['CRABIGNORE']):
-        try:
-            return subprocess.call([shell, '-c', command], env=env,
-                                   **subprocess_options)
-
-        except OSError:
-            err = sys.exc_info()[1]
-            print('crabsh (' + shell + '): ' + command)
-            print('ERROR: ' + str(err))
-
-            return 1
+    ignore = ('CRABIGNORE' in vars and true_string(vars['CRABIGNORE']))
 
     # Look for cron job ID
     #
@@ -109,7 +100,12 @@ def main():
     elif 'CRABID' in vars:
         crabid = vars['CRABID']
 
-    # Look for PID file setting
+    # Prepare Crab client options -- will be passed to client constructor
+    # when needed.
+
+    client_options = {'command': command, 'crabid': crabid}
+
+    # Check for presence of PID file, if a PID file has been configured,
 
     pidfile = None
 
@@ -118,124 +114,146 @@ def main():
     elif 'CRABPIDFILE' in vars:
         pidfile = vars['CRABPIDFILE']
 
-    # Attempt to execute the command
-
-    client = CrabClient(command, crabid=crabid)
-
     if pidfile is not None:
         if pidfile_running(pidfile):
-            try:
-                client.finish(CrabStatus.ALREADYRUNNING)
-            except CrabError:
-                err = sys.exc_info()[1]
-                print('crabsh: ' + command)
-                print('Failed to notify job already running.')
-                print('ERROR: ' + str(err) + '\n')
-
-            return 0
-
-    try:
-        response = client.start()
-
-        # If the server sent an inhibit response, check the config to
-        # see whether crabsh.allow_inhibit is on or not.
-        if response.get('inhibit', False):
-            allow_inhibit = True
-            try:
-                allow_inhibit = true_string(
-                        client.config.get('crabsh', 'allow_inhibit'))
-            except:
-                # The configuration key might have been missing -- since this
-                # is a crabsh-specific option, the crab client will not have
-                # ensured it is present.
-                pass
-
-            if allow_inhibit:
+            # Only report "already running" status when not in "ignore" mode.
+            if not ignore:
                 try:
-                    client.finish(CrabStatus.INHIBITED)
-                # except CrabError as err:
+                    client = CrabClient(**client_options)
+                    client.finish(CrabStatus.ALREADYRUNNING)
                 except CrabError:
                     err = sys.exc_info()[1]
                     print('crabsh: ' + command)
-                    print('Failed to acknowledge inhibited job.')
+                    print('Failed to notify job already running.')
                     print('ERROR: ' + str(err) + '\n')
 
-                return 0
+            return 0
 
-    # except CrabError as err:
-    except CrabError:
-        err = sys.exc_info()[1]
-        print('crabsh: ' + command)
-        print('Failed to notify job start.')
-        print('ERROR: ' + str(err) + '\n')
+        # Write PID file based on our PID.  (Changed in version 0.5.0:
+        # previously we wrote the PID of the child process.)
+        pidfile_write(pidfile, os.getpid())
 
-    returncode = None
+    # Begin try-finally block to try to ensure PID file is deleted at end.
 
     try:
-        p = subprocess.Popen([shell, '-c', command],
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             env=env,
-                             **subprocess_options)
 
-        if pidfile is not None:
-            # Add a short delay before creating the PID file in case
-            # the cmdline which pidfile_write uses changes when the
-            # shell starts running the command.
-            time.sleep(5)
-            pidfile_write(pidfile, p.pid)
+        # In "ignore" mode, simply run the command directly (i.e. without
+        # redirecting stdout and stderr).
 
-        (stdoutdata, stderrdata) = p.communicate()
-        returncode = p.returncode
-        stdoutdata = (latin_1_decode(stdoutdata, 'replace'))[0]
-        stderrdata = (latin_1_decode(stderrdata, 'replace'))[0]
+        if ignore:
+            try:
+                return subprocess.call([shell, '-c', command], env=env,
+                                       **subprocess_options)
 
+            except OSError:
+                err = sys.exc_info()[1]
+                print('crabsh (' + shell + '): ' + command)
+                print('ERROR: ' + str(err))
+
+                return 1
+
+        # Otherwise attempt to execute the command with notifications sent
+        # to the Crab server.
+
+        client = CrabClient(**client_options)
+
+        try:
+            response = client.start()
+
+            # If the server sent an inhibit response, check the config to
+            # see whether crabsh.allow_inhibit is on or not.
+            if response.get('inhibit', False):
+                allow_inhibit = True
+                try:
+                    allow_inhibit = true_string(
+                            client.config.get('crabsh', 'allow_inhibit'))
+                except:
+                    # The configuration key might have been missing -- since
+                    # this is a crabsh-specific option, the crab client will
+                    # not have ensured it is present.
+                    pass
+
+                if allow_inhibit:
+                    try:
+                        client.finish(CrabStatus.INHIBITED)
+                    # except CrabError as err:
+                    except CrabError:
+                        err = sys.exc_info()[1]
+                        print('crabsh: ' + command)
+                        print('Failed to acknowledge inhibited job.')
+                        print('ERROR: ' + str(err) + '\n')
+
+                    return 0
+
+        # except CrabError as err:
+        except CrabError:
+            err = sys.exc_info()[1]
+            print('crabsh: ' + command)
+            print('Failed to notify job start.')
+            print('ERROR: ' + str(err) + '\n')
+
+        returncode = None
+
+        try:
+            p = subprocess.Popen([shell, '-c', command],
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 env=env,
+                                 **subprocess_options)
+
+            (stdoutdata, stderrdata) = p.communicate()
+            returncode = p.returncode
+            stdoutdata = (latin_1_decode(stdoutdata, 'replace'))[0]
+            stderrdata = (latin_1_decode(stderrdata, 'replace'))[0]
+
+            status = CrabStatus.SUCCESS
+
+            if returncode:
+                status = CrabStatus.FAIL
+
+            client.finish(status, stdoutdata, stderrdata)
+
+        # except OSError as err:
+        except OSError:
+            err = sys.exc_info()[1]
+            try:
+                client.finish(CrabStatus.COULDNOTSTART, str(err))
+            except CrabError:
+                print('crabsh (' + shell + '): ' + command)
+                print('Failed to notify that job could not start.')
+                print('ERROR: ' + str(err))
+
+        # except CrabError as err:
+        except CrabError:
+            err = sys.exc_info()[1]
+            # Print fall-back message for cron to send by email (to the
+            # crontab owner or address set its MAILTO variable.
+            print('crabsh: ' + command)
+            print('Failed to notify job finish.')
+            print('ERROR: ' + str(err))
+            print('\nRETURN CODE: ' + str(returncode))
+            if stdoutdata != '':
+                print('\nSTDOUT:')
+                print(stdoutdata)
+            if stderrdata != '':
+                print('\nSTDERR:')
+                print(stderrdata)
+
+        else:
+            # Echo the output only if we didn't already print it due
+            # to an exception occurring.
+            if ('CRABECHO' in vars) and true_string(vars['CRABECHO']):
+                if stdoutdata != '':
+                    print(stdoutdata)
+                if stderrdata != '':
+                    if stdoutdata != '':
+                        print('\n\nStandard Error:\n')
+                    print(stderrdata)
+
+    finally:
         if pidfile is not None:
             pidfile_delete(pidfile)
 
-        status = CrabStatus.SUCCESS
-
-        if returncode:
-            status = CrabStatus.FAIL
-
-        client.finish(status, stdoutdata, stderrdata)
-
-    # except OSError as err:
-    except OSError:
-        err = sys.exc_info()[1]
-        try:
-            client.finish(CrabStatus.COULDNOTSTART, str(err))
-        except CrabError:
-            print('crabsh (' + shell + '): ' + command)
-            print('Failed to notify that job could not start.')
-            print('ERROR: ' + str(err))
-
-    # except CrabError as err:
-    except CrabError:
-        err = sys.exc_info()[1]
-        # Print fall-back message for cron to send by email (to the
-        # crontab owner or address set its MAILTO variable.
-        print('crabsh: ' + command)
-        print('Failed to notify job finish.')
-        print('ERROR: ' + str(err))
-        print('\nRETURN CODE: ' + str(returncode))
-        if stdoutdata != '':
-            print('\nSTDOUT:')
-            print(stdoutdata)
-        if stderrdata != '':
-            print('\nSTDERR:')
-            print(stderrdata)
-
-    else:
-        # Echo the output only if we didn't already print it due
-        # to an exception occurring.
-        if ('CRABECHO' in vars) and true_string(vars['CRABECHO']):
-            if stdoutdata != '':
-                print(stdoutdata)
-            if stderrdata != '':
-                if stdoutdata != '':
-                    print('\n\nStandard Error:\n')
-                print(stderrdata)
 
 if __name__ == "__main__":
     main()

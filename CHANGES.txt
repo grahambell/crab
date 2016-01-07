@@ -15,6 +15,9 @@
       (When job output is stored in the database, this requires a
       minor schema update.  SQLite and MySQL update scripts are provided:
       util/update_2016-01-06_sqlite.sql and util/update_2016-01-06_mysql.sql.)
+    - Wrapper shell crabsh now writes its own PID to the pidfile immediately
+      (rather than that of the child process after a 5 second delay)
+      and also now applies the pidfile check even when CRABIGNORE is set.
 
 0.4.2, 2014-02-21
 
