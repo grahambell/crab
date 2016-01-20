@@ -154,7 +154,13 @@ a certain age, you can have it run a cleaning service by enabling the
 select the cleaning schedule and length of history to keep.  A fairly
 frequent cleaning schedule is recommended to avoid the accumulation
 of a large number of old events so that each cleaning operation does
-not take long.
+not take long.  If the file output store is being used, the cleaning
+service will remove only the event records and not the output
+text.  You can remove old output text separately, for example by running
+in your output store directory::
+
+    % find output -type f -mtime +90 -delete
+    % find output -type d -empty -delete
 
 Running
 ~~~~~~~
