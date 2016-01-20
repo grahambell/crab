@@ -29,7 +29,7 @@ from mako.template import Template
 
 from crab import CrabError, CrabStatus
 from crab.util.filter import CrabEventFilter
-from crab.util.string import format_datetime, parse_datetime
+from crab.util.datetime import format_datetime, parse_datetime
 
 
 def empty_to_none(value):
