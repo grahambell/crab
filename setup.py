@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
 import os
+import sys
 from distutils.core import setup
+
+sys.path.append('lib')
+from crab.version import version
 
 with open('README.rst') as file:
     long_description = file.read()
@@ -58,7 +62,7 @@ def find_files(inst, base=None, path=[]):
 
 setup(
     name='crab',
-    version='0.4.2',
+    version=version,
     author='Graham Bell',
     author_email='g.bell@eaobservatory.org',
     url='http://github.com/grahambell/crab',
