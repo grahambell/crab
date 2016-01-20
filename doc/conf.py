@@ -41,7 +41,9 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'Crab'
-copyright = u'2012-2014, Science and Technology Facilities Council'
+copyright = \
+    u'2015-2016, East Asian Observatory, ' \
+    u'2012-2014, Science and Technology Facilities Council'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
