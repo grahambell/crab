@@ -472,6 +472,20 @@ success pattern was defined.  If the success pattern does not match
 then the status will be failure if the was no failure pattern
 or unknown if there was a failure pattern which did not match.
 
+The "Inhibit execution" checkbox can be use to temporarily
+request that a job not be run.  This setting is stored in
+the Crab server and passed to the client when it reports
+that a job is being started.  Note that there is no guarantee
+that the job will not be run while this option is selected: the
+client could fail to connect to the server before
+starting the job, or it could choose to ignore the
+inhibit setting.  The ``crabsh`` wrapper shell reads a
+configuration parameter ``allow_inhibit`` from the ``crabsh``
+section of the ``cran.ini`` file to determine whether
+inhibit requests should be honored.  (The default value
+is true, i.e. it will not run the job if it receives the
+inhibit flag in response to its job starting message.)
+
 The job configuration page also allows jobs to be marked as deleted.
 Normally this would be done by importing a new crontab without that
 job in it, but having this available on the web interface is useful
