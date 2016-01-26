@@ -25,8 +25,8 @@ Packages
 ~~~~~~~~
 
 * `crontab`_ (0.15 or newer)
-* `CherryPy`_ (`PyPI entry <CherryPy PyPI_>`_)
-* `Mako`_ (`PyPI entry <Mako PyPI_>`_)
+* `CherryPy`_ (`PyPI entry <http://pypi.python.org/pypi/CherryPy>`__)
+* `Mako`_ (`PyPI entry <http://pypi.python.org/pypi/Mako/>`__)
 * `jQuery`_
 * `PyRSS2Gen`_ (optional)
 * `Font Awesome`_ (optional)
@@ -35,9 +35,7 @@ Packages
 
 .. _`crontab`: http://pypi.python.org/pypi/crontab/
 .. _`CherryPy`: http://www.cherrypy.org/
-.. _`CherryPy PyPI`: http://pypi.python.org/pypi/CherryPy
 .. _`Mako`: http://www.makotemplates.org/
-.. _`Mako PyPI`: http://pypi.python.org/pypi/Mako/
 .. _`jQuery`: http://jquery.com/
 .. _`PyRSS2Gen`: http://pypi.python.org/pypi/PyRSS2Gen/
 .. _`Font Awesome`: http://fortawesome.github.com/Font-Awesome
