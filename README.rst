@@ -31,6 +31,7 @@ Packages
 * `PyRSS2Gen`_ (optional)
 * `Font Awesome`_ (optional)
 * `ansi_up`_ (optional)
+* `MySQL Connector`_ (needed only if using a MySQL database)
 
 .. _`crontab`: http://pypi.python.org/pypi/crontab/
 .. _`CherryPy`: http://www.cherrypy.org/
@@ -41,6 +42,7 @@ Packages
 .. _`PyRSS2Gen`: http://pypi.python.org/pypi/PyRSS2Gen/
 .. _`Font Awesome`: http://fortawesome.github.com/Font-Awesome
 .. _`ansi_up`: https://github.com/drudru/ansi_up
+.. _`MySQL Connector`: http://dev.mysql.com/downloads/connector/python/
 
 Python Version
 ~~~~~~~~~~~~~~
