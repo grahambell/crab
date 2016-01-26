@@ -533,6 +533,24 @@ configured by host name and/or by user name.  Notifications
 will include any jobs where the host and user match the specified
 values, but if either is left blank, then it will match all entries.
 
+Additional Job Actions
+~~~~~~~~~~~~~~~~~~~~~~
+
+Depending on the state of a job, additional links may appear
+below the summary on the job information page.
+These are:
+
+* "Clear status": this appears when the job is in a warning or
+  error state.
+  Selecting this option sets the job state to "Cleared",
+  which you can use to acknowledge the problem.
+  The job's status will then be shown in green on the dashboard.
+
+* "Resume inhibited job": this appears when the inhibit setting
+  has been selected on the job configuration page.
+  The link provides a convenient means of removing the
+  inhibit setting.
+
 .. endcrabweb
 
 Screenshots
