@@ -436,7 +436,21 @@ Job Configuration
 ~~~~~~~~~~~~~~~~~
 
 Below the summary on the job information page, there is a link
-allowing the job's configuration to be edited.  The grace period
+allowing the job's configuration to be edited.
+If a job is deleted, then its configuration is considered to be
+orphaned.  In this case, when configuring a job for which
+no configuration exists, the system will offer a list of
+orphaned configurations for re-linking.  This should be used
+when the job is actually the continuation of a previous job.
+Note that notifications which are attached to specific jobs
+are linked via the configuration.  Therefore re-linking the
+configuration will re-attach all associated notifications.
+
+However this problem can generally be avoided by giving the jobs
+suitable names via the ``CRABID`` parameter.  Crab will then be able
+to recognize jobs by name even if the command string changes.
+
+The grace period
 specifies how close to the scheduled time the job must start
 in order not to be considered missed.  The time-out is the
 maximum expected duration of the job.  If it runs for longer
@@ -457,19 +471,6 @@ match then the status is logged as it was reported, unless a
 success pattern was defined.  If the success pattern does not match
 then the status will be failure if the was no failure pattern
 or unknown if there was a failure pattern which did not match.
-
-If a job is deleted, then its configuration is considered to be
-orphaned.  In this case, when configuring a job for which
-no configuration exists, the system will offer a list of
-orphaned configurations for re-linking.  This should be used
-when the job is actually the continuation of a previous job.
-Note that notifications which are attached to specific jobs
-are linked via the configuration.  Therefore re-linking the
-configuration will re-attach all associated notifications.
-
-However this problem can generally be avoided by giving the jobs
-suitable names via the ``CRABID`` parameter.  Crab will then be able
-to recognize jobs by name even if the command string changes.
 
 The job configuration page also allows jobs to be marked as deleted.
 Normally this would be done by importing a new crontab without that
