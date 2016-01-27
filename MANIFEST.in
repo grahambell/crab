@@ -4,3 +4,7 @@ include test/*.py
 include util/fromoutputstore.py
 include util/tooutputstore.py
 include util/update_2012-10-15.sql
+include util/update_2014-07-09.sql
+include util/update_2014-08-05.sql
+include util/update_2016-01-06_mysql.sql
+include util/update_2016-01-06_sqlite.sql

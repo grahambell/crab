@@ -1,4 +1,4 @@
-0.5.0, in preparation
+0.5.0, 2016-01-27
 
     - Job configuration expanded to include status patterns and a note.
       These patterns are regular expressions to be compared to the job output.
