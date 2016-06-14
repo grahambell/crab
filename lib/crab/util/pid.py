@@ -1,4 +1,5 @@
 # Copyright (C) 2013 Science and Technology Facilities Council.
+# Copyright (C) 2016 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -41,7 +42,12 @@ def pidfile_write(pidfile, pid):
 
 
 def pidfile_running(pidfile):
-    """Read the pidfile specified and check if the process is running."""
+    """Read the pidfile specified and check if the process is running.
+
+    If the pidfile was found then its timestamps are updated
+    (using `os.utime`).  This is to try to avoid the pidfile being
+    automatically removed from temporary directories if a job
+    runs for a very long time."""
 
     f = None
 
@@ -56,6 +62,11 @@ def pidfile_running(pidfile):
     finally:
         if f is not None:
             f.close()
+
+            try:
+                os.utime(pidfile, None)
+            except:
+                pass
 
 
 def pidfile_delete(pidfile):
