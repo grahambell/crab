@@ -4,7 +4,7 @@ import os
 import sys
 from distutils.core import setup
 
-sys.path.append('lib')
+sys.path.insert(0, 'lib')
 from crab.version import version
 
 with open('README.rst') as file:
