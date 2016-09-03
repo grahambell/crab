@@ -11,15 +11,25 @@ class CrontabTestCase(TestCase):
             'CRON_TZ=Europe/Berlin',
             '* * * * * CRABID=job_one command_one',
             '0 15 * * * command_two',
+            '0 0 1 4 * date +\%Y\%m\%d',
+            '59 23 12 31 * echo%a\%b%c\%d',
         ]
 
         (jobs, warnings) = parse_crontab(crontab_orig)
 
         self.assertEqual(jobs, [
             {'crabid': 'job_one', 'command': 'command_one',
-             'time': '* * * * *', 'timezone': 'Europe/Berlin'},
+             'time': '* * * * *', 'timezone': 'Europe/Berlin',
+             'input': None},
             {'crabid': None, 'command': 'command_two',
-             'time': '0 15 * * *', 'timezone': 'Europe/Berlin'},
+             'time': '0 15 * * *', 'timezone': 'Europe/Berlin',
+             'input': None},
+            {'crabid': None, 'command': 'date +%Y%m%d',
+             'time': '0 0 1 4 *', 'timezone': 'Europe/Berlin',
+             'input': None},
+            {'crabid': None, 'command': 'echo',
+             'time': '59 23 12 31 *', 'timezone': 'Europe/Berlin',
+             'input': 'a%b\nc%d'},
         ])
 
         self.assertEqual(warnings, [])

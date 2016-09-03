@@ -25,6 +25,7 @@ blankline = re.compile('^\s*$')
 comment = re.compile('^\s*#')
 variable = re.compile('^\s*(\w+)\s*=\s*(.*)$')
 cronrule = re.compile('^\s*(@\w+|\S+\s+\S+\s+\S+\s+\S+\s+\S+)\s+(.*)$')
+plain_percent = re.compile('(?<!\\\\)%')
 
 
 def parse_crontab(crontab, timezone=None):
@@ -55,22 +56,35 @@ def parse_crontab(crontab, timezone=None):
 
         m = cronrule.search(job)
         if m is not None:
-            (time, command) = m.groups()
+            (time, full_command) = m.groups()
+
+            # Process percent signs in command (indicating command input
+            # and line breaks).
+            input_lines = plain_percent.split(full_command)
+            command = input_lines.pop(0).rstrip().replace('\%', '%')
+
+            if input_lines:
+                input_ = '\n'.join(x.replace('\%', '%') for x in input_lines)
+            else:
+                input_ = None
+
+            # Process embedded environment variables.
             (command, jobvars) = split_crab_vars(command)
             vars = env.copy()
             vars.update(jobvars)
 
+            # Skip this job if CRABIGNORE is set, otherwise add it
+            # to the jobs list.
             if 'CRABIGNORE' in vars:
                 if true_string(vars['CRABIGNORE']):
                     continue
-
-            command = command.rstrip()
 
             jobs.append({
                 'crabid': vars.get('CRABID'),
                 'command': command,
                 'time': time,
                 'timezone': timezone,
+                'input': input_,
             })
 
             continue
@@ -116,6 +130,14 @@ def write_crontab(jobs):
         if job['crabid'] is not None:
             command = ('CRABID=' + quote_multiword(job['crabid']) +
                        ' ' + command)
+
+        # Process percent signs in the command, and add input if present.
+        command = command.replace('%', '\%')
+
+        input_ = job.get('input')
+        if input_ is not None:
+            command += '%' + '%'.join(
+                x.replace('%', '\%') for x in input_.splitlines())
 
         crontab.append(time + ' ' + command)
 
