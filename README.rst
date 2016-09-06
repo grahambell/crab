@@ -337,6 +337,10 @@ command string, but they must precede any other variables.
 Environment Variables
 ~~~~~~~~~~~~~~~~~~~~~
 
+CRABCLIENTHOSTNAME
+    The host name to be used by Crab clients to identify themselves,
+    overriding any value in the configuration files.
+
 CRABECHO
     If present and not set to 0/no/off/false then ``crabsh`` will print out
     the standard output and standard error it receives from the cron job.
@@ -387,6 +391,10 @@ CRABSYSCONFIG
 CRABUSERCONFIG
     A directory to search for user-level configuration files.  If not
     set then ~/.crab will be used.
+
+CRABUSERNAME
+    The user name to be used by Crab clients to identify themselves,
+    overriding any value in the configuration files.
 
 CRON_TZ
     Cron reads this variable to know in which timezone to interpret

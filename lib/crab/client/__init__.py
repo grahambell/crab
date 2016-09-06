@@ -85,6 +85,10 @@ class CrabClient:
             self.config.set('server', 'host', env['CRABHOST'])
         if 'CRABPORT' in env:
             self.config.set('server', 'port', env['CRABPORT'])
+        if 'CRABUSERNAME' in env:
+            self.config.set('client', 'username', env['CRABUSERNAME'])
+        if 'CRABCLIENTHOSTNAME' in env:
+            self.config.set('client', 'hostname', env['CRABCLIENTHOSTNAME'])
 
         # Add computed defaults for some values if they have not already
         # been determined.  This avoids the need to perform these operations
