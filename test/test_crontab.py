@@ -13,6 +13,7 @@ class CrontabTestCase(TestCase):
             '0 15 * * * command_two',
             '0 0 1 4 * date +\%Y\%m\%d',
             '59 23 12 31 * echo%a\%b%c\%d',
+            '1 2 3 4 * CRABID=cal CRABCLIENTHOSTNAME=b CRABUSERNAME=a cal',
         ]
 
         (jobs, warnings) = parse_crontab(crontab_orig)
@@ -20,16 +21,20 @@ class CrontabTestCase(TestCase):
         self.assertEqual(jobs, [
             {'crabid': 'job_one', 'command': 'command_one',
              'time': '* * * * *', 'timezone': 'Europe/Berlin',
-             'input': None},
+             'input': None, 'vars': {}},
             {'crabid': None, 'command': 'command_two',
              'time': '0 15 * * *', 'timezone': 'Europe/Berlin',
-             'input': None},
+             'input': None, 'vars': {}},
             {'crabid': None, 'command': 'date +%Y%m%d',
              'time': '0 0 1 4 *', 'timezone': 'Europe/Berlin',
-             'input': None},
+             'input': None, 'vars': {}},
             {'crabid': None, 'command': 'echo',
              'time': '59 23 12 31 *', 'timezone': 'Europe/Berlin',
-             'input': 'a%b\nc%d'},
+             'input': 'a%b\nc%d', 'vars': {}},
+            {'crabid': 'cal', 'command': 'cal',
+             'time': '1 2 3 4 *', 'timezone': 'Europe/Berlin',
+             'input': None,
+             'vars': {'CRABCLIENTHOSTNAME': 'b', 'CRABUSERNAME': 'a'}},
         ])
 
         self.assertEqual(warnings, [])

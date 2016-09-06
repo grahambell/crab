@@ -70,21 +70,24 @@ def parse_crontab(crontab, timezone=None):
 
             # Process embedded environment variables.
             (command, jobvars) = split_crab_vars(command)
-            vars = env.copy()
-            vars.update(jobvars)
+            vars_ = env.copy()
+            vars_.update(jobvars)
 
             # Skip this job if CRABIGNORE is set, otherwise add it
             # to the jobs list.
-            if 'CRABIGNORE' in vars:
-                if true_string(vars['CRABIGNORE']):
+            if 'CRABIGNORE' in vars_:
+                if true_string(vars_['CRABIGNORE']):
                     continue
 
+            crabid = vars_.pop('CRABID', None)
+
             jobs.append({
-                'crabid': vars.get('CRABID'),
+                'crabid': crabid,
                 'command': command,
                 'time': time,
                 'timezone': timezone,
                 'input': input_,
+                'vars': vars_,
             })
 
             continue
@@ -125,14 +128,23 @@ def write_crontab(jobs):
             crontab.append('### CRAB: UNKNOWN TIMEZONE ###')
             timezone = None
 
-        # Include the crabid in the command if present.
-        command = job['command']
+        # Build the command string via a list of parts.
+        command = []
+
+        # Include the crabid in if present.
         if job['crabid'] is not None:
-            command = ('CRABID=' + quote_multiword(job['crabid']) +
-                       ' ' + command)
+            command.append('CRABID=' + quote_multiword(job['crabid']))
+
+        # Include additional variables, if "vars" is present in the job.
+        vars_ = job.get('vars')
+        if vars_ is not None:
+            for var in sorted(vars_.keys()):
+                command.append(var + '=' + quote_multiword(vars_[var]))
+
+        command.append(job['command'])
 
         # Process percent signs in the command, and add input if present.
-        command = command.replace('%', '\%')
+        command = ' '.join(command).replace('%', '\%')
 
         input_ = job.get('input')
         if input_ is not None:
