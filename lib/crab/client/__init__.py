@@ -68,21 +68,32 @@ class CrabClient:
         self.config.set('server', 'port', '8000')
         self.config.set('server', 'timeout', '30')
         self.config.add_section('client')
-        self.config.set('client', 'hostname', socket.gethostname())
-        self.config.set('client', 'username', pwd.getpwuid(os.getuid())[0])
 
         env = os.environ
+
+        # Read configuration files -- first system and then user.
         sysconfdir = env.get('CRABSYSCONFIG', '/etc/crab')
         userconfdir = env.get('CRABUSERCONFIG', os.path.expanduser('~/.crab'))
 
         self.configfiles = self.config.read([
-                          os.path.join(sysconfdir, 'crab.ini'),
-                          os.path.join(userconfdir, 'crab.ini')])
+            os.path.join(sysconfdir, 'crab.ini'),
+            os.path.join(userconfdir, 'crab.ini')])
 
+        # Override configuration as specified by environment variables.
         if 'CRABHOST' in env:
             self.config.set('server', 'host', env['CRABHOST'])
         if 'CRABPORT' in env:
             self.config.set('server', 'port', env['CRABPORT'])
+
+        # Add computed defaults for some values if they have not already
+        # been determined.  This avoids the need to perform these operations
+        # if the value is already known and would allow the way in which this
+        # is done to be customized based on other values.
+        if not self.config.has_option('client', 'hostname'):
+            self.config.set('client', 'hostname', socket.gethostname())
+
+        if not self.config.has_option('client', 'username'):
+            self.config.set('client', 'username', pwd.getpwuid(os.getuid())[0])
 
     def start(self):
         """Notify the server that the job is starting.
