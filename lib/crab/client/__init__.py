@@ -68,6 +68,7 @@ class CrabClient:
         self.config.set('server', 'port', '8000')
         self.config.set('server', 'timeout', '30')
         self.config.add_section('client')
+        self.config.set('client', 'use_fqdn', 'false')
 
         env = os.environ
 
@@ -90,7 +91,11 @@ class CrabClient:
         # if the value is already known and would allow the way in which this
         # is done to be customized based on other values.
         if not self.config.has_option('client', 'hostname'):
-            self.config.set('client', 'hostname', socket.gethostname())
+            if self.config.getboolean('client', 'use_fqdn'):
+                self.config.set('client', 'hostname', socket.getfqdn())
+            else:
+                self.config.set('client', 'hostname',
+                                socket.gethostname().split('.', 1)[0])
 
         if not self.config.has_option('client', 'username'):
             self.config.set('client', 'username', pwd.getpwuid(os.getuid())[0])
