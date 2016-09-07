@@ -1,4 +1,5 @@
 # Copyright (C) 2012-2013 Science and Technology Facilities Council.
+# Copyright (C) 2016 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +23,7 @@ from smtplib import SMTP
 
 from crab.report.text import report_to_text
 from crab.report.html import report_to_html
+from crab.report.summary import report_to_summary
 
 
 class CrabNotifyEmail:
@@ -50,6 +52,8 @@ class CrabNotifyEmail:
             subject = self.subject_warning
         else:
             subject = self.subject_ok
+
+        subject += ' (' + report_to_summary(report) + ')'
 
         message = MIMEMultipart('alternative')
         message['Subject'] = subject
