@@ -88,6 +88,7 @@ def parse_crontab(crontab, timezone=None):
                 'timezone': timezone,
                 'input': input_,
                 'vars': vars_,
+                'rule': job,
             })
 
             continue

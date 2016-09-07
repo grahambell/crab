@@ -156,13 +156,18 @@ class CrabStore:
 
         return write_crontab(jobs)
 
-    def save_crontab(self, host, user, crontab, timezone=None):
+    def save_crontab(self, host, user, crontab, timezone=None,
+                     allow_filter=True):
         """Takes a list of crontab lines and uses them to update the job records.
 
         It looks for the CRABID and CRON_TZ variables, but otherwise
         ignores everything except command lines.  It also checks for commands
         starting with a CRABID= definition, but otherwise inserts them
         into the database as is.
+
+        If "allow_filter" is True (as is the default) then cron jobs are
+        skipped if they have a specified user name or client host name
+        which does not match the given host or user name.
 
         Returns a list of warning strings."""
 
@@ -182,13 +187,28 @@ class CrabStore:
         idsaved = set()
         with self.lock as c:
             for job in jobs:
+                if allow_filter:
+                    vars_ = job['vars']
+
+                    vars_hostname = vars_.get('CRABCLIENTHOSTNAME')
+                    if (vars_hostname is not None) and (vars_hostname != host):
+                        warning.append(
+                            'Skipped job for other hostname: ' + job['rule'])
+                        continue
+
+                    vars_username = vars_.get('CRABUSERNAME')
+                    if (vars_username is not None) and (vars_username != user):
+                        warning.append(
+                            'Skipped job for other user: ' + job['rule'])
+                        continue
+
                 id_ = self._check_job(
                     c, host, user, job['crabid'],
                     job['command'], job['time'], job['timezone'])
 
                 if id_ in idsaved:
                     warning.append(
-                        'Indistinguishable duplicated job: ' + job)
+                        'Indistinguishable duplicated job: ' + job['rule'])
                 else:
                     idsaved.add(id_)
 
