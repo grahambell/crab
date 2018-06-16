@@ -192,7 +192,7 @@ function dashboardSorter(keyfield) {
         }
 
         $('#joblisthead span').removeClass();
-        $('#preheading' + keyfield).addClass('fa fa-sort-' + (sortdirection > 0 ? 'desc' : 'asc'));
+        $('#preheading' + keyfield).addClass('fa fa-sort-' + (sortdirection > 0 ? 'down' : 'up'));
 
         sortdirection = - sortdirection;
         sortByStatus = false;

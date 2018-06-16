@@ -1,3 +1,9 @@
+Next release
+    - Now support Font Awesome version 5.  Existing installations of
+      the Crab server being updated will also need an updated Font
+      Awesome, including renaming the res/fonts directory again to
+      res/webfonts.
+
 0.5.0, 2016-01-27
 
     - Job configuration expanded to include status patterns and a note.

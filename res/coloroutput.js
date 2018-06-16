@@ -19,7 +19,7 @@ $(document).ready(function () {
                 var colorlink = $.parseHTML(
                     '<a href="#"><span class="fa fa-adjust"></span> Display ANSI colors.</a>');
                 var invertlink = $.parseHTML(
-                    '<a href="#"><span class="fa fa-exchange"></span> Invert colors.</a>');
+                    '<a href="#"><span class="fa fa-exchange-alt"></span> Invert colors.</a>');
                 joboutput.before(colorpara);
                 joboutput.before(invertpara);
                 $(colorpara).append(colorlink);
