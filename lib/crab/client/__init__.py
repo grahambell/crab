@@ -29,6 +29,7 @@ import pwd
 import re
 import socket
 import sys
+from time import sleep
 # urllib.quote moved into urllib.parse.quote in Python 3
 try:
     from urllib.parse import quote as urlquote
@@ -67,6 +68,8 @@ class CrabClient:
         self.config.set('server', 'host', 'localhost')
         self.config.set('server', 'port', '8000')
         self.config.set('server', 'timeout', '30')
+        self.config.set('server', 'max_tries', '1')
+        self.config.set('server', 'retry_delay', '5')
         self.config.add_section('client')
         self.config.set('client', 'use_fqdn', 'false')
 
@@ -180,17 +183,39 @@ class CrabClient:
         # Python, we must catch the TypeError and construct the object
         # without a timeout.
         try:
-            return HTTPConnection(self.config.get('server', 'host'),
+            conn = HTTPConnection(self.config.get('server', 'host'),
                                   self.config.get('server', 'port'),
                                   timeout=int(self.config.get(
                                                   'server', 'timeout')))
         except TypeError:
-            return HTTPConnection(self.config.get('server', 'host'),
+            conn = HTTPConnection(self.config.get('server', 'host'),
                                   self.config.get('server', 'port'))
+
+        # Now attempt to open the connection, allowing for the configured
+        # number of tries.
+        max_tries = int(self.config.get('server', 'max_tries'))
+        retry_delay = int(self.config.get('server', 'retry_delay'))
+
+        n_try = 0
+        while True:
+            n_try += 1
+
+            try:
+                conn.connect()
+
+            except:
+                if n_try < max_tries:
+                    sleep(retry_delay)
+                    continue
+                raise
+
+            return conn
 
     def _read_json(self, url):
         """Performs an HTTP GET on the given URL and interprets the
         response as JSON."""
+
+        conn = None
 
         try:
             try:
@@ -220,13 +245,16 @@ class CrabClient:
                 raise CrabError('did not understand response: ' + str(err))
 
         finally:
-            conn.close()
+            if conn is not None:
+                conn.close()
 
     def _write_json(self, url, obj, read=False):
         """Converts the given object to JSON and sends it with an
         HTTP PUT to the given URL.
 
         Optionally attempts to read JSON from the response."""
+
+        conn = None
 
         try:
             try:
@@ -265,7 +293,8 @@ class CrabClient:
                 raise CrabError('did not understand response: ' + str(err))
 
         finally:
-            conn.close()
+            if conn is not None:
+                conn.close()
 
     def _read_error(self, res):
         """Determine the error message to show based on an

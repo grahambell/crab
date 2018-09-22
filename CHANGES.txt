@@ -9,6 +9,7 @@ Next release
       plugin to run the server in the background.
     - Added crabd --passive option to run the server with a passive monitor
       and no other services.
+    - Crab clients can now re-try connections to the server.
 
 0.5.0, 2016-01-27
 
