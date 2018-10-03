@@ -3,6 +3,8 @@ Next release
       the Crab server being updated will also need an updated Font
       Awesome, including renaming the res/fonts directory again to
       res/webfonts.
+    - Added crabd options to specify where to write access and error
+      logs.
 
 0.5.0, 2016-01-27
 

@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2013 Science and Technology Facilities Council.
-# Copyright (C) 2015-2016 East Asian Observatory.
+# Copyright (C) 2015-2018 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from logging.handlers import RotatingFileHandler
 import os
 import socket
 import sys
@@ -31,23 +32,39 @@ def read_crabd_config():
     values read from the config files and environment variables."""
 
     config = Config()
-    config.update({'global': {'server.socket_port': 8000,
-                              'server.socket_host': '0.0.0.0'},
-
-                   'crab': {'home': os.path.join(sys.prefix, 'share', 'crab'),
-                            'base_url': None},
-
-                   'email': {'server': 'mailhost',
-                             'from': 'Crab Daemon',
-                             'subject_ok': 'Crab notification',
-                             'subject_warning': 'Crab notification (WARNING)',
-                             'subject_error': 'Crab notification (ERROR)'},
-
-                   'notify': {'timezone': 'UTC',
-                              'daily': '0 0 * * *'},
-
-                   'store': {'type': 'sqlite',
-                             'file': '/var/lib/crab/crab.db'}})
+    config.update({
+        'global': {
+            'server.socket_port': 8000,
+            'server.socket_host': '0.0.0.0',
+        },
+        'crab': {
+            'home': os.path.join(sys.prefix, 'share', 'crab'),
+            'base_url': None,
+        },
+        'email': {
+            'server': 'mailhost',
+            'from': 'Crab Daemon',
+            'subject_ok': 'Crab notification',
+            'subject_warning': 'Crab notification (WARNING)',
+            'subject_error': 'Crab notification (ERROR)',
+        },
+        'notify': {
+            'timezone': 'UTC',
+            'daily': '0 0 * * *',
+        },
+        'store': {
+            'type': 'sqlite',
+            'file': '/var/lib/crab/crab.db',
+        },
+        'access_log': {
+            'max_size': 10,
+            'backup_count': 10,
+        },
+        'error_log': {
+            'max_size': 10,
+            'backup_count': 10,
+        },
+    })
 
     env = os.environ
     sysconfdir = env.get('CRABSYSCONFIG', '/etc/crab')
@@ -87,6 +104,13 @@ def read_crabd_config():
             str(config['global']['server.socket_port']))
 
     return config
+
+
+def construct_log_handler(filename, log_config):
+    return RotatingFileHandler(
+        filename,
+        maxBytes=log_config['max_size'] * 1024 * 1024,
+        backupCount=log_config['backup_count'])
 
 
 def construct_store(storeconfig, outputstore=None):

@@ -45,9 +45,9 @@ fi
 # Set file names.
 
 PIDFILE=$RUNDIR/crabd-$UID.pid
-LOGFILE=$LOGDIR/crabd-$UID.log
+LOGFILEACC=$LOGDIR/crabd-$UID-access.log
+LOGFILEERR=$LOGDIR/crabd-$UID-error.log
 
 # Launch crabd using its own PID file mechanism.
 
-crabd --pidfile $PIDFILE >> $LOGFILE 2>&1 &
-
+crabd --pidfile $PIDFILE --accesslog $LOGFILEACC --errorlog $LOGFILEERR > /dev/null 2>&1 &
