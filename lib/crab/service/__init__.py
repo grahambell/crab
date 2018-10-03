@@ -14,12 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-
 from datetime import datetime, timedelta
+from logging import getLogger
 import pytz
 import time
 from threading import Thread
+
+logger = getLogger(__name__)
 
 
 class CrabMinutely(Thread):
@@ -68,7 +69,7 @@ class CrabMinutely(Thread):
                     self.run_minutely(previous.replace(second=0,
                                                        microsecond=0))
                 except Exception as e:
-                    print("Error: run_minutely raised exception:", str(e))
+                    logger.exception("Error: run_minutely raised exception")
 
             self._previous = previous
 

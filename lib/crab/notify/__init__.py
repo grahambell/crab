@@ -13,14 +13,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-
 from collections import namedtuple
+from logging import getLogger
 
 from crab.report import CrabReportGenerator, CrabReportJob
 from crab.notify.email import CrabNotifyEmail
 
 CrabNotifyJob = namedtuple('CrabNotifyJob', ['n', 'start', 'end'])
+
+logger = getLogger(__name__)
 
 
 class CrabNotify:
@@ -51,7 +52,8 @@ class CrabNotify:
                         # addresses and CC a single message to all of them.
                         email.append(address)
                     else:
-                        print('Unknown notification method: ', method)
+                        logger.error(
+                            'Unknown notification method: {}'.format(method))
 
                 if email:
                     self.send_email(output, email)

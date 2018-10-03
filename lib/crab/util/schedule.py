@@ -13,14 +13,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import absolute_import, print_function
+from __future__ import absolute_import
 
 from datetime import timedelta
+from logging import getLogger
 import pytz
 
 from crontab import CronTab
 
 from crab import CrabError
+
+logger = getLogger(__name__)
 
 
 class CrabSchedule(CronTab):
@@ -49,7 +52,7 @@ class CrabSchedule(CronTab):
                 # the timezone objects by zone name.
                 self.timezone = pytz.timezone(timezone)
             except pytz.UnknownTimeZoneError:
-                print('Warning: unknown time zone', timezone)
+                logger.warning('Warning: unknown time zone {}'.format(timezone))
 
     def match(self, datetime_):
         """Determines whether the given datetime matches the scheduling

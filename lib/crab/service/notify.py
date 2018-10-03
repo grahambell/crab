@@ -14,12 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
+from logging import getLogger
 
 from crab import CrabError
 from crab.notify import CrabNotify, CrabNotifyJob
 from crab.service import CrabMinutely
 from crab.util.schedule import CrabSchedule
+
+logger = getLogger(__name__)
 
 
 class CrabNotifyService(CrabMinutely):
@@ -56,7 +58,7 @@ class CrabNotifyService(CrabMinutely):
             notifications = self.store.get_notifications()
 
         except CrabError as err:
-            print('Error fetching notifications:', str(err))
+            logger.exception('Error fetching notifications')
             return
 
         for notification in notifications:
@@ -74,8 +76,8 @@ class CrabNotifyService(CrabMinutely):
                                                 notification['timezone'])
                     except CrabError as err:
                         schedule = None
-                        print('Warning: could not read notification schedule:',
-                              str(err))
+                        logger.exception(
+                            'Warning: could not read notification schedule')
                 else:
                     schedule = None
 

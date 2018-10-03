@@ -14,9 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import print_function
-
 from datetime import datetime, timedelta
+from logging import getLogger
 import pytz
 import time
 from random import Random
@@ -28,6 +27,8 @@ from crab.util.schedule import CrabSchedule
 
 HISTORY_COUNT = 10
 LATE_GRACE_PERIOD = timedelta(seconds=30)
+
+logger = getLogger(__name__)
 
 
 class JobDeleted(Exception):
@@ -93,7 +94,7 @@ class CrabMonitor(CrabMinutely):
                 self._initialize_job(id_, load_events=True)
 
             except JobDeleted:
-                print('Warning: job', id_, 'has vanished')
+                logger.warning('Warning: job {} has vanished'.format(id_))
 
         self.status_ready.set()
 
@@ -108,7 +109,7 @@ class CrabMonitor(CrabMinutely):
                 events = self.store.get_events_since(
                     self.max_startid, self.max_alarmid, self.max_finishid)
             except Exception as e:
-                print('Error: monitor exception getting events:', str(e))
+                logger.exception('Error: monitor exception getting events')
 
             for event in events:
                 id_ = event['jobid']
@@ -132,7 +133,7 @@ class CrabMonitor(CrabMinutely):
                 # inside the events loop so that we keep the max_id_values
                 # up to date with the other events.
                 except Exception as e:
-                    print('Error: monitor exception handling event:', str(e))
+                    logger.exception('Error: monitor exception handling event')
 
             self.num_error = 0
             self.num_warning = 0
@@ -215,7 +216,7 @@ class CrabMonitor(CrabMinutely):
                 try:
                     self._initialize_job(id_, load_events=True)
                 except JobDeleted:
-                    print('Warning: job', id_, 'has vanished')
+                    logger.warning('Warning: job {} has vanished'.format(id_))
 
         # Remove (presumably deleted) jobs.
         for id_ in currentjobs:
@@ -266,7 +267,7 @@ class CrabMonitor(CrabMinutely):
                 self.sched[id_] = CrabSchedule(jobinfo['time'],
                                                jobinfo['timezone'])
             except CrabError as err:
-                print('Warning: could not add schedule:', str(err))
+                logger.exception('Warning: could not add schedule')
 
             else:
                 self.status[id_]['scheduled'] = True
@@ -310,7 +311,8 @@ class CrabMonitor(CrabMinutely):
             if id_ in self.miss_timeout:
                 del self.miss_timeout[id_]
         except KeyError:
-            print('Warning: stopping monitoring job but it is not in monitor.')
+            logger.warning(
+                'Warning: stopping monitoring job but it is not in monitor.')
 
     def _update_max_id_values(self, event):
         """Updates the instance max_startid, max_alarmid and max_finishid
@@ -399,13 +401,13 @@ class CrabMonitor(CrabMinutely):
         """Inserts an alarm into the storage backend."""
 
         if self.passive:
-            print('Warning: trying to write alarm in passive mode')
+            logger.warning('Warning: trying to write alarm in passive mode')
             return
 
         try:
             self.store.log_alarm(id_, status)
         except CrabError as err:
-            print('Could not record alarm: ', str(err))
+            logger.exception('Could not record alarm')
 
     def get_job_status(self, id_=None):
         """Fetches the status of all jobs as a dict.
