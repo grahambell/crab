@@ -1,6 +1,14 @@
 Utilities
 =========
 
+crab.util.bus
+-------------
+
+.. automodule:: crab.util.bus
+   :members:
+   :member-order: bysource
+   :undoc-members:
+
 crab.util.compat
 ----------------
 

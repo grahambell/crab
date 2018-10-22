@@ -5,6 +5,8 @@ Next release
       res/webfonts.
     - Added crabd options to specify where to write access and error
       logs.
+    - Added crabd --daemon option which uses CherryPy's daemonizer
+      plugin to run the server in the background.
 
 0.5.0, 2016-01-27
 

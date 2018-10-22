@@ -1,5 +1,5 @@
 # Copyright (C) 2012 Science and Technology Facilities Council.
-# Copyright (C) 2015 East Asian Observatory.
+# Copyright (C) 2015-2018 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,20 +22,21 @@ import cherrypy
 from PyRSS2Gen import RSS2, RSSItem, Guid
 
 from crab import CrabStatus
+from crab.util.bus import CrabStoreListener
 
 
-class CrabRSS:
+class CrabRSS(CrabStoreListener):
     """Class providing a RSS feed."""
 
-    def __init__(self, store, base_url):
+    def __init__(self, bus, base_url):
         """Constructor for CrabRSS class.
 
-        Stores the given storage backend, and caches the
-        host's domain name for use in constructing GUIDs.
+        Caches the host's domain name for use in constructing GUIDs.
         Links includes in the RSS feed will use the given
         base URL."""
 
-        self.store = store
+        super(CrabRSS, self).__init__(bus)
+
         self.base = base_url
         self.fqdn = socket.getfqdn()
 

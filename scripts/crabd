@@ -18,6 +18,7 @@
 
 import atexit
 import cherrypy
+from cherrypy.process.plugins import Daemonizer
 import logging
 from optparse import OptionParser
 import os
@@ -35,9 +36,48 @@ except ImportError:
 from crab.server import CrabServer
 from crab.server.config import read_crabd_config, \
     construct_log_handler, construct_store
+from crab.util.bus import CrabPlugin, priority
 from crab.util.filter import CrabEventFilter
 from crab.util.pid import pidfile_write, pidfile_running, pidfile_delete
 from crab.web.web import CrabWeb
+
+
+class CrabFacilities:
+    def __init__(self, bus, config, pidfile=None):
+        self.bus = bus
+        self.config = config
+        self.pidfile = pidfile
+
+    def subscribe(self):
+        self.bus.subscribe('start', self.start)
+
+    @priority(70)
+    def start(self):
+        if self.pidfile is not None:
+            self.bus.log('Writing Crab PID file: {}'.format(self.pidfile))
+            pidfile_write(self.pidfile, os.getpid())
+            atexit.register(pidfile_delete, self.pidfile)
+
+        self.bus.log('Starting Crab facilities')
+
+        store = self.get_store()
+        self.bus.publish('crab-store', store)
+
+        # Pass whole configuration to CrabNotify to allow it to
+        # construct notification method objects.
+        notifier = self.get_notifier(store)
+        self.bus.publish('crab-notify', notifier)
+
+    def get_store(self):
+        if 'outputstore' in self.config:
+            outputstore = construct_store(self.config['outputstore'])
+        else:
+            outputstore = None
+
+        return construct_store(self.config['store'], outputstore)
+
+    def get_notifier(self, store):
+        return CrabNotify(self.config, store)
 
 
 def main():
@@ -63,6 +103,10 @@ def main():
         '--export',
         type='string', dest='export',
         help='export jobs and settings to file', metavar='JSONFILE')
+    parser.add_option(
+        '--daemon',
+        action='store_true', dest='daemon',
+        help='Run in daemon mode')
 
     (options, args) = parser.parse_args()
     if len(args) != 0:
@@ -78,35 +122,31 @@ def main():
     if pidfile is not None:
         if pidfile_running(pidfile):
             return
-        pidfile_write(pidfile, os.getpid())
-        atexit.register(pidfile_delete, pidfile)
 
-    if 'outputstore' in config:
-        outputstore = construct_store(config['outputstore'])
-    else:
-        outputstore = None
-
-    store = construct_store(config['store'], outputstore)
+    facilities = CrabFacilities(
+        cherrypy.engine, config=config, pidfile=pidfile)
 
     # Perform import/export operations if requested.
-    if options.import_:
-        if options.export:
-            parser.error('import and export operations both requested')
-        from crab.server.io import import_config
-        if options.import_ == '-':
-            import_config(store=store, file_=sys.stdin)
-        else:
-            with open(options.import_, 'r') as file_:
-                import_config(store=store, file_=file_)
-        return
+    if options.import_ or options.export:
+        from crab.server.io import import_config, export_config
+        store = facilities.get_store()
 
-    elif options.export:
-        from crab.server.io import export_config
-        if options.export == '-':
-            export_config(store=store, file_=sys.stdout)
-        else:
-            with open(options.export, 'w') as file_:
-                export_config(store=store, file_=file_)
+        if options.import_ and options.export:
+            parser.error('import and export operations both requested')
+
+        if options.import_:
+            if options.import_ == '-':
+                import_config(store=store, file_=sys.stdin)
+            else:
+                with open(options.import_, 'r') as file_:
+                    import_config(store=store, file_=file_)
+
+        elif options.export:
+            if options.export == '-':
+                export_config(store=store, file_=sys.stdout)
+            else:
+                with open(options.export, 'w') as file_:
+                    export_config(store=store, file_=file_)
         return
 
     # Set up logging based on which log files are requested.
@@ -139,51 +179,45 @@ def main():
     root_logger.addHandler(handler)
     root_logger.setLevel(logging.DEBUG)
 
-    # Create dictionary of services to be passed to the CrabWeb constructor.
-    service = {}
+    # Set up CherryPy Daemonizer if requested.
+    if options.daemon:
+        Daemonizer(cherrypy.engine).subscribe()
+
+    facilities.subscribe()
 
     # Set a default timezone: applies to times shown in
     # notifications and on the web interface.
     CrabEventFilter.set_default_timezone(config['notify']['timezone'])
 
-    monitor = CrabMonitor(store)
-    monitor.daemon = True
-    monitor.start()
-    service['Monitor'] = monitor
+    CrabPlugin(cherrypy.engine, 'Monitor', CrabMonitor).subscribe()
 
-    # Pass whole configuration to CrabNotify to allow it to
-    # construct notification method objects.
-    notifier = CrabNotify(config, store)
-
-    notify = CrabNotifyService(config['notify'], store, notifier)
-    notify.daemon = True
-    notify.start()
-    service['Notification'] = notify
+    CrabPlugin(
+        cherrypy.engine, 'Notification', CrabNotifyService,
+        config=config['notify'], notify=None).subscribe()
 
     # Construct cleaning service if requested.
     if 'clean' in config:
-        clean = CrabCleanService(config['clean'], store)
-        clean.daemon = True
-        clean.start()
-        service['Clean'] = clean
+        CrabPlugin(
+            cherrypy.engine, 'Clean', CrabCleanService,
+            config=config['clean']).subscribe()
 
     cherrypy.config.update(config)
 
-    cherrypy.tree.mount(
-        CrabWeb(store, monitor,
-                config['crab']['home'],
-                service,
-                {
-                    'rss_enabled': (CrabRSS is not None),
-                }),
-        '/', config)
+    web = CrabWeb(
+        config['crab']['home'], {
+            'rss_enabled': (CrabRSS is not None),
+        })
+    web.subscribe()
+    cherrypy.tree.mount(web, '/', config)
 
-    cherrypy.tree.mount(CrabServer(store), '/api/0', {})
+    server = CrabServer(cherrypy.engine)
+    server.subscribe()
+    cherrypy.tree.mount(server, '/api/0', {})
 
     if CrabRSS is not None:
-        cherrypy.tree.mount(
-            CrabRSS(store, config['crab']['base_url']),
-            '/rss', {})
+        rss = CrabRSS(cherrypy.engine, config['crab']['base_url'])
+        rss.subscribe()
+        cherrypy.tree.mount(rss, '/rss', {})
 
     cherrypy.engine.start()
     cherrypy.engine.block()

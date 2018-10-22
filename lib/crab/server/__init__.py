@@ -1,4 +1,5 @@
-# Copyright (C) 2012 Science and Technology Facilities Council.
+# Copyright (C) 2012-2014 Science and Technology Facilities Council.
+# Copyright (C) 2018 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,17 +22,16 @@ import cherrypy
 from cherrypy import HTTPError
 
 from crab import CrabError, CrabStatus
+from crab.util.bus import CrabStoreListener
 
 
-class CrabServer:
+class CrabServer(CrabStoreListener):
     """Crab server class, used for interaction with the client."""
 
-    def __init__(self, store):
-        """Constructor for CrabServer.
+    def __init__(self, bus):
+        """Constructor for CrabServer."""
 
-        Saves a reference to the given storage backend."""
-
-        self.store = store
+        super(CrabServer, self).__init__(bus)
 
     @cherrypy.expose
     def crontab(self, host, user, raw=False):

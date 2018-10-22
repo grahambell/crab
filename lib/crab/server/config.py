@@ -34,6 +34,7 @@ def read_crabd_config():
     config = Config()
     config.update({
         'global': {
+            'engine.autoreload.on': False,
             'server.socket_port': 8000,
             'server.socket_host': '0.0.0.0',
         },

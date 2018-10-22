@@ -50,4 +50,4 @@ LOGFILEERR=$LOGDIR/crabd-$UID-error.log
 
 # Launch crabd using its own PID file mechanism.
 
-crabd --pidfile $PIDFILE --accesslog $LOGFILEACC --errorlog $LOGFILEERR > /dev/null 2>&1 &
+crabd --pidfile $PIDFILE --accesslog $LOGFILEACC --errorlog $LOGFILEERR --daemon > /dev/null 2>&1

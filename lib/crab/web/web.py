@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2014 Science and Technology Facilities Council.
-# Copyright (C) 2015 East Asian Observatory.
+# Copyright (C) 2015-2018 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@ from mako.lookup import TemplateLookup
 from mako.template import Template
 
 from crab import CrabError, CrabStatus
+from crab.util.bus import CrabStoreListener
 from crab.util.filter import CrabEventFilter
 from crab.util.datetime import format_datetime, parse_datetime
 
@@ -39,17 +40,34 @@ def empty_to_none(value):
     return value
 
 
-class CrabWebQuery:
+class CrabWebBase(CrabStoreListener):
+    def __init__(self, bus):
+        super(CrabWebBase, self).__init__(bus)
+
+        self.bus = bus
+        self.service = {}
+        self.monitor = None
+
+    def subscribe(self):
+        super(CrabWebBase, self).subscribe()
+
+        self.bus.subscribe('crab-service', self.__service)
+
+    def __service(self, name, service):
+        self.service[name] = service
+
+        if name == 'Monitor':
+            self.monitor = service
+
+
+class CrabWebQuery(CrabWebBase):
     """CherryPy handler class for the JSON query part of the crab web
     interface."""
 
-    def __init__(self, store, monitor, service):
-        """Constructor: saves the given storage backend and reference
-        to the monitor thread."""
+    def __init__(self):
+        """Constructor: saves the given storage backend."""
 
-        self.store = store
-        self.monitor = monitor
-        self.service = service
+        super(CrabWebQuery, self).__init__(cherrypy.engine)
 
         def to_json(obj):
             if isinstance(obj, datetime):
@@ -86,21 +104,26 @@ class CrabWebQuery:
         return self.json_encoder.encode(info)
 
 
-class CrabWeb:
+class CrabWeb(CrabWebBase):
     """CherryPy handler for the HTML part of the crab web interface."""
 
-    def __init__(self, store, monitor, crab_home, service, options):
+    def __init__(self, crab_home, options):
         """Constructor for CrabWeb class.
 
         Stores a reference to the given storage backend, and
         the home directory from the config dict.  Prepares the template
         engine and instantiates a CrabWebQuery object which CherryPy
         can find as 'query'."""
-        self.store = store
-        self.monitor = monitor
+
+        super(CrabWeb, self).__init__(cherrypy.engine)
+
         self.options = options
         self.templ = TemplateLookup(directories=[crab_home + '/templ'])
-        self.query = CrabWebQuery(store, monitor, service)
+        self.query = CrabWebQuery()
+
+    def subscribe(self):
+        super(CrabWeb, self).subscribe()
+        self.query.subscribe()
 
     @cherrypy.expose
     def index(self):
