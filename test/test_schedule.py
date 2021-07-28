@@ -35,22 +35,22 @@ class ScheduleTestCase(TestCase):
 
         # Check scheduling tests all date parts.
 
-        self.assertFalse(qs.match(datetime(2012, 12, 25, 14, 0, tzinfo=lon)),
+        self.assertFalse(qs.match(lon.localize(datetime(2012, 12, 25, 14, 0))),
                          'Queen not one hour early')
-        self.assertFalse(qs.match(datetime(2012, 12, 25, 15, 5, tzinfo=lon)),
+        self.assertFalse(qs.match(lon.localize(datetime(2012, 12, 25, 15, 5))),
                          'Queen not five minutes late')
-        self.assertFalse(qs.match(datetime(2012, 12, 26, 15, 0, tzinfo=lon)),
+        self.assertFalse(qs.match(lon.localize(datetime(2012, 12, 26, 15, 0))),
                          'Queen not on boxing day')
-        self.assertFalse(qs.match(datetime(2012, 11, 25, 15, 0, tzinfo=lon)),
+        self.assertFalse(qs.match(lon.localize(datetime(2012, 11, 25, 15, 0))),
                          'Queen not on in November')
 
         # And an event which doesn't happen at minute zero.
 
-        self.assertTrue(gf.match(datetime(2012, 11, 5, 19, 30, 0, tzinfo=lon)),
+        self.assertTrue(gf.match(lon.localize(datetime(2012, 11, 5, 19, 30, 0))),
                         'Fireworks on time')
-        self.assertTrue(gf.match(datetime(2012, 11, 5, 19, 30, 1, tzinfo=lon)),
+        self.assertTrue(gf.match(lon.localize(datetime(2012, 11, 5, 19, 30, 1))),
                         'Fireworks might be one second late')
-        self.assertFalse(gf.match(datetime(2012, 11, 5, 19, 35, tzinfo=lon)),
+        self.assertFalse(gf.match(lon.localize(datetime(2012, 11, 5, 19, 35))),
                          'Fireworks not 5 minutes late')
 
     def test_weekdays(self):
@@ -120,13 +120,13 @@ class ScheduleTestCase(TestCase):
     def test_list(self):
         hon = timezone('Pacific/Honolulu')
         br = CrabSchedule('0 10,15 * * *', 'Pacific/Honolulu')
-        self.assertTrue(br.match(datetime(2012, 10, 15, 10, 0, tzinfo=hon)),
+        self.assertTrue(br.match(hon.localize(datetime(2012, 10, 15, 10, 0))),
                         'Coffee break on time')
-        self.assertTrue(br.match(datetime(2012, 10, 15, 15, 0, tzinfo=hon)),
+        self.assertTrue(br.match(hon.localize(datetime(2012, 10, 15, 15, 0))),
                         'Tea break on time')
-        self.assertFalse(br.match(datetime(2012, 10, 15, 11, 0, tzinfo=hon)),
+        self.assertFalse(br.match(hon.localize(datetime(2012, 10, 15, 11, 0))),
                          'Coffee break not 1 hour late')
-        self.assertFalse(br.match(datetime(2012, 10, 15, 16, 0, tzinfo=hon)),
+        self.assertFalse(br.match(hon.localize(datetime(2012, 10, 15, 16, 0))),
                          'Tea break not 1 hour late')
 
     def test_aliases(self):
@@ -153,7 +153,7 @@ class ScheduleTestCase(TestCase):
         fm = CrabSchedule('0-55/5 * * * *', 'UTC')
         lt = CrabSchedule('0 12 * * * *', 'Pacific/Honolulu')
         d = datetime(2020, 2, 1, 12, 30, tzinfo=UTC)
-        dl = datetime(2020, 2, 1, 12, 30, tzinfo=hon)
+        dl = hon.localize(datetime(2020, 2, 1, 12, 30))
 
         self.assertEqual(ho.next_datetime(d),
                          datetime(2020, 2, 1, 13, 0, tzinfo=UTC),
@@ -177,10 +177,10 @@ class ScheduleTestCase(TestCase):
                          'Previous lunchtime correct as UTC')
 
         self.assertEqual(lt.next_datetime(dl),
-                         datetime(2020, 2, 2, 12, 0, tzinfo=hon),
+                         hon.localize(datetime(2020, 2, 2, 12, 0)),
                          'Next lunchtime correct')
         self.assertEqual(lt.previous_datetime(dl),
-                         datetime(2020, 2, 1, 12, 0, tzinfo=hon),
+                         hon.localize(datetime(2020, 2, 1, 12, 0)),
                          'Previous lunchtime correct')
 
 if __name__ == '__main__':
