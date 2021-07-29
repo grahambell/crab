@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Copyright (C) 2012-2013 Science and Technology Facilities Council.
-# Copyright (C) 2016-2018 East Asian Observatory.
+# Copyright (C) 2016-2021 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -107,6 +107,10 @@ def main():
         '--daemon',
         action='store_true', dest='daemon',
         help='Run in daemon mode')
+    parser.add_option(
+        '--passive',
+        action='store_true', dest='passive',
+        help='Run passive server (passive monitor, no notifications)')
 
     (options, args) = parser.parse_args()
     if len(args) != 0:
@@ -189,14 +193,17 @@ def main():
     # notifications and on the web interface.
     CrabEventFilter.set_default_timezone(config['notify']['timezone'])
 
-    CrabPlugin(cherrypy.engine, 'Monitor', CrabMonitor).subscribe()
-
     CrabPlugin(
-        cherrypy.engine, 'Notification', CrabNotifyService,
-        config=config['notify'], notify=None).subscribe()
+        cherrypy.engine, 'Monitor', CrabMonitor,
+        passive=options.passive).subscribe()
+
+    if not options.passive:
+        CrabPlugin(
+            cherrypy.engine, 'Notification', CrabNotifyService,
+            config=config['notify'], notify=None).subscribe()
 
     # Construct cleaning service if requested.
-    if 'clean' in config:
+    if ('clean' in config) and not options.passive:
         CrabPlugin(
             cherrypy.engine, 'Clean', CrabCleanService,
             config=config['clean']).subscribe()

@@ -7,6 +7,8 @@ Next release
       logs.
     - Added crabd --daemon option which uses CherryPy's daemonizer
       plugin to run the server in the background.
+    - Added crabd --passive option to run the server with a passive monitor
+      and no other services.
 
 0.5.0, 2016-01-27
 
