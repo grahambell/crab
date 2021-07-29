@@ -1,5 +1,5 @@
 # Copyright (C) 2012-2014 Science and Technology Facilities Council.
-# Copyright (C) 2015-2016 East Asian Observatory.
+# Copyright (C) 2015-2021 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -330,7 +330,9 @@ class CrabStoreDB(CrabStore):
                 'SELECT jobconfig.id AS configid, job.id AS id, '
                 'host, user, job.crabid AS crabid, command '
                 'FROM jobconfig JOIN job ON jobconfig.jobid = job.id '
-                'WHERE job.deleted IS NOT NULL')
+                'WHERE job.deleted IS NOT NULL '
+                'ORDER BY host ASC, user ASC, '
+                'job.crabid ASC, job.installed ASC')
 
     def relink_job_config(self, configid, id_):
         with self.lock as c:
