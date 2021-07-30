@@ -1,4 +1,5 @@
 # Copyright (C) 2013 Science and Technology Facilities Council.
+# Copyright (C) 2021 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -30,8 +31,40 @@ def restore_signals():
 # Determine which options should be given to the subprocess module
 # when starting new processes.  The "restore_signals" option was
 # added in Python 3.2, so we need only ensure that it is turned on.
-# Otherwise we need to provide a function to do this.
+# Otherwise if the backported subprocess32 module is not available,
+# we need to provide a function to do this and a dummy timeout implementation.
+have_new_subprocess = True
 if sys.version_info >= (3, 2):
+    import subprocess
+    from subprocess import TimeoutExpired
+
+else:
+    try:
+        import subprocess32 as subprocess
+        from subprocess32 import TimeoutExpired
+
+    except ImportError:
+        have_new_subprocess = False
+        import subprocess
+
+
+if have_new_subprocess:
     subprocess_options = {'restore_signals': True}
+
+    def subprocess_communicate(p, input=None, timeout=None):
+        return p.communicate(input=input, timeout=timeout)
+
+    def subprocess_call(args, timeout=None, **kwargs):
+        return subprocess.call(args, timeout=timeout, **kwargs)
+
 else:
     subprocess_options = {'preexec_fn': restore_signals}
+
+    def subprocess_communicate(p, input=None, timeout=None):
+        return p.communicate(input=input)
+
+    def subprocess_call(args, timeout=None, **kwargs):
+        return subprocess.call(args, **kwargs)
+
+    class TimeoutExpired(Exception):
+        pass

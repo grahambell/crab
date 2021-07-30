@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Copyright (C) 2012-2013 Science and Technology Facilities Council.
-# Copyright (C) 2016 East Asian Observatory.
+# Copyright (C) 2016-2021 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -19,13 +19,13 @@
 from codecs import latin_1_encode, latin_1_decode
 import os
 import sys
-import subprocess
 import time
 from optparse import OptionParser
 
 from crab import CrabError, CrabStatus
 from crab.client import CrabClient
-from crab.util.compat import subprocess_options
+from crab.util.compat import subprocess, subprocess_options, \
+    subprocess_call, subprocess_communicate, TimeoutExpired
 from crab.util.pid import pidfile_write, pidfile_running, pidfile_delete
 from crab.util.string import split_crab_vars, true_string
 
