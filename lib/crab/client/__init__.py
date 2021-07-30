@@ -160,6 +160,15 @@ class CrabClient:
                     ':' + self.config.get('server', 'port'))
         info.append('Client: ' + self.config.get('client', 'username') +
                     '@' + self.config.get('client', 'hostname'))
+        info.append('Connection: ' +
+                    self.config.get('server', 'timeout') +
+                    's timeout, ' +
+                    ('1 try'
+                     if (int(self.config.get('server', 'max_tries')) < 2)
+                     else self.config.get('server', 'max_tries') +
+                     ' tries with ' +
+                     self.config.get('server', 'retry_delay') +
+                     's delay'))
         info.append('Files: ' + ', '.join(self.configfiles))
         return '\n'.join(info)
 
