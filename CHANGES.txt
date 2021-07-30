@@ -10,6 +10,11 @@ Next release
     - Added crabd --passive option to run the server with a passive monitor
       and no other services.
     - Crab clients can now re-try connections to the server.
+    - Wrapper shell crabsh now uses environment variable CRABWATCHDOG
+      to set a timeout (in minutes) for the command being run.
+      If this time is exceeded, it will try to kill the command,
+      collect its output and then report a new "watchdog" status.
+      (Requires Python 3.3 or the subprocess32 backport module.)
 
 0.5.0, 2016-01-27
 

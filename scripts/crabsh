@@ -133,6 +133,13 @@ def main():
         # previously we wrote the PID of the child process.)
         pidfile_write(pidfile, os.getpid())
 
+    # Check for watchdog timeout variable.
+
+    watchdog_timeout = None
+
+    if 'CRABWATCHDOG' in vars:
+        watchdog_timeout = 60 * int(vars['CRABWATCHDOG'])
+
     # Begin try-finally block to try to ensure PID file is deleted at end.
 
     try:
@@ -142,13 +149,20 @@ def main():
 
         if ignore:
             try:
-                return subprocess.call([shell, '-c', command], env=env,
+                return subprocess_call([shell, '-c', command], env=env,
+                                       timeout=watchdog_timeout,
                                        **subprocess_options)
 
             except OSError:
                 err = sys.exc_info()[1]
                 print('crabsh (' + shell + '): ' + command)
                 print('ERROR: ' + str(err))
+
+                return 1
+
+            except TimeoutExpired:
+                print('crabsh (' + shell + '): ' + command)
+                print('Killed by watchdog.')
 
                 return 1
 
@@ -201,14 +215,24 @@ def main():
                                  env=env,
                                  **subprocess_options)
 
-            (stdoutdata, stderrdata) = p.communicate()
-            returncode = p.returncode
+            try:
+                (stdoutdata, stderrdata) = subprocess_communicate(
+                    p, timeout=watchdog_timeout)
+                returncode = p.returncode
+
+            except TimeoutExpired:
+                p.kill()
+                (stdoutdata, stderrdata) = subprocess_communicate(p)
+
             stdoutdata = (latin_1_decode(stdoutdata, 'replace'))[0]
             stderrdata = (latin_1_decode(stderrdata, 'replace'))[0]
 
             status = CrabStatus.SUCCESS
 
-            if returncode:
+            if returncode is None:
+                status = CrabStatus.WATCHDOG
+
+            elif returncode:
                 status = CrabStatus.FAIL
 
             client.finish(status, stdoutdata, stderrdata)
@@ -231,7 +255,10 @@ def main():
             print('crabsh: ' + command)
             print('Failed to notify job finish.')
             print('ERROR: ' + str(err))
-            print('\nRETURN CODE: ' + str(returncode))
+            if returncode is None:
+                print('\nKilled by watchdog timeout.')
+            else:
+                print('\nRETURN CODE: ' + str(returncode))
             if stdoutdata != '':
                 print('\nSTDOUT:')
                 print(stdoutdata)

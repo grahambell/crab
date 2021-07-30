@@ -396,6 +396,11 @@ CRABUSERNAME
     The user name to be used by Crab clients to identify themselves,
     overriding any value in the configuration files.
 
+CRABWATCHDOG
+    Specifies a timeout (in minutes) which ``crabsh`` should apply to
+    the cron job, killing it and reporting status "watchdog" if exceeded.
+    (Requires Python 3.3 or the subprocess32 backport module.)
+
 CRON_TZ
     Cron reads this variable to know in which timezone to interpret
     the crontab schedule.  When the server receives a crontab,
