@@ -133,7 +133,8 @@ def main():
 
 Commands:
   start, finish          - report cron job progress
-  fail, couldnotstart    - report problems with cron job
+  fail, couldnotstart,   - report problems with cron job
+    watchdog
   warning, unknown       - report warning on cron job completion
   alreadyrunning         - long running job need not start
   import                 - send crontab to server
@@ -175,6 +176,7 @@ Commands:
                        'couldnotstart': CrabStatus.COULDNOTSTART,
                        'alreadyrunning': CrabStatus.ALREADYRUNNING,
                        'warning': CrabStatus.WARNING,
+                       'watchdog': CrabStatus.WATCHDOG,
                       }
 
     if len(args) == 0:

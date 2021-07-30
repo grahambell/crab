@@ -1,4 +1,5 @@
 # Copyright (C) 2012-2013 Science and Technology Facilities Council.
+# Copyright (C) 2021 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,9 +41,10 @@ class CrabStatus:
     ALREADYRUNNING = 4
     WARNING = 5
     INHIBITED = 6
+    WATCHDOG = 7
 
     VALUES = set([SUCCESS, FAIL, UNKNOWN, COULDNOTSTART, ALREADYRUNNING,
-                  WARNING, INHIBITED])
+                  WARNING, INHIBITED, WATCHDOG])
 
     # Additional internal status values (it is not valid for
     # a client to send these).  Also some of these are less bad
@@ -56,7 +58,7 @@ class CrabStatus:
     INTERNAL_VALUES = set([LATE, MISSED, TIMEOUT, CLEARED])
 
     _error_names = ['Succeeded', 'Failed', 'Unknown', 'Could not start',
-                    'Already running', 'Warning', 'Inhibited']
+                    'Already running', 'Warning', 'Inhibited', 'Watchdog']
     _alarm_names = ['Late', 'Missed', 'Timed out', 'Cleared']
 
     @staticmethod
@@ -71,7 +73,7 @@ class CrabStatus:
             else:
                 return CrabStatus._alarm_names[(-1) - status]
         except IndexError:
-            return 'Status ' + int(status)
+            return 'Status ' + str(status)
 
     @staticmethod
     def is_trivial(status):
@@ -119,4 +121,4 @@ class CrabEvent:
             return CrabEvent._event_names[event - 1]
 
         except IndexError:
-            return 'Event ' + int(event)
+            return 'Event ' + str(event)
