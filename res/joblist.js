@@ -32,6 +32,8 @@ function updateStatusBox(id, status_, running) {
     }
     if (running) {
         box.addClass('status_running');
+    } else if (box.hasClass('status_running')) {
+        box.removeClass('status_running');
     }
 }
 
