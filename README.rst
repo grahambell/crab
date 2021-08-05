@@ -25,22 +25,22 @@ Packages
 ~~~~~~~~
 
 * `crontab`_ (0.15 or newer)
-* `CherryPy`_ (`PyPI entry <http://pypi.python.org/pypi/CherryPy>`__)
-* `Mako`_ (`PyPI entry <http://pypi.python.org/pypi/Mako/>`__)
+* `CherryPy`_
+* `Mako`_ (`PyPI entry <https://pypi.python.org/pypi/Mako/>`__)
 * `jQuery`_
 * `PyRSS2Gen`_ (optional)
 * `Font Awesome`_ (optional)
 * `ansi_up`_ (optional)
-* `MySQL Connector`_ (needed only if using a MySQL database)
+* `MySQL Connector`_ (needed only if using a MySQL database,  `PyPI entry <https://pypi.org/project/mysql-connector-python/>`__)
 
-.. _`crontab`: http://pypi.python.org/pypi/crontab/
-.. _`CherryPy`: http://www.cherrypy.org/
-.. _`Mako`: http://www.makotemplates.org/
-.. _`jQuery`: http://jquery.com/
-.. _`PyRSS2Gen`: http://pypi.python.org/pypi/PyRSS2Gen/
+.. _`crontab`: https://pypi.python.org/pypi/crontab/
+.. _`CherryPy`: https://pypi.python.org/pypi/CherryPy
+.. _`Mako`: https://www.makotemplates.org/
+.. _`jQuery`: https://jquery.com/
+.. _`PyRSS2Gen`: https://pypi.python.org/pypi/PyRSS2Gen/
 .. _`Font Awesome`: https://fontawesome.com/
 .. _`ansi_up`: https://github.com/drudru/ansi_up
-.. _`MySQL Connector`: http://dev.mysql.com/downloads/connector/python/
+.. _`MySQL Connector`: https://dev.mysql.com/doc/connector-python/en/
 
 Python Version
 ~~~~~~~~~~~~~~
@@ -280,7 +280,7 @@ Python
 Perl
     A Perl module `WWW::Crab::Client`_ is also available.
 
-.. _`WWW::Crab::Client`: http://search.cpan.org/perldoc?WWW::Crab::Client
+.. _`WWW::Crab::Client`: https://metacpan.org/pod/WWW::Crab::Client
 
 Other languages
     Other language libraries could be written.  They would need to make
@@ -585,7 +585,7 @@ Copyright
 ---------
 
 | Copyright (C) 2012-2014 Science and Technology Facilities Council.
-| Copyright (C) 2015-2018 East Asian Observatory.
+| Copyright (C) 2015-2021 East Asian Observatory.
 
 Crab is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -598,12 +598,12 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with Crab.  If not, see <http://www.gnu.org/licenses/>.
+along with Crab.  If not, see <https://www.gnu.org/licenses/>.
 
 Additional Links
 ----------------
 
 * `Crab entry on PyPI <https://pypi.python.org/pypi/crab>`_
-* `Documentation at Read the Docs <http://crab.readthedocs.io/en/latest/>`_
+* `Documentation at Read the Docs <https://crab.readthedocs.io/en/latest/>`_
 * `Repository at GitHub <https://github.com/grahambell/crab>`_
 * `ADASS article about Crab <http://www.aspbooks.org/a/volumes/article_details/?paper_id=35592>`_
