@@ -379,6 +379,12 @@ CRABPORT
     Specifies the port on the Crab server, overriding the setting in the
     configuration file.
 
+CRABQUIET
+    If present and not set to 0/no/off/false then ``crabsh`` will not write
+    fallback messages to standard output except in case of failure.  Such
+    messages would normally be sent by cron to the ``MAILTO`` address.
+    This option can also be specified via the client configuration files.
+
 CRABSHELL
     The shell which ``crabsh`` will use to invoke the cron job command.
     Defaults to ``/bin/sh`` regardless of the user's shell to replicate

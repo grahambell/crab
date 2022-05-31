@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Copyright (C) 2012-2013 Science and Technology Facilities Council.
-# Copyright (C) 2016-2021 East Asian Observatory.
+# Copyright (C) 2016-2022 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -86,6 +86,10 @@ def main():
 
     ignore = ('CRABIGNORE' in vars and true_string(vars['CRABIGNORE']))
 
+    # Check for CRABECHO variable.
+
+    echo = ('CRABECHO' in vars and true_string(vars['CRABECHO']))
+
     # Look for cron job ID
     #
     # We could leave the CRABID in the command for the shell to
@@ -100,10 +104,20 @@ def main():
     elif 'CRABID' in vars:
         crabid = vars['CRABID']
 
-    # Prepare Crab client options -- will be passed to client constructor
-    # when needed.
+    # Prepare Crab client and get "quiet" parameter.
 
-    client_options = {'command': command, 'crabid': crabid}
+    client = CrabClient(command=command, crabid=crabid)
+
+    if 'CRABQUIET' in vars:
+        quiet = true_string(vars['CRABQUIET'])
+    else:
+        try:
+            quiet = true_string(client.config.get('crabsh', 'quiet'))
+        except:
+            # The configuration key might have been missing -- since
+            # this is a crabsh-specific option, the crab client will
+            # not have ensured it is present.
+            quiet = False
 
     # Check for presence of PID file, if a PID file has been configured,
 
@@ -119,13 +133,13 @@ def main():
             # Only report "already running" status when not in "ignore" mode.
             if not ignore:
                 try:
-                    client = CrabClient(**client_options)
                     client.finish(CrabStatus.ALREADYRUNNING)
                 except CrabError:
                     err = sys.exc_info()[1]
-                    print('crabsh: ' + command)
-                    print('Failed to notify job already running.')
-                    print('ERROR: ' + str(err) + '\n')
+                    if not quiet:
+                        print('crabsh: ' + command)
+                        print('Failed to notify job already running.')
+                        print('ERROR: ' + str(err) + '\n')
 
             return 0
 
@@ -169,8 +183,6 @@ def main():
         # Otherwise attempt to execute the command with notifications sent
         # to the Crab server.
 
-        client = CrabClient(**client_options)
-
         try:
             response = client.start()
 
@@ -193,18 +205,20 @@ def main():
                     # except CrabError as err:
                     except CrabError:
                         err = sys.exc_info()[1]
-                        print('crabsh: ' + command)
-                        print('Failed to acknowledge inhibited job.')
-                        print('ERROR: ' + str(err) + '\n')
+                        if not quiet:
+                            print('crabsh: ' + command)
+                            print('Failed to acknowledge inhibited job.')
+                            print('ERROR: ' + str(err) + '\n')
 
                     return 0
 
         # except CrabError as err:
         except CrabError:
             err = sys.exc_info()[1]
-            print('crabsh: ' + command)
-            print('Failed to notify job start.')
-            print('ERROR: ' + str(err) + '\n')
+            if not quiet:
+                print('crabsh: ' + command)
+                print('Failed to notify job start.')
+                print('ERROR: ' + str(err) + '\n')
 
         returncode = None
 
@@ -252,24 +266,25 @@ def main():
             err = sys.exc_info()[1]
             # Print fall-back message for cron to send by email (to the
             # crontab owner or address set its MAILTO variable.
-            print('crabsh: ' + command)
-            print('Failed to notify job finish.')
-            print('ERROR: ' + str(err))
-            if returncode is None:
-                print('\nKilled by watchdog timeout.')
-            else:
-                print('\nRETURN CODE: ' + str(returncode))
-            if stdoutdata != '':
-                print('\nSTDOUT:')
-                print(stdoutdata)
-            if stderrdata != '':
-                print('\nSTDERR:')
-                print(stderrdata)
+            if (not quiet) or echo or (returncode is None) or returncode:
+                print('crabsh: ' + command)
+                print('Failed to notify job finish.')
+                print('ERROR: ' + str(err))
+                if returncode is None:
+                    print('\nKilled by watchdog timeout.')
+                else:
+                    print('\nRETURN CODE: ' + str(returncode))
+                if stdoutdata != '':
+                    print('\nSTDOUT:')
+                    print(stdoutdata)
+                if stderrdata != '':
+                    print('\nSTDERR:')
+                    print(stderrdata)
 
         else:
             # Echo the output only if we didn't already print it due
             # to an exception occurring.
-            if ('CRABECHO' in vars) and true_string(vars['CRABECHO']):
+            if echo:
                 if stdoutdata != '':
                     print(stdoutdata)
                 if stderrdata != '':
