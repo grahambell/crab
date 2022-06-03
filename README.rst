@@ -28,7 +28,6 @@ Packages
 * `CherryPy`_
 * `Mako`_ (`PyPI entry <https://pypi.python.org/pypi/Mako/>`__)
 * `jQuery`_
-* `PyRSS2Gen`_ (optional)
 * `Font Awesome`_ (free version for web, optional)
 * `ansi_up`_ (optional)
 * `MySQL Connector`_ (needed only if using a MySQL database,  `PyPI entry <https://pypi.org/project/mysql-connector-python/>`__)
@@ -37,7 +36,6 @@ Packages
 .. _`CherryPy`: https://pypi.python.org/pypi/CherryPy
 .. _`Mako`: https://www.makotemplates.org/
 .. _`jQuery`: https://jquery.com/
-.. _`PyRSS2Gen`: https://pypi.python.org/pypi/PyRSS2Gen/
 .. _`Font Awesome`: https://fontawesome.com/
 .. _`ansi_up`: https://github.com/drudru/ansi_up
 .. _`MySQL Connector`: https://dev.mysql.com/doc/connector-python/en/
@@ -68,7 +66,6 @@ To run Crab without installing it, and if any of the Python dependencies
 listed above can not be installed, they can be symlinked into the ``lib``
 directory in the following locations::
 
-    lib/PyRSS2Gen.py
     lib/cherrypy
     lib/crontab
     lib/mako

@@ -1,5 +1,4 @@
 crontab>=0.15
 CherryPy
 Mako
-PyRSS2Gen
 pytz

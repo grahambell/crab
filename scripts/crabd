@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Copyright (C) 2012-2013 Science and Technology Facilities Council.
-# Copyright (C) 2016-2021 East Asian Observatory.
+# Copyright (C) 2016-2022 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,11 +28,6 @@ from crab.notify import CrabNotify
 from crab.service.clean import CrabCleanService
 from crab.service.monitor import CrabMonitor
 from crab.service.notify import CrabNotifyService
-# crab.web.rss imports the optional PyRSS2Gen requirement
-try:
-    from crab.web.rss import CrabRSS
-except ImportError:
-    CrabRSS = None
 from crab.server import CrabServer
 from crab.server.config import read_crabd_config, \
     construct_log_handler, construct_store
@@ -211,20 +206,13 @@ def main():
     cherrypy.config.update(config)
 
     web = CrabWeb(
-        config['crab']['home'], {
-            'rss_enabled': (CrabRSS is not None),
-        })
+        config['crab']['home'], {})
     web.subscribe()
     cherrypy.tree.mount(web, '/', config)
 
     server = CrabServer(cherrypy.engine)
     server.subscribe()
     cherrypy.tree.mount(server, '/api/0', {})
-
-    if CrabRSS is not None:
-        rss = CrabRSS(cherrypy.engine, config['crab']['base_url'])
-        rss.subscribe()
-        cherrypy.tree.mount(rss, '/rss', {})
 
     cherrypy.engine.start()
     cherrypy.engine.block()

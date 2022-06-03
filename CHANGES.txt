@@ -5,6 +5,7 @@ Next release
       via the CRABQUIET variable or crabsh.quiet configuration parameter.
     - Now support Font Awesome version 6.  Existing installations of
       the Crab server being updated will also need an updated Font Awesome.
+    - Removed support for an RSS feed.
 
 0.5.1, 2021-08-05
 

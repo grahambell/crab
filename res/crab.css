@@ -211,14 +211,6 @@ td.linkcell a:link, td.linkcell a:visited {
     color: #00F;
 }
 
-a:link.rss, a:visited.rss {
-    background: #F80;
-    color: white;
-    border: 1px solid black;
-    padding: 5px;
-    border-radius: 5px;
-}
-
 h1 a:link, h1 a:visited {
     color: white;
 }
