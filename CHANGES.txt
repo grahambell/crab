@@ -3,6 +3,8 @@ Next release
     - Added a "quiet" option to prevent crabsh issuing fallback messages
       to standard output except in the case of failure.  This can be enabled
       via the CRABQUIET variable or crabsh.quiet configuration parameter.
+    - Now support Font Awesome version 6.  Existing installations of
+      the Crab server being updated will also need an updated Font Awesome.
 
 0.5.1, 2021-08-05
 

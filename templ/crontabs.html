@@ -55,12 +55,12 @@ ${key | h}
 
 <p>
 % if hasDeleted:
-<a href="#" id="show_deleted_${key | alphanum}"><span class="far fa-trash-alt"></span> Show deleted.</a>
-<a href="#" id="hide_deleted_${key | alphanum}" class="hidden"><span class="far fa-trash-alt"></span> Hide deleted.</a>
+<a href="#" id="show_deleted_${key | alphanum}"><span class="fa fa-trash"></span> Show deleted.</a>
+<a href="#" id="hide_deleted_${key | alphanum}" class="hidden"><span class="fa fa-trash"></span> Hide deleted.</a>
 % endif
 % if raw[key] is not None:
-<a href="#" id="show_raw_${key | alphanum}"><span class="far fa-file-alt"></span> Show raw crontab.</a>
-<a href="#" id="hide_raw_${key | alphanum}" class="hidden"><span class="far fa-file-alt"></span> Hide raw crontab.</a>
+<a href="#" id="show_raw_${key | alphanum}"><span class="fa fa-file"></span> Show raw crontab.</a>
+<a href="#" id="hide_raw_${key | alphanum}" class="hidden"><span class="fa fa-file"></span> Hide raw crontab.</a>
 % endif
 </p>
 
@@ -78,6 +78,6 @@ ${line | h}
 <a href="#" id="show_all_table" class="hidden"><span class="fa fa-table"></span> Show all tables.</a>
 <a href="#" id="hide_all_table"><span class="fa fa-table"></span> Hide all tables.</a>
 
-<a href="#" id="show_all_raw"><span class="far fa-file-alt"></span> Show all raw crontabs.</a>
-<a href="#" id="hide_all_raw" class="hidden"><span class="far fa-file-alt"></span> Hide all raw crontabs.</a>
+<a href="#" id="show_all_raw"><span class="fa fa-file"></span> Show all raw crontabs.</a>
+<a href="#" id="hide_all_raw" class="hidden"><span class="fa fa-file"></span> Hide all raw crontabs.</a>
 </p>

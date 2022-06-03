@@ -29,7 +29,7 @@ Packages
 * `Mako`_ (`PyPI entry <https://pypi.python.org/pypi/Mako/>`__)
 * `jQuery`_
 * `PyRSS2Gen`_ (optional)
-* `Font Awesome`_ (optional)
+* `Font Awesome`_ (free version for web, optional)
 * `ansi_up`_ (optional)
 * `MySQL Connector`_ (needed only if using a MySQL database,  `PyPI entry <https://pypi.org/project/mysql-connector-python/>`__)
 
@@ -79,14 +79,15 @@ Crab's ``res`` directory as::
     res/jquery.js
 
 To use Font Awesome icons, copy or symlink its ``webfonts`` directory into
-Crab's ``res`` directory, and also place its stylesheet inside
+Crab's ``res`` directory, and also place its stylesheets inside
 that subdirectory, giving::
 
-    res/webfonts/fontawesome-all.css
+    res/webfonts/fontawesome.css
+    res/webfonts/solid.css
     res/webfonts/fa-*.*
 
 Note that Font Awesome is not backward compatible between major
-version numbers.  Crab now uses version 5 of Font Awesome.
+version numbers.  Crab now uses version 6 of Font Awesome.
 
 To use ansi_up to interpret ANSI color commands in cron job output,
 copy or symlink the ``ansi_up.js`` file into Crab's ``res`` directory::
