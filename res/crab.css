@@ -295,6 +295,6 @@ label {
     vertical-align: top;
 }
 
-a + a > .fa {
+a:not(.hidden) + a > .fa, a:not(.hidden) + a.hidden + a > .fa {
     padding-left: 2ex;
 }
