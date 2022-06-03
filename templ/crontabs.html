@@ -74,6 +74,7 @@ ${line | h}
 
 % endfor
 
+% if len(jobs) > 1:
 <p>
 <a href="#" id="show_all_table" class="hidden"><span class="fa fa-table"></span> Show all tables.</a>
 <a href="#" id="hide_all_table"><span class="fa fa-table"></span> Hide all tables.</a>
@@ -81,3 +82,4 @@ ${line | h}
 <a href="#" id="show_all_raw"><span class="fa fa-file"></span> Show all raw crontabs.</a>
 <a href="#" id="hide_all_raw" class="hidden"><span class="fa fa-file"></span> Hide all raw crontabs.</a>
 </p>
+% endif
