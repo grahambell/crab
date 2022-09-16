@@ -130,7 +130,7 @@ def export_config(store, file_):
 
     # Retrieve raw crontabs.
     crontabs = []
-    for (host, user) in hostuser:
+    for (host, user) in sorted(hostuser):
         crontab = store.get_raw_crontab(host, user)
 
         if crontab is not None:
