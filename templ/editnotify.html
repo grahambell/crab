@@ -27,14 +27,14 @@
 %>
 <tr id="row_${nid | h}">
 % if match_mode:
-    <td><input name="host_${nid | h}"
+    <td><input type="text" name="host_${nid | h}"
 %     if n.get('host') is not None:
             value="${n['host'] | h}"
 %     else:
             value=""
 %     endif
     /></td>
-    <td><input name="user_${nid | h}"
+    <td><input type="text" name="user_${nid | h}"
 %     if n.get('user') is not None:
             value="${n['user'] | h}"
 %     else:
@@ -51,14 +51,14 @@
         >${methodname}</option>
 % endfor
     </select></td>
-    <td><input id="address_${nid | h}" name="address_${nid | h}"
+    <td><input type="text" id="address_${nid | h}" name="address_${nid | h}"
 % if n.get('address') is not None:
             value="${n['address'] | h}"
 % else:
             value=""
 % endif
         /></td>
-    <td><input name="time_${nid | h}"
+    <td><input type="text" name="time_${nid | h}"
 % if n.get('time') is not None:
             value="${n['time'] | h}"
 % else:
