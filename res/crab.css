@@ -298,3 +298,22 @@ label {
 a:not(.hidden) + a > .fa, a:not(.hidden) + a.hidden + a > .fa {
     padding-left: 2ex;
 }
+
+input[type="submit"], input[type="text"], input[type="password"], input[type="number"], input[type="date"], input[type="time"], input[type="email"], select, textarea, input[type="file"]::file-selector-button, input[type="button"] {
+    padding: 0.5ex;
+    border: 1px solid #888;
+    border-radius: 0.5ex;
+}
+
+input[type="submit"], select, input[type="file"]::file-selector-button, input[type="button"] {
+    background: #EEE;
+    color: #000;
+}
+
+input[type="submit"]:hover, select:hover, input[type="file"]::file-selector-button:hover, input[type="button"]:hover {
+    background: #CCC;
+}
+
+input[type="text"], input[type="password"], input[type="number"], input[type="date"], input[type="time"], input[type="email"] {
+    background: #FFF;
+}
