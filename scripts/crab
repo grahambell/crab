@@ -251,7 +251,7 @@ Commands:
 
     elif args[0] == 'info':
         client = CrabClient()
-        print(client.get_info())
+        print(client.get_info(timezone=guess_timezone()))
 
     else:
         parser.error('command not recognised')

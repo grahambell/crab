@@ -154,7 +154,7 @@ class CrabClient:
         else:
             return '\n'.join(data['crontab'])
 
-    def get_info(self):
+    def get_info(self, timezone=None):
         info = []
         info.append('Server: ' + self.config.get('server', 'host') +
                     ':' + self.config.get('server', 'port'))
@@ -173,6 +173,8 @@ class CrabClient:
                     's timeout, ' +
                     retry_info)
         info.append('Files: ' + ', '.join(self.configfiles))
+        if timezone is not None:
+            info.append('Time zone: ' + timezone)
         return '\n'.join(info)
 
     def _get_url(self, action):
