@@ -10,8 +10,9 @@
 <link rel="stylesheet" href="/res/webfonts/fontawesome.css">
 <link rel="stylesheet" href="/res/webfonts/solid.css">
 <link rel="icon" href="/res/favicon.png" sizes="16x16" type="image/png">
-% if self.attr.scripts:
 <script type="text/javascript" src="/res/jquery.js"></script>
+<script type="text/javascript" src="/res/crab.js"></script>
+% if self.attr.scripts:
 % for script in self.attr.scripts:
 %     if script.startswith('dyn:'):
 <script type="text/javascript" src="/dynres/${script[4:] | h}.js"></script>
@@ -23,11 +24,12 @@
 </head>
 <body>
 <div id="headerbar">
-<h1><a href="/">Crab</a></h1>
-<ul>
+<a href="#" id="menubutton"><span class="fa fa-bars"></span></a>
+<ul id="mainmenu">
 <li><span class="fa fa-table"></span> <a href="/">Dashboard</a></li>
 <li><span class="fa fa-envelope"></span> <a href="/notify">Notifications</a></li>
 </ul>
+<h1><a href="/">Crab</a></h1>
 <%block name="links" />
 </div>
 

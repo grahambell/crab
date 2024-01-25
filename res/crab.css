@@ -81,10 +81,6 @@ div#headerbar ul li + li {
     border-top: 1px solid grey;
 }
 
-div#headerbar *:hover + ul,  div#headerbar ul:hover {
-    display: block;
-}
-
 div#headerbar ul a, div#headerbar ul a:hover {
     color: #00F;
     text-shadow: none;
