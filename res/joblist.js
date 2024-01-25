@@ -135,10 +135,12 @@ function updateStatus(data) {
 
 function refreshStatusOnceSuccess(data, text, xhr) {
     updateStatus(data);
+    $('#command_refresh').children('span').removeClass('fa-spin');
 }
 
 function refreshStatusOnceError(xhr, text, error) {
     $('#last_refresh').text('Failed to fetch status from server.');
+    $('#command_refresh').children('span').removeClass('fa-spin');
 }
 
 function refreshStatusOnce() {
@@ -147,6 +149,7 @@ function refreshStatusOnce() {
         success: refreshStatusOnceSuccess,
         error: refreshStatusOnceError
     });
+    $('#command_refresh').children('span').addClass('fa-spin');
 }
 
 function refreshStatusCometSuccess(data, text, xhr) {
