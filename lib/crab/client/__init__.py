@@ -172,6 +172,9 @@ class CrabClient:
                     self.config.get('server', 'timeout') +
                     's timeout, ' +
                     retry_info)
+        if self.config.has_option('server', 'comm_timeout'):
+            info.append('Communication timeout: ' +
+                self.config.get('server', 'comm_timeout') + 's')
         info.append('Files: ' + ', '.join(self.configfiles))
         if timezone is not None:
             info.append('Time zone: ' + timezone)
@@ -199,7 +202,7 @@ class CrabClient:
         try:
             conn = HTTPConnection(self.config.get('server', 'host'),
                                   self.config.get('server', 'port'),
-                                  timeout=int(self.config.get(
+                                  timeout=float(self.config.get(
                                                   'server', 'timeout')))
         except TypeError:
             conn = HTTPConnection(self.config.get('server', 'host'),
@@ -222,6 +225,15 @@ class CrabClient:
                     sleep(retry_delay)
                     continue
                 raise
+
+            if self.config.has_option('server', 'comm_timeout'):
+                comm_timeout = float(self.config.get('server', 'comm_timeout'))
+                # Attempt to change the timeout in a "try" block in case the
+                # HTTPConnection does not have a "sock" attribute.
+                try:
+                    conn.sock.settimeout(comm_timeout)
+                except:
+                    pass
 
             return conn
 
