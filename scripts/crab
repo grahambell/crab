@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from codecs import latin_1_decode
+import codecs
 import os
 import sys
 from optparse import OptionParser
@@ -43,7 +43,7 @@ def send_crontab(client, crontab):
     return client.send_crontab(crontab, timezone=tz)
 
 
-def read_crontab():
+def read_crontab(codec):
     """Fetches the current user's crontab file.
 
     The output from ``crontab -l`` is decoded to give a unicode
@@ -56,7 +56,7 @@ def read_crontab():
         (stdoutdata, stderrdata) = p.communicate()
 
         if p.returncode == 0:
-            return latin_1_decode(stdoutdata, 'replace')[0]
+            return codec.decode(stdoutdata, 'replace')[0]
 
         else:
             print(sys.argv[0] + ': failed to read crontab')
@@ -66,7 +66,7 @@ def read_crontab():
         print(sys.argv[0] + ': could not execute crontab command')
 
 
-def read_file(path, silent=False):
+def read_file(path, codec, silent=False):
     """Returns the contents of the given file.
 
     The file is opened in text-mode read, so it should return
@@ -83,7 +83,7 @@ def read_file(path, silent=False):
         fh = None
 
         try:
-            fh = open(path, 'r')
+            fh = codecs.open(path, 'r', encoding=codec.name, errors='replace')
             return fh.read()
 
         except IOError:
@@ -96,16 +96,16 @@ def read_file(path, silent=False):
             fh.close()
 
 
-def do_import(client, crontabfile=None):
+def do_import(client, codec, crontabfile=None):
     """Action for the "import" command.
 
     Either reads the given file or fetches the user's crontab.  Then sends
     it to the Crab server."""
 
     if crontabfile is None:
-        crontab = read_crontab()
+        crontab = read_crontab(codec=codec)
     else:
-        crontab = read_file(crontabfile)
+        crontab = read_file(crontabfile, codec=codec)
 
     if crontab is None:
         return 1
@@ -202,7 +202,8 @@ Commands:
                     stderrdata = ''
 
                     if options.stdoutfile is not None:
-                        stdoutdata = read_file(options.stdoutfile, silent=True)
+                        stdoutdata = read_file(
+                            options.stdoutfile, codec=codec, silent=True)
                         if stdoutdata is None:
                             stdoutdata = 'Failed to read from file: ' + \
                                          options.stdoutfile
@@ -210,7 +211,8 @@ Commands:
                                 status = CrabStatus.WARNING
 
                     if options.stderrfile is not None:
-                        stderrdata = read_file(options.stderrfile, silent=True)
+                        stderrdata = read_file(
+                            options.stderrfile, codec=codec, silent=True)
                         if stderrdata is None:
                             stderrdata = 'Failed to read from file: ' + \
                                          options.stderrfile
@@ -227,7 +229,8 @@ Commands:
                 return 1
 
     elif args[0] == 'import':
-        return do_import(client=client, crontabfile=options.crontabfile)
+        return do_import(
+            client=client, codec=codec, crontabfile=options.crontabfile)
 
     elif args[0] == 'edit':
         status = subprocess.call(['crontab', '-e'],
@@ -237,7 +240,7 @@ Commands:
             return 1
 
         print(sys.argv[0] + ': importing crontab')
-        return do_import(client=client)
+        return do_import(client=client, codec=codec)
 
     elif args[0] == 'export':
         try:
