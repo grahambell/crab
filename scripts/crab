@@ -172,7 +172,9 @@ Commands:
 
     client = CrabClient(options.command, crabid=options.crabid)
 
-    codec = determine_codec(vars=os.environ)
+    codec = determine_codec(
+        encoding=client.config.get('client', 'encoding'),
+        vars=os.environ)
 
     status_commands = {
                        'finish': CrabStatus.SUCCESS,

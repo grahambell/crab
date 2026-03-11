@@ -71,8 +71,6 @@ def main():
         if envvar.startswith('CRAB') and envvar not in vars:
             vars[envvar] = env[envvar]
 
-    codec = determine_codec(vars=vars)
-
     # Determine shell to use
     #
     # Note that cron defaults to sh regardless of the user's shell.
@@ -120,6 +118,12 @@ def main():
             # this is a crabsh-specific option, the crab client will
             # not have ensured it is present.
             quiet = False
+
+    # Determine codec to use.
+
+    codec = determine_codec(
+        encoding=client.config.get('client', 'encoding'),
+        vars=vars)
 
     # Check for presence of PID file, if a PID file has been configured,
 

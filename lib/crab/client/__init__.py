@@ -72,6 +72,7 @@ class CrabClient:
         self.config.set('server', 'retry_delay', '5')
         self.config.add_section('client')
         self.config.set('client', 'use_fqdn', 'false')
+        self.config.set('client', 'encoding', '')
 
         env = os.environ
 

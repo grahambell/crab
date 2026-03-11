@@ -347,7 +347,8 @@ CRABECHO
 
 CRABENCODING
     Character encoding to use to read information from the system,
-    overriding that determined from the locale settings.
+    overriding that given in the client configuration file or determined
+    from the locale settings.
 
 CRABHOME
     If present overrides the Crab server home directory, where the
