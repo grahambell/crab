@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 # Copyright (C) 2012-2013 Science and Technology Facilities Council.
-# Copyright (C) 2016-2022 East Asian Observatory.
+# Copyright (C) 2016-2026 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from codecs import latin_1_encode, latin_1_decode
 import os
 import sys
 import time
@@ -26,6 +25,7 @@ from crab import CrabError, CrabStatus
 from crab.client import CrabClient
 from crab.util.compat import subprocess, subprocess_options, \
     subprocess_call, subprocess_communicate, TimeoutExpired
+from crab.util.encoding import determine_codec
 from crab.util.pid import pidfile_write, pidfile_running, pidfile_delete
 from crab.util.string import split_crab_vars, true_string
 
@@ -70,6 +70,8 @@ def main():
     for envvar in env:
         if envvar.startswith('CRAB') and envvar not in vars:
             vars[envvar] = env[envvar]
+
+    codec = determine_codec(vars=vars)
 
     # Determine shell to use
     #
@@ -238,8 +240,8 @@ def main():
                 p.kill()
                 (stdoutdata, stderrdata) = subprocess_communicate(p)
 
-            stdoutdata = (latin_1_decode(stdoutdata, 'replace'))[0]
-            stderrdata = (latin_1_decode(stderrdata, 'replace'))[0]
+            stdoutdata = (codec.decode(stdoutdata, 'replace'))[0]
+            stderrdata = (codec.decode(stderrdata, 'replace'))[0]
 
             status = CrabStatus.SUCCESS
 

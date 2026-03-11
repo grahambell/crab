@@ -345,6 +345,10 @@ CRABECHO
     This allows the output to be sent by email via cron's default
     behavior as well as being captured by the Crab system.
 
+CRABENCODING
+    Character encoding to use to read information from the system,
+    overriding that determined from the locale settings.
+
 CRABHOME
     If present overrides the Crab server home directory, where the
     ``res`` and ``templ`` directories are to be found.
