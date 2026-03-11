@@ -113,6 +113,9 @@ class CrabClient:
         Return the decoded server response, which may include
         an inhibit dictionary item."""
 
+        if self.command is None:
+            raise CrabError('client error: command not specified for job start')
+
         return self._write_json(self._get_url('start'),
                                 {'command': self.command},
                                 read=True)
@@ -120,6 +123,9 @@ class CrabClient:
     def finish(self, status=CrabStatus.UNKNOWN,
                stdoutdata='', stderrdata=''):
         """Notify the server that the job is finishing."""
+
+        if self.command is None:
+            raise CrabError('client error: command not specified for job finish')
 
         self._write_json(self._get_url('finish'),
                          {'command': self.command,
