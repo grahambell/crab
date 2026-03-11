@@ -28,7 +28,7 @@ from crab.util.encoding import determine_codec
 from crab.util.guesstimezone import guess_timezone
 
 
-def send_crontab(crontab):
+def send_crontab(client, crontab):
     """Sends the given crontab to the server.
 
     The crontab should be given as a unicode string.
@@ -40,7 +40,6 @@ def send_crontab(crontab):
 
     tz = guess_timezone()
 
-    client = CrabClient()
     return client.send_crontab(crontab, timezone=tz)
 
 
@@ -97,7 +96,7 @@ def read_file(path, silent=False):
             fh.close()
 
 
-def do_import(crontabfile=None):
+def do_import(client, crontabfile=None):
     """Action for the "import" command.
 
     Either reads the given file or fetches the user's crontab.  Then sends
@@ -112,7 +111,7 @@ def do_import(crontabfile=None):
         return 1
 
     try:
-        warning = send_crontab(crontab)
+        warning = send_crontab(client=client, crontab=crontab)
 
         if warning:
             print(sys.argv[0] + ': crontab import warnings:')
@@ -171,6 +170,8 @@ Commands:
 
     (options, args) = parser.parse_args()
 
+    client = CrabClient(options.command, crabid=options.crabid)
+
     codec = determine_codec(vars=os.environ)
 
     status_commands = {
@@ -191,8 +192,6 @@ Commands:
             parser.error('no command specified')
         else:
             try:
-                client = CrabClient(options.command, crabid=options.crabid)
-
                 if args[0] == 'start':
                     client.start()
                 else:
@@ -226,7 +225,7 @@ Commands:
                 return 1
 
     elif args[0] == 'import':
-        return do_import(options.crontabfile)
+        return do_import(client=client, crontabfile=options.crontabfile)
 
     elif args[0] == 'edit':
         status = subprocess.call(['crontab', '-e'],
@@ -236,11 +235,10 @@ Commands:
             return 1
 
         print(sys.argv[0] + ': importing crontab')
-        return do_import()
+        return do_import(client=client)
 
     elif args[0] == 'export':
         try:
-            client = CrabClient()
             crontab = client.fetch_crontab(raw=options.raw)
             print(crontab)
 
@@ -254,7 +252,6 @@ Commands:
         parser.print_help()
 
     elif args[0] == 'info':
-        client = CrabClient()
         print(client.get_info(timezone=guess_timezone(), codec=codec))
 
     else:
