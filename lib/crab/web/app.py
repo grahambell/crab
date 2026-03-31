@@ -14,12 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from datetime import datetime
-from json import JSONEncoder
-import mimetypes
-import os
 import re
-import time
 
 import cherrypy
 from cherrypy import HTTPError, HTTPRedirect
@@ -28,9 +23,10 @@ from mako.lookup import TemplateLookup
 from mako.template import Template
 
 from crab import CrabError, CrabStatus
-from crab.util.bus import CrabStoreListener
-from crab.util.filter import CrabEventFilter
 from crab.util.datetime import format_datetime, parse_datetime
+from crab.util.filter import CrabEventFilter
+from crab.web import CrabWebBase
+from crab.web.query import CrabWebQuery
 
 
 def empty_to_none(value):
@@ -38,70 +34,6 @@ def empty_to_none(value):
         return None
 
     return value
-
-
-class CrabWebBase(CrabStoreListener):
-    def __init__(self, bus):
-        super(CrabWebBase, self).__init__(bus)
-
-        self.bus = bus
-        self.service = {}
-        self.monitor = None
-
-    def subscribe(self):
-        super(CrabWebBase, self).subscribe()
-
-        self.bus.subscribe('crab-service', self.__service)
-
-    def __service(self, name, service):
-        self.service[name] = service
-
-        if name == 'Monitor':
-            self.monitor = service
-
-
-class CrabWebQuery(CrabWebBase):
-    """CherryPy handler class for the JSON query part of the crab web
-    interface."""
-
-    def __init__(self):
-        """Constructor: saves the given storage backend."""
-
-        super(CrabWebQuery, self).__init__(cherrypy.engine)
-
-        def to_json(obj):
-            if isinstance(obj, datetime):
-                return format_datetime(obj)
-            raise TypeError('Cannot JSON-encode object')
-
-        self.json_encoder = JSONEncoder(default=to_json)
-
-    @cherrypy.expose
-    def jobstatus(self, startid, alarmid, finishid):
-        """CherryPy handler returning the job status dict fetched
-        from the monitor thread."""
-
-        try:
-            s = self.monitor.wait_for_event_since(int(startid),
-                                                  int(alarmid), int(finishid))
-            s['service'] = dict((s, self.service[s].is_alive())
-                                for s in self.service)
-            return self.json_encoder.encode(s)
-        except ValueError:
-            raise HTTPError(400, 'Query parameter not an integer')
-
-    @cherrypy.expose
-    def jobinfo(self, id_):
-        """CherryPy handler returning the job information for the given job."""
-        try:
-            info = self.store.get_job_info(int(id_))
-        except ValueError:
-            raise HTTPError(400, 'Job ID not a number')
-        if info is None:
-            raise HTTPError(404, 'Job not found')
-
-        info["id"] = id_
-        return self.json_encoder.encode(info)
 
 
 class CrabWeb(CrabWebBase):

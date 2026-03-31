@@ -34,7 +34,7 @@ from crab.server.config import read_crabd_config, \
 from crab.util.bus import CrabPlugin, priority
 from crab.util.filter import CrabEventFilter
 from crab.util.pid import pidfile_write, pidfile_running, pidfile_delete
-from crab.web.web import CrabWeb
+from crab.web.app import CrabWeb
 
 
 class CrabFacilities:
