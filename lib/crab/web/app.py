@@ -25,6 +25,7 @@ from mako.template import Template
 from crab import CrabError, CrabStatus
 from crab.util.datetime import format_datetime, parse_datetime
 from crab.util.filter import CrabEventFilter
+from crab.util.web import server_url as url
 from crab.web import CrabWebBase
 from crab.web.query import CrabWebQuery
 
@@ -177,10 +178,10 @@ class CrabWeb(CrabWebBase):
                 with self.monitor.new_event:
                     self.monitor.new_event.wait(10)
 
-                raise HTTPRedirect("/job/" + str(id_))
+                raise HTTPRedirect(url('/job/{}'.format(id_)))
 
             elif submit_cancel:
-                raise HTTPRedirect("/job/" + str(id_))
+                raise HTTPRedirect(url('/job/{}'.format(id_)))
 
             else:
                 return self._write_template(
@@ -189,15 +190,15 @@ class CrabWeb(CrabWebBase):
                         'info': info,
                         'title': 'clear status',
                         'description': 'Reset the job status?',
-                        'target': '/job/' + str(id_) + '/clear',
+                        'target': url('/job/{}/clear'.format(id_)),
                     })
 
         elif command == 'uninhibit':
             if submit_confirm:
                 self.store.disable_inhibit(id_)
-                raise HTTPRedirect('/job/' + str(id_))
+                raise HTTPRedirect(url('/job/{}'.format(id_)))
             elif submit_cancel:
-                raise HTTPRedirect('/job/' + str(id_))
+                raise HTTPRedirect(url('/job/{}'.format(id_)))
             else:
                 return self._write_template(
                     'confirm.html', {
@@ -205,7 +206,7 @@ class CrabWeb(CrabWebBase):
                         'info': info,
                         'title': 'resume',
                         'description': 'Resume inhibited job?',
-                        'target': '/job/' + str(id_) + '/uninhibit',
+                        'target': url('/job/{}/uninhibit'.format(id_)),
                     })
 
         elif command == 'delete':
@@ -216,10 +217,10 @@ class CrabWeb(CrabWebBase):
                 else:
                     self.store.undelete_job(id_)
 
-                raise HTTPRedirect('/job/' + str(id_))
+                raise HTTPRedirect(url('/job/{}'.format(id_)))
 
             elif submit_cancel:
-                raise HTTPRedirect('/job/' + str(id_))
+                raise HTTPRedirect(url('/job/{}'.format(id_)))
 
             else:
                 return self._write_template(
@@ -230,7 +231,7 @@ class CrabWeb(CrabWebBase):
                         'description': (
                             ('Delete' if notdeleted else 'Undelete')
                             + ' this job from the server?'),
-                        'target': '/job/' + str(id_) + '/delete',
+                        'target': url('/job/{}/delete'.format(id_)),
                     })
 
         elif command == 'changeid':
@@ -243,12 +244,12 @@ class CrabWeb(CrabWebBase):
                             400, 'Specified job ID already exists.')
                     else:
                         self.store.update_job(id_, crabid=crabid)
-                        raise HTTPRedirect('/job/' + str(id_))
+                        raise HTTPRedirect(url('/job/{}'.format(id_)))
                 else:
                     raise HTTPError(400, 'Specified job ID is blank.')
 
             elif submit_cancel:
-                raise HTTPRedirect('/job/' + str(id_))
+                raise HTTPRedirect(url('/job/{}'.format(id_)))
 
             else:
                 return self._write_template(
@@ -266,7 +267,7 @@ class CrabWeb(CrabWebBase):
                             'crontab if the CRABID variable is used, '
                             'or in the cron job itself in the case '
                             'of Crab-aware cron jobs.',
-                        'target': '/job/' + str(id_) + '/changeid',
+                        'target': url('/job/{}/changeid'.format(id_)),
                         'data': {
                             'crabid': crabid,
                         },
@@ -334,7 +335,7 @@ class CrabWeb(CrabWebBase):
                     raise HTTPError(400, 'Orphan number not a number')
 
                 self.store.relink_job_config(orphan, id_)
-                raise HTTPRedirect("/job/" + str(id_))
+                raise HTTPRedirect(url('/job/{}'.format(id_)))
 
             elif submit_config:
                 try:
@@ -368,7 +369,7 @@ class CrabWeb(CrabWebBase):
                     id_, graceperiod, timeout,
                     success_pattern, warning_pattern, fail_pattern, note,
                     inhibit)
-                raise HTTPRedirect("/job/" + str(id_))
+                raise HTTPRedirect(url('/job/{}'.format(id_)))
 
             else:
                 config = self.store.get_job_config(id_)
@@ -434,7 +435,7 @@ class CrabWeb(CrabWebBase):
                 for notifyid in existing:
                     self.store.delete_notification(notifyid)
 
-                raise HTTPRedirect('/job/' + str(id_))
+                raise HTTPRedirect(url('/job/{}'.format(id_)))
             else:
                 config = self.store.get_job_config(id_)
 
@@ -542,7 +543,7 @@ class CrabWeb(CrabWebBase):
             for notifyid in existing:
                 self.store.delete_notification(notifyid)
 
-            raise HTTPRedirect('/')
+            raise HTTPRedirect(url('/'))
 
         else:
             return self._write_template(

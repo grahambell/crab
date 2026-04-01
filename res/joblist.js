@@ -2,6 +2,17 @@ $(document).ready(function () {
     var sortByStatus = false;
     var disconnectFavicon = null;
 
+    var jobs_body = $('#joblistbody');
+    var refresh_url = jobs_body.data('refresh-url');
+    var info_url = jobs_body.data('info-url');
+
+    var service_status = $('#service_status');
+    var icon_url_ok = service_status.data('icon-ok');
+    var icon_url_warning = service_status.data('icon-warning');
+    var icon_url_error = service_status.data('icon-error');
+    var icon_url_stopped = service_status.data('icon-stopped');
+    var icon_url_disconnect = service_status.data('icon-disconnect');
+
     // Need to load the disconnected icon now because if the
     // server vanishes we will not be able to load it when
     // needed.
@@ -17,7 +28,7 @@ $(document).ready(function () {
             disconnectFavicon = canvas.toDataURL('image/png');
         };
 
-        image.src = '/res/favicon-disconnect.png';
+        image.src = icon_url_disconnect;
     })();
 
     // Find the status_running CSS rule and make it flash.
@@ -50,10 +61,9 @@ $(document).ready(function () {
 
     // Set up table sorting controls.
     $('#headingstatus').click(function (event) {
-        var tab = $('#joblistbody');
-        tab.append(tab.children().has('.status_ok').detach());
-        tab.prepend(tab.children().has('.status_warn').detach());
-        tab.prepend(tab.children().has('.status_fail').detach());
+        jobs_body.append(jobs_body.children().has('.status_ok').detach());
+        jobs_body.prepend(jobs_body.children().has('.status_warn').detach());
+        jobs_body.prepend(jobs_body.children().has('.status_fail').detach());
         sortByStatus = true;
         $('#joblisthead span').removeClass();
         $('#preheadingstatus').addClass('fa fa-sort');
@@ -65,9 +75,8 @@ $(document).ready(function () {
 
         return function (event) {
             var arr = new Array();
-            var tab = $('#joblistbody');
 
-            tab.children().each(function (index) {
+            jobs_body.children().each(function (index) {
                 arr.push({row: this, text: $(this).find('[id^=' + keyfield + '_]').text()});
             });
 
@@ -76,7 +85,7 @@ $(document).ready(function () {
             });
 
             for (var i in arr) {
-                tab.append($(arr[i].row).detach());
+                jobs_body.append($(arr[i].row).detach());
             }
 
             $('#joblisthead span').removeClass();
@@ -111,8 +120,7 @@ $(document).ready(function () {
                     box.removeClass().addClass('status_warn');
 
                     if (sortByStatus) {
-                        var tab = $('#joblistbody');
-                        tab.prepend($('#row_' + id).detach());
+                        jobs_body.prepend($('#row_' + id).detach());
                     }
                 }
             }
@@ -120,8 +128,7 @@ $(document).ready(function () {
                 box.removeClass().addClass('status_fail');
 
                 if (sortByStatus) {
-                    var tab = $('#joblistbody');
-                    tab.prepend($('#row_' + id).detach());
+                    jobs_body.prepend($('#row_' + id).detach());
                 }
             }
         }
@@ -169,7 +176,7 @@ $(document).ready(function () {
             }
             statustext = statustext.concat(id + '</li> ');
         }
-        $('#service_status').html(statustext);
+        service_status.html(statustext);
     });
 
     var updateStatus = (function (data) {
@@ -179,7 +186,7 @@ $(document).ready(function () {
 
             if ($('#row_' + id).length == 0) {
                 $('table#joblist').append(joblistrowtemplate.replace(new RegExp('XXX', 'g'), id));
-                $.ajax('/query/jobinfo/' + id, {
+                $.ajax(info_url + '/' + id, {
                     dataType: 'json',
                 }).done(function (data) {
                     var id = data['id'];
@@ -212,21 +219,21 @@ $(document).ready(function () {
         }
 
         if (! service_ok) {
-            setFavicon('/res/favicon-stopped.png');
+            setFavicon(icon_url_stopped);
         }
         else if (data['numerror'] > 0) {
-            setFavicon('/res/favicon-error.png');
+            setFavicon(icon_url_error);
         }
         else if (data['numwarning'] > 0) {
-            setFavicon('/res/favicon-warn.png');
+            setFavicon(icon_url_warning);
         }
         else {
-            setFavicon('/res/favicon.png');
+            setFavicon(icon_url_ok);
         }
     });
 
     var refreshStatusCometLoop = (function (startid, alarmid, finishid) {
-        $.ajax('/query/jobstatus?startid=' + startid + '&alarmid=' + alarmid + '&finishid=' + finishid, {
+        $.ajax(refresh_url + '?startid=' + startid + '&alarmid=' + alarmid + '&finishid=' + finishid, {
             dataType: 'json',
             timeout: 160000
         }).done(function (data, text, xhr) {
@@ -247,7 +254,7 @@ $(document).ready(function () {
     $('#command_refresh').click(function (event) {
         $('#command_refresh').children('span').addClass('fa-spin');
 
-        $.ajax('/query/jobstatus?startid=0&alarmid=0&finishid=0', {
+        $.ajax(refresh_url + '?startid=0&alarmid=0&finishid=0', {
             dataType: 'json',
         }).done(function (data, text, xhr) {
             updateStatus(data);

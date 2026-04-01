@@ -1,18 +1,18 @@
 <%!
     from crab import CrabStatus
-    from crab.util.web import abbr
+    from crab.util.web import abbr, server_url as url
 
     scripts = ['ansi_up', 'coloroutput']
 %>
 <%inherit file="base.html"/>
 
 <%block name="links">
-<a href="/host/${info['host'] | h}">${info['host'] | h}</a>
-<a href="/user/${info['user'] | h}">${info['user'] | h}</a>
+<a href="${url('/host/{}'.format(info['host'])) | h}">${info['host'] | h}</a>
+<a href="${url('/user/{}'.format(info['user'])) | h}">${info['user'] | h}</a>
 % if info['crabid'] is not None:
-<a href="/job/${id | h}">${info['crabid'] | h}</a>
+<a href="${url('/job/{}'.format(id)) | h}">${info['crabid'] | h}</a>
 % else:
-<a href="/job/${id | h}">${info['command'] | abbr}</a>
+<a href="${url('/job/{}'.format(id)) | h}">${info['command'] | abbr}</a>
 % endif
 <span>output</span>
 </%block>
@@ -22,11 +22,11 @@
 % if next or prev:
 <p>
 %     if prev:
-    <a href="/job/${id | h}/output/${prev | h}"><span class="fa fa-backward"></span> Previous</a>
+    <a href="${url('/job/{}/output/{}'.format(id, prev)) | h}"><span class="fa fa-backward"></span> Previous</a>
 %     endif
 %     if next:
-    <a href="/job/${id | h}/output/${next | h}"><span class="fa fa-forward"></span> Next</a>
-    <a href="/job/${id | h}/output"><span class="fa fa-fast-forward"></span> Last</a>
+    <a href="${url('/job/{}/output/{}'.format(id, next)) | h}"><span class="fa fa-forward"></span> Next</a>
+    <a href="${url('/job/{}/output'.format(id)) | h}"><span class="fa fa-fast-forward"></span> Last</a>
 %     endif
 </p>
 % endif

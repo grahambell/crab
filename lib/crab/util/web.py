@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import cherrypy
 import markupsafe
 
 
@@ -44,3 +45,9 @@ def abbr(text, limit=60, tolerance=10):
 
     else:
         return str(markupsafe.escape(text))
+
+
+def server_url(*args):
+    """Uses CherryPy's url function to prepare a server-relative URL."""
+
+    return cherrypy.url(*args, relative='server')

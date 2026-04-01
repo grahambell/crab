@@ -2,7 +2,7 @@
     import pytz
 
     from crab.util.string import mergelines
-    from crab.util.web import abbr
+    from crab.util.web import abbr, server_url as url
 
     scripts = ["editnotify"]
 %>
@@ -10,12 +10,12 @@
 
 <%block name="links">
 % if not match_mode:
-<a href="/host/${info['host'] | h}">${info['host'] | h}</a>
-<a href="/user/${info['user'] | h}">${info['user'] | h}</a>
+<a href="${url('/host/{}'.format(info['host'])) | h}">${info['host'] | h}</a>
+<a href="${url('/user/{}'.format(info['user'])) | h}">${info['user'] | h}</a>
 %     if info['crabid'] is not None:
-<a href="/job/${id | h}">${info['crabid'] | h}</a>
+<a href="${url('/job/{}'.format(id)) | h}">${info['crabid'] | h}</a>
 %     else:
-<a href="/job/${id | h}">${info['command'] | abbr}</a>
+<a href="${url('/job/{}'.format(id)) | h}">${info['command'] | abbr}</a>
 %     endif
 % endif
 <span>notifications</span>
@@ -127,14 +127,14 @@ this specific job.
 <p>
 Notifications can also be configured
 by host name and/or by user name on the
-<a href="/notify">host/user notifications</a> page.
+<a href="${url('/notify') | h }">host/user notifications</a> page.
 </p>
 % endif
 
 % if match_mode:
-<form method="post" action="/notify">
+<form method="post" action="${url('/notify') | h}">
 % else:
-<form method="post" action="/job/${id | h}/notify">
+<form method="post" action="${url('/job/{}/notify'.format(id)) | h}">
 % endif
 <table id="notifylist">
 <tr>

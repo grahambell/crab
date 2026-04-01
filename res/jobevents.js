@@ -2,6 +2,8 @@ $(document).ready(function () {
     var events_body = $('#jobevents');
     var events_form = $('#eventsform');
 
+    var refresh_url = events_body.data('refresh-url');
+
     var refreshJobEvents = (function (enddate) {
         var params = events_form.serialize();
 
@@ -9,7 +11,7 @@ $(document).ready(function () {
             params = params + '&enddate=' + encodeURIComponent(enddate);
         }
 
-        $.ajax('/job/'+ jobidnumber + '?barerows=1&' + params, {
+        $.ajax(refresh_url + '?barerows=1&' + params, {
             dataType: 'html',
             timeout: 10000
         }).done(function (data, text, xhr) {
@@ -19,7 +21,7 @@ $(document).ready(function () {
         });
 
         var stateObj = {'enddate': enddate};
-        history.replaceState(stateObj, '', '/job/' + jobidnumber + '?' + params);
+        history.replaceState(stateObj, '', refresh_url + '?' + params);
     });
 
     events_form.change(function (event) {

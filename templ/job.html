@@ -1,14 +1,14 @@
 <%!
     from crab import CrabStatus
-    from crab.util.web import abbr
+    from crab.util.web import abbr, server_url as url
 
     scripts = ["jobevents"]
 %>
 <%inherit file="base.html"/>
 
 <%block name="links">
-<a href="/host/${info['host'] | h}">${info['host'] | h}</a>
-<a href="/user/${info['user'] | h}">${info['user'] | h}</a>
+<a href="${url('/host/{}'.format(info['host'])) | h}">${info['host'] | h}</a>
+<a href="${url('/user/{}'.format(info['user'])) | h}">${info['user'] | h}</a>
 % if info['crabid'] is not None:
 <span>${info['crabid'] | h}</span>
 % else:
@@ -115,17 +115,17 @@
 </table>
 
 <p>
-    <a href="/job/${id | h}/config"><span class="fa fa-cog"></span> Edit configuration.</a>
-    <a href="/job/${id | h}/notify"><span class="fa fa-envelope"></span> Edit notifications.</a>
+    <a href="${url('/job/{}/config'.format(id)) | h}"><span class="fa fa-cog"></span> Edit configuration.</a>
+    <a href="${url('/job/{}/notify'.format(id)) | h}"><span class="fa fa-envelope"></span> Edit notifications.</a>
 </p>
 % if status['status'] is not None and not CrabStatus.is_ok(status['status']):
 <p>
-    <a href="/job/${id | h}/clear"><span class="fa fa-check-circle"></span> Clear status.</a> (${CrabStatus.get_name(status['status']) | h})
+    <a href="${url('/job/{}/clear'.format(id)) | h}"><span class="fa fa-check-circle"></span> Clear status.</a> (${CrabStatus.get_name(status['status']) | h})
 </p>
 % endif
 % if config is not None and config['inhibit']:
 <p>
-    <a href="/job/${id | h}/uninhibit"><span class="fa fa-play"></span> Resume inhibited job.</a>
+    <a href="${url('/job/{}/uninhibit'.format(id)) | h}"><span class="fa fa-play"></span> Resume inhibited job.</a>
 </p>
 % endif
 
@@ -160,10 +160,6 @@ Show all
 <a href="#" id="eventslast"><span class="fa fa-fast-forward"></span> Last</a>
 </p>
 </form>
-<script>
-var jobidnumber = '${id | h}';
-</script>
-
 
 
 <table>
@@ -175,7 +171,7 @@ var jobidnumber = '${id | h}';
         <th>Duration</th>
     </tr>
     </thead>
-    <tbody id="jobevents">
+    <tbody id="jobevents" data-refresh-url="${url('/job/{}'.format(id)) | h}">
 <%include file="jobevents.html" />
     </tbody>
 </table>

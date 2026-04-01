@@ -1,15 +1,15 @@
 <%!
-    from crab.util.web import abbr
+    from crab.util.web import abbr, server_url as url
 %>
 <%inherit file="base.html"/>
 
 <%block name="links">
-<a href="/host/${info['host'] | h}">${info['host'] | h}</a>
-<a href="/user/${info['user'] | h}">${info['user'] | h}</a>
+<a href="${url('/host/{}'.format(info['host'])) | h}">${info['host'] | h}</a>
+<a href="${url('/user/{}'.format(info['user'])) | h}">${info['user'] | h}</a>
 % if info['crabid'] is not None:
-<a href="/job/${id | h}">${info['crabid'] | h}</a>
+<a href="${url('/job/{}'.format(id)) | h}">${info['crabid'] | h}</a>
 % else:
-<a href="/job/${id | h}">${info['command'] | abbr}</a>
+<a href="${url('/job/{}'.format(id)) | h}">${info['command'] | abbr}</a>
 % endif
 <span>${title | h}</span>
 </%block>

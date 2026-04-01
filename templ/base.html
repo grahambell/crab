@@ -1,23 +1,25 @@
 <!DOCTYPE HTML>
 <%!
+    from crab.util.web import server_url as url
+
     scripts = []
 %>
 <html>
 <head>
 <title>Crab</title>
-<link rel="stylesheet" href="/res/crab.css">
+<link rel="stylesheet" href="${url('/res/crab.css') | h}">
 <!-- Icons from: Font Awesome by Dave Gandy - https://fontawesome.com -->
-<link rel="stylesheet" href="/res/webfonts/fontawesome.css">
-<link rel="stylesheet" href="/res/webfonts/solid.css">
-<link rel="icon" href="/res/favicon.png" sizes="16x16" type="image/png">
-<script type="text/javascript" src="/res/jquery.js"></script>
-<script type="text/javascript" src="/res/crab.js"></script>
+<link rel="stylesheet" href="${url('/res/webfonts/fontawesome.css') | h}">
+<link rel="stylesheet" href="${url('/res/webfonts/solid.css') | h}">
+<link rel="icon" href="${url('/res/favicon.png') | h}" sizes="16x16" type="image/png">
+<script type="text/javascript" src="${url('/res/jquery.js') | h }"></script>
+<script type="text/javascript" src="${url('/res/crab.js') | h }"></script>
 % if self.attr.scripts:
 % for script in self.attr.scripts:
 %     if script.startswith('dyn:'):
-<script type="text/javascript" src="/dynres/${script[4:] | h}.js"></script>
+<script type="text/javascript" src="${url('/dynres/{}.js').format(script[4:]) | h}"></script>
 %     else:
-<script type="text/javascript" src="/res/${script | h}.js"></script>
+<script type="text/javascript" src="${url('/res/{}.js'.format(script)) | h}"></script>
 %     endif
 % endfor
 % endif
@@ -26,10 +28,10 @@
 <div id="headerbar">
 <a href="#" id="menubutton"><span class="fa fa-bars"></span></a>
 <ul id="mainmenu">
-<li><span class="fa fa-table"></span> <a href="/">Dashboard</a></li>
-<li><span class="fa fa-envelope"></span> <a href="/notify">Notifications</a></li>
+<li><span class="fa fa-table"></span> <a href="${url('/') | h}">Dashboard</a></li>
+<li><span class="fa fa-envelope"></span> <a href="${url('/notify') | h}">Notifications</a></li>
 </ul>
-<h1><a href="/">Crab</a></h1>
+<h1><a href="${url('/') | h }">Crab</a></h1>
 <%block name="links" />
 </div>
 

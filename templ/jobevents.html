@@ -1,5 +1,6 @@
 <%!
     from crab import CrabEvent, CrabStatus
+    from crab.util.web import server_url as url
 %>
 % for event in events:
 % if event["type"] == 1:
@@ -27,7 +28,7 @@
          cell_class = 'status_warn'
 
      if event['type'] == CrabEvent.FINISH:
-         cell_link = '/job/' + str(id) + '/output/' + str(event['eventid'])
+         cell_link = url('/job/{}/output/{}'.format(id, event['eventid']))
      else:
          cell_link = None
 

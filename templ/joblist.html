@@ -1,6 +1,6 @@
 <%!
     from crab.util.string import mergelines
-    from crab.util.web import abbr
+    from crab.util.web import abbr, server_url as url
 
     scripts = ["dyn:crabutil", "joblist"]
 %>
@@ -8,23 +8,23 @@
 
 <%def name="joblistrow(job)" filter="mergelines">
     <tr id="row_${job["id"] | h}">
-        <td class="statuscell"><a href="/job/${job["id"] | h}/output" id="status_${job["id"] | h}" class="status_unknown">Loading</a></td>
+        <td class="statuscell"><a href="${url('/job/{}/output'.format(job['id'])) | h}" id="status_${job["id"] | h}" class="status_unknown">Loading</a></td>
 % if job.get("host") is not None:
-        <td class="linkcell"><a href="/host/${job['host']}" id="host_${job["id"] | h}">${job["host"] | h}</a></td>
+        <td class="linkcell"><a href="${url('/host/{}'.format(job['host'])) | h}" id="host_${job["id"] | h}">${job["host"] | h}</a></td>
 % else:
         <td id="host_${job["id"] | h}">&nbsp;</td>
 % endif
 % if job.get('user') is not None:
-        <td class="linkcell"><a href="/user/${job['user']}" id="user_${job["id"] | h}">${job['user'] | h}</a></td>
+        <td class="linkcell"><a href="${url('/user/{}'.format(job['user'])) | h}" id="user_${job["id"] | h}">${job['user'] | h}</a></td>
 % else:
         <td id="user_${job["id"] | h}">&nbsp;</td>
 % endif
 % if job.get('crabid') is not None:
-        <td class="linkcell"><a href="/job/${job['id'] | h}" id="crabid_${job["id"] | h}">${job["crabid"] | h}</a></td>
+        <td class="linkcell"><a href="${url('/job/{}'.format(job['id'])) | h}" id="crabid_${job["id"] | h}">${job["crabid"] | h}</a></td>
 % else:
         <td class="status_unknown" id="crabid_${job["id"] | h}">Unspecified</td>
 % endif
-        <td class="linkcell"><a href="/job/${job["id"] | h}" id="command_${job["id"] | h}">
+        <td class="linkcell"><a href="${url('/job/{}'.format(job['id'])) | h}" id="command_${job["id"] | h}">
 % if job.get('command') is not None:
             ${job["command"] | abbr}
 % else:
@@ -48,7 +48,7 @@
         <th><span id="preheadingreliability"></span><a href="#" id="headingreliability">Reliability</a></th>
     </tr>
     </thead>
-    <tbody id="joblistbody">
+    <tbody id="joblistbody" data-refresh-url="${url('/query/jobstatus') | h}" data-info-url="${url('/query/jobinfo') | h}">
 % for job in jobs:
     ${joblistrow(job)}
 % endfor
@@ -60,7 +60,7 @@
 var joblistrowtemplate = '${joblistrow(job)}';
 </script>
 
-<ul id="service_status"></ul>
+<ul id="service_status" data-icon-disconnect="${url('/res/favicon-disconnect.png') | h}" data-icon-ok="${url('/res/favicon.png') | h}" data-icon-warning="${url('/res/favicon-warn.png') | h}" data-icon-error="${url('/res/favicon-error.png') | h}" data-icon-stopped="${url('/res/favicon-stopped.png') | h}"></ul>
 
 <p>
     <a href="#" id="command_refresh"><span class="fa fa-arrows-rotate"></span> Refresh</a>
