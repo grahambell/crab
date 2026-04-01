@@ -66,8 +66,8 @@ class CrabMinutely(Thread):
 
             if not minute_equal(previous, self._previous):
                 try:
-                    self.run_minutely(previous.replace(second=0,
-                                                       microsecond=0))
+                    self.run_minutely(
+                        previous.replace(second=0, microsecond=0))
                 except Exception as e:
                     logger.exception("Error: run_minutely raised exception")
 

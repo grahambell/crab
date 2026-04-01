@@ -103,8 +103,9 @@ class CrabServer(CrabStoreListener):
             if status not in CrabStatus.VALUES:
                 raise CrabError('invalid finish status')
 
-            self.store.log_finish(host, user, crabid, command, status,
-                                  data.get('stdout'), data.get('stderr'))
+            self.store.log_finish(
+                host, user, crabid, command, status,
+                data.get('stdout'), data.get('stderr'))
 
         except CrabError as err:
             cherrypy.log.error('CrabError: log error: ' + str(err))

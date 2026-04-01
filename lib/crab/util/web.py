@@ -37,9 +37,10 @@ def abbr(text, limit=60, tolerance=10):
         else:
             shorttext = text[:space]
 
-        return ('<span title="' + str(markupsafe.escape(text)) +
-                '">' + str(markupsafe.escape(shorttext)) +
-                '&hellip;</span>')
+        return (
+            '<span title="' + str(markupsafe.escape(text))
+            + '">' + str(markupsafe.escape(shorttext))
+            + '&hellip;</span>')
 
     else:
         return str(markupsafe.escape(text))

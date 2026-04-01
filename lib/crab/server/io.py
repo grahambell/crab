@@ -83,8 +83,9 @@ def import_config(store, file_):
 
             for notification in job['notifications']:
                 notifyid = existing_notify.get(_notify_key(notification))
-                store.write_notification(notifyid=notifyid, configid=configid,
-                                         host=None, user=None, **notification)
+                store.write_notification(
+                    notifyid=notifyid, configid=configid,
+                    host=None, user=None, **notification)
 
     # Store any crontabs which were given.
     for crontab in data['crontabs']:
@@ -99,8 +100,9 @@ def import_config(store, file_):
 
     for notification in data['notifications']:
         notifyid = existing_notify.get(_notify_key(notification, match=True))
-        store.write_notification(notifyid=notifyid, configid=None,
-                                 **notification)
+        store.write_notification(
+            notifyid=notifyid, configid=None,
+            **notification)
 
 
 def export_config(store, file_):
@@ -181,5 +183,6 @@ def _notify_key(notification, match=False):
         return (notification['host'], notification['user']) + \
             _notify_key(notification)
 
-    return (notification['method'], notification['address'],
-            notification['time'], notification['timezone'])
+    return (
+        notification['method'], notification['address'],
+        notification['time'], notification['timezone'])

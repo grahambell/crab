@@ -40,8 +40,9 @@ class CrabSchedule(CronTab):
             item = CronTab.__init__(self, specifier)
 
         except ValueError as err:
-            raise CrabError('Failed to parse cron time specifier ' +
-                            specifier + ' reason: ' + str(err))
+            raise CrabError(
+                'Failed to parse cron time specifier ' +
+                specifier + ' reason: ' + str(err))
 
         self.timezone = None
 
@@ -52,7 +53,8 @@ class CrabSchedule(CronTab):
                 # the timezone objects by zone name.
                 self.timezone = pytz.timezone(timezone)
             except pytz.UnknownTimeZoneError:
-                logger.warning('Warning: unknown time zone {}'.format(timezone))
+                logger.warning(
+                    'Warning: unknown time zone {}'.format(timezone))
 
     def match(self, datetime_):
         """Determines whether the given datetime matches the scheduling
@@ -64,11 +66,12 @@ class CrabSchedule(CronTab):
 
         localtime = self._localtime(datetime_)
 
-        return (self.matchers.minute(localtime.minute, localtime) and
-                self.matchers.hour(localtime.hour, localtime) and
-                self.matchers.day(localtime.day, localtime) and
-                self.matchers.month(localtime.month, localtime) and
-                self.matchers.weekday(localtime.isoweekday() % 7, localtime))
+        return (
+            self.matchers.minute(localtime.minute, localtime) and
+            self.matchers.hour(localtime.hour, localtime) and
+            self.matchers.day(localtime.day, localtime) and
+            self.matchers.month(localtime.month, localtime) and
+            self.matchers.weekday(localtime.isoweekday() % 7, localtime))
 
     def next_datetime(self, datetime_):
         """return a datetime rather than number of

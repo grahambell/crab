@@ -115,8 +115,9 @@ class CrabStoreDB(CrabStore):
         self.lock = lock
         self.outputstore = outputstore
 
-    def _get_jobs(self, c, host, user, include_deleted=False,
-                  crabid=None, command=None, without_crabid=False):
+    def _get_jobs(
+            self, c, host, user, include_deleted=False,
+            crabid=None, command=None, without_crabid=False):
         """Private/protected version of get_jobs which does not
         acquire the lock, and takes more search parameters."""
 
@@ -165,22 +166,25 @@ class CrabStoreDB(CrabStore):
     def _insert_job(self, c, host, user, crabid, time, command, timezone):
         """Inserts a job record into the database."""
 
-        c.execute('INSERT INTO job (host, user, crabid, ' +
-                  'time, command, timezone)' +
-                  'VALUES (?, ?, ?, ?, ?, ?)',
-                  [host, user, crabid, time, command, timezone])
+        c.execute(
+            'INSERT INTO job (host, user, crabid, ' +
+            'time, command, timezone)' +
+            'VALUES (?, ?, ?, ?, ?, ?)',
+            [host, user, crabid, time, command, timezone])
 
         return c.lastrowid
 
     def _delete_job(self, c, id_):
         """Marks a job as deleted in the database."""
 
-        c.execute('UPDATE job SET deleted=CURRENT_TIMESTAMP ' +
-                  'WHERE id=?',
-                  [id_])
+        c.execute(
+            'UPDATE job SET deleted=CURRENT_TIMESTAMP ' +
+            'WHERE id=?',
+            [id_])
 
-    def _update_job(self, c, id_,
-                    crabid=None, command=None, time=None, timezone=None):
+    def _update_job(
+            self, c, id_,
+            crabid=None, command=None, time=None, timezone=None):
         """Marks a job as not deleted, and updates its information.
 
         Only fields not given as None are updated."""
@@ -206,8 +210,9 @@ class CrabStoreDB(CrabStore):
 
         params.append(id_)
 
-        c.execute('UPDATE job SET ' + ', '.join(fields) + ' '
-                  'WHERE id=?', params)
+        c.execute(
+            'UPDATE job SET ' + ', '.join(fields) + ' WHERE id=?',
+            params)
 
     def _log_start(self, c, id_, command):
         """Inserts a job start record into the database.
@@ -215,9 +220,9 @@ class CrabStoreDB(CrabStore):
         Private method to perform only the actual insertion.  The lock
         should already have been acquired."""
 
-        c.execute('INSERT INTO jobstart (jobid, command) '
-                  'VALUES (?, ?)',
-                  [id_, command])
+        c.execute(
+            'INSERT INTO jobstart (jobid, command) VALUES (?, ?)',
+            [id_, command])
 
     def _log_finish(self, c, id_, command, status):
         """Inserts a job finish record into the database.
@@ -227,9 +232,9 @@ class CrabStoreDB(CrabStore):
 
         Returns the finish record ID."""
 
-        c.execute('INSERT INTO jobfinish (jobid, command, status) ' +
-                  'VALUES (?, ?, ?)',
-                  [id_, command, status])
+        c.execute(
+            'INSERT INTO jobfinish (jobid, command, status) VALUES (?, ?, ?)',
+            [id_, command, status])
 
         return c.lastrowid
 
@@ -242,8 +247,9 @@ class CrabStoreDB(CrabStore):
         records."""
 
         with self.lock as c:
-            c.execute('INSERT INTO jobalarm (jobid, status) VALUES (?, ?)',
-                      [id_, status])
+            c.execute(
+                'INSERT INTO jobalarm (jobid, status) VALUES (?, ?)',
+                [id_, status])
 
     def get_job_info(self, id_):
         """Retrieve information about a job by ID number."""
@@ -254,7 +260,8 @@ class CrabStoreDB(CrabStore):
                 'SELECT host, user, command, crabid, time, timezone, '
                 'installed AS "installed [timestamp]", '
                 'deleted AS "deleted [timestamp]" '
-                'FROM job WHERE id = ?', [id_])
+                'FROM job WHERE id = ?',
+                [id_])
 
     def _get_job_config(self, c, id_):
         """Private/protected version of get_job_config which does
@@ -265,7 +272,8 @@ class CrabStoreDB(CrabStore):
             'SELECT id AS configid, graceperiod, timeout, ' +
             'success_pattern, warning_pattern, fail_pattern, ' +
             'note, inhibit ' +
-            'FROM jobconfig WHERE jobid = ?', [id_])
+            'FROM jobconfig WHERE jobid = ?',
+            [id_])
 
     def write_job_config(
             self, id_, graceperiod=None, timeout=None,
@@ -278,8 +286,8 @@ class CrabStoreDB(CrabStore):
         with self.lock as c:
             row = self._query_to_dict(
                 c,
-                'SELECT id as configid FROM jobconfig '
-                'WHERE jobid = ?', [id_])
+                'SELECT id AS configid FROM jobconfig WHERE jobid = ?',
+                [id_])
 
             if row is None:
                 c.execute(
@@ -318,8 +326,9 @@ class CrabStoreDB(CrabStore):
         """
 
         with self.lock as c:
-            c.execute('UPDATE jobconfig SET inhibit=0 WHERE jobid=?',
-                      [id_])
+            c.execute(
+                'UPDATE jobconfig SET inhibit=0 WHERE jobid=?',
+                [id_])
 
     def get_orphan_configs(self):
         """Make a list of orphaned job configuration records."""
@@ -336,12 +345,14 @@ class CrabStoreDB(CrabStore):
 
     def relink_job_config(self, configid, id_):
         with self.lock as c:
-            c.execute('UPDATE jobconfig SET jobid = ? '
-                      'WHERE id = ?', [id_, configid])
+            c.execute(
+                'UPDATE jobconfig SET jobid = ? WHERE id = ?',
+                [id_, configid])
 
-    def get_job_finishes(self, id_, limit=100,
-                         finishid=None, before=None, after=None,
-                         include_alreadyrunning=False):
+    def get_job_finishes(
+            self, id_, limit=100,
+            finishid=None, before=None, after=None,
+            include_alreadyrunning=False):
         """Retrieves a list of recent job finish events for the given job,
         most recent first.
 
@@ -512,9 +523,10 @@ class CrabStoreDB(CrabStore):
         but these arguments are accepted for compatability with stores which
         may require them."""
 
-        c.execute('INSERT INTO joboutput (finishid, stdout, stderr) ' +
-                  'VALUES (?, ?, ?)',
-                  [finishid, stdout, stderr])
+        c.execute(
+            'INSERT INTO joboutput (finishid, stdout, stderr) ' +
+            'VALUES (?, ?, ?)',
+            [finishid, stdout, stderr])
 
     def _get_job_output(self, c, finishid, host, user, id_, crabid):
         """Fetches the standard output and standard error for the
@@ -524,8 +536,9 @@ class CrabStoreDB(CrabStore):
         but these arguments are accepted for compatability with stores which
         may require them."""
 
-        c.execute('SELECT stdout, stderr FROM joboutput ' +
-                  'WHERE finishid=?', [finishid])
+        c.execute(
+            'SELECT stdout, stderr FROM joboutput ' +
+            'WHERE finishid=?', [finishid])
 
         row = c.fetchone()
 
@@ -596,7 +609,8 @@ class CrabStoreDB(CrabStore):
                 'SELECT id AS notifyid, '
                 'method, address, time, timezone, '
                 'skip_ok, skip_warning, skip_error, include_output '
-                'FROM jobnotify WHERE configid=?', [configid])
+                'FROM jobnotify WHERE configid=?',
+                [configid])
 
     def get_match_notifications(self, host=None, user=None):
         """Fetches matching notifications which are not tied to a
@@ -620,36 +634,41 @@ class CrabStoreDB(CrabStore):
                 'SELECT id AS notifyid, host, user, '
                 'method, address, time, timezone, '
                 'skip_ok, skip_warning, skip_error, include_output '
-                'FROM jobnotify ' + where_clause, params)
+                'FROM jobnotify ' + where_clause,
+                params)
 
-    def write_notification(self, notifyid, configid, host, user,
-                           method, address, time, timezone,
-                           skip_ok, skip_warning, skip_error, include_output):
+    def write_notification(
+            self, notifyid, configid, host, user,
+            method, address, time, timezone,
+            skip_ok, skip_warning, skip_error, include_output):
         """Adds or updates a notification record in the database."""
 
         if configid is not None and ((host is not None) or (user is not None)):
-            raise CrabError('writing notification: job config and match '
-                            'parameters both specified')
+            raise CrabError(
+                'writing notification: job config and match '
+                'parameters both specified')
 
         with self.lock as c:
             if notifyid is None:
-                c.execute('INSERT INTO jobnotify (configid, host, user, '
-                          'method, address, time, timezone, skip_ok, '
-                          'skip_warning, skip_error, include_output) '
-                          'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                          [configid, host, user, method, address,
-                           time, timezone, skip_ok,
-                           skip_warning, skip_error, include_output])
+                c.execute(
+                    'INSERT INTO jobnotify (configid, host, user, '
+                    'method, address, time, timezone, skip_ok, '
+                    'skip_warning, skip_error, include_output) '
+                    'VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    [configid, host, user, method, address,
+                     time, timezone, skip_ok,
+                     skip_warning, skip_error, include_output])
             else:
-                c.execute('UPDATE jobnotify SET configid=?, host=?, '
-                          'user=?, method=?, address=?, time=?, '
-                          'timezone=?, skip_ok=?, skip_warning=?, '
-                          'skip_error=?, include_output=? '
-                          'WHERE id=?',
-                          [configid, host, user, method, address,
-                           time, timezone, skip_ok,
-                           skip_warning, skip_error, include_output,
-                           notifyid])
+                c.execute(
+                    'UPDATE jobnotify SET configid=?, host=?, '
+                    'user=?, method=?, address=?, time=?, '
+                    'timezone=?, skip_ok=?, skip_warning=?, '
+                    'skip_error=?, include_output=? '
+                    'WHERE id=?',
+                    [configid, host, user, method, address,
+                     time, timezone, skip_ok,
+                     skip_warning, skip_error, include_output,
+                     notifyid])
 
     def delete_notification(self, notifyid):
         """Removes a notification from the database."""

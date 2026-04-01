@@ -169,9 +169,11 @@ def main():
 
         if ignore:
             try:
-                return subprocess_call([shell, '-c', command], env=env,
-                                       timeout=watchdog_timeout,
-                                       **subprocess_options)
+                return subprocess_call(
+                    [shell, '-c', command],
+                    env=env,
+                    timeout=watchdog_timeout,
+                    **subprocess_options)
 
             except OSError:
                 err = sys.exc_info()[1]
@@ -198,7 +200,7 @@ def main():
                 allow_inhibit = True
                 try:
                     allow_inhibit = true_string(
-                            client.config.get('crabsh', 'allow_inhibit'))
+                        client.config.get('crabsh', 'allow_inhibit'))
                 except:
                     # The configuration key might have been missing -- since
                     # this is a crabsh-specific option, the crab client will
@@ -229,11 +231,12 @@ def main():
         returncode = None
 
         try:
-            p = subprocess.Popen([shell, '-c', command],
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 env=env,
-                                 **subprocess_options)
+            p = subprocess.Popen(
+                [shell, '-c', command],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=env,
+                **subprocess_options)
 
             try:
                 (stdoutdata, stderrdata) = subprocess_communicate(

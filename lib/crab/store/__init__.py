@@ -71,8 +71,9 @@ class CrabStore:
 
         return data
 
-    def log_finish(self, host, user, crabid, command, status,
-                   stdout=None, stderr=None):
+    def log_finish(
+            self, host, user, crabid, command, status,
+            stdout=None, stderr=None):
         """Inserts a job finish record into the database.
 
         The output will be passed to the write_job_output method,
@@ -100,8 +101,8 @@ class CrabStore:
                 info = self.get_job_info(id_)
                 crabid = info['crabid']
 
-            self.write_job_output(finishid, host, user, id_, crabid,
-                                  stdout, stderr)
+            self.write_job_output(
+                finishid, host, user, id_, crabid, stdout, stderr)
 
     def get_job_config(self, id_):
         """Retrieve configuration data for a job by ID number."""
@@ -109,8 +110,9 @@ class CrabStore:
         with self.lock as c:
             return self._get_job_config(c, id_)
 
-    def write_job_output(self, finishid, host, user, id_, crabid,
-                         stdout, stderr):
+    def write_job_output(
+            self, finishid, host, user, id_, crabid,
+            stdout, stderr):
         """Writes the job output to the store.
 
         This will use the outputstore's corresponding method if it is defined,
@@ -154,8 +156,9 @@ class CrabStore:
 
         return write_crontab(jobs)
 
-    def save_crontab(self, host, user, crontab, timezone=None,
-                     allow_filter=True):
+    def save_crontab(
+            self, host, user, crontab, timezone=None,
+            allow_filter=True):
         """Takes a list of crontab lines and uses them to update the job records.
 
         It looks for the CRABID and CRON_TZ variables, but otherwise
@@ -227,8 +230,9 @@ class CrabStore:
         with self.lock as c:
             return self._check_job(c, *args, **kwargs)
 
-    def _check_job(self, c, host, user, crabid, command,
-                   time=None, timezone=None):
+    def _check_job(
+            self, c, host, user, crabid, command,
+            time=None, timezone=None):
         """Ensure that a job exists in the store.
 
         Tries to find (and update if necessary) the corresponding job.
@@ -244,8 +248,9 @@ class CrabStore:
         # We know the crabid, so use it to search
 
         if crabid is not None:
-            jobs = self._get_jobs(c, host, user, include_deleted=True,
-                                  crabid=crabid)
+            jobs = self._get_jobs(
+                c, host, user, include_deleted=True,
+                crabid=crabid)
 
             if jobs:
                 job = jobs[0]
@@ -264,8 +269,9 @@ class CrabStore:
                 # Need to check if the job already existed without
                 # a job ID, in which case we update it to add the job ID.
 
-                jobs = self._get_jobs(c, host, user, include_deleted=True,
-                                      command=command, without_crabid=True)
+                jobs = self._get_jobs(
+                    c, host, user, include_deleted=True,
+                    command=command, without_crabid=True)
                 if jobs:
                     job = jobs[0]
                     id_ = job['id']
@@ -273,8 +279,8 @@ class CrabStore:
                     self._update_job(c, id_, crabid, None, time, timezone)
 
                 else:
-                    id_ = self._insert_job(c, host, user, crabid, time,
-                                           command, timezone)
+                    id_ = self._insert_job(
+                        c, host, user, crabid, time, command, timezone)
 
         # We don't know the crabid, so we must search by command.
         # In general we can't distinguish multiple copies of the same
@@ -283,8 +289,9 @@ class CrabStore:
         # time ranges / steps.
 
         else:
-            jobs = self._get_jobs(c, host, user, include_deleted=True,
-                                  command=command)
+            jobs = self._get_jobs(
+                c, host, user, include_deleted=True,
+                command=command)
 
             if jobs:
                 job = jobs[0]
@@ -299,8 +306,8 @@ class CrabStore:
                     self._update_job(c, id_, None, None, time, timezone)
 
             else:
-                id_ = self._insert_job(c, host, user, crabid,
-                                       time, command, timezone)
+                id_ = self._insert_job(
+                    c, host, user, crabid, time, command, timezone)
 
         if id_ is None:
             raise CrabError('store error: failed to identify job')
@@ -308,16 +315,16 @@ class CrabStore:
         return id_
 
     def write_raw_crontab(self, host, user, crontab):
-        if self.outputstore is not None and hasattr(self.outputstore,
-                                                    'write_raw_crontab'):
+        if self.outputstore is not None and hasattr(
+                self.outputstore, 'write_raw_crontab'):
             return self.outputstore.write_raw_crontab(host, user, crontab)
 
         with self.lock as c:
             return self._write_raw_crontab(c, host, user, crontab)
 
     def get_raw_crontab(self, host, user):
-        if self.outputstore is not None and hasattr(self.outputstore,
-                                                    'get_raw_crontab'):
+        if self.outputstore is not None and hasattr(
+                self.outputstore, 'get_raw_crontab'):
             return self.outputstore.get_raw_crontab(host, user)
 
         with self.lock as c:

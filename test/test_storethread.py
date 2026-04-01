@@ -42,10 +42,14 @@ class RandomTester(Thread):
         Thread.__init__(self)
         self.exceptions = 0
         self.store = store
-        self.user = sample(['usera', 'userb', 'userc', 'userd',
-                            'usere', 'userf', 'userg', 'userh'], 1)[0]
-        self.host = sample(['hosta', 'hostb', 'hostc', 'hostd',
-                            'hoste', 'hostf', 'hostg', 'hosth'], 1)[0]
+        self.user = sample([
+            'usera', 'userb', 'userc', 'userd',
+            'usere', 'userf', 'userg', 'userh',
+        ], 1)[0]
+        self.host = sample([
+            'hosta', 'hostb', 'hostc', 'hostd',
+            'hoste', 'hostf', 'hostg', 'hosth',
+        ], 1)[0]
 
     def run(self):
         for i in range(ITERATIONS):
@@ -65,14 +69,16 @@ class CronTabTester(RandomTester):
         self.store.get_raw_crontab(self.host, self.user)
 
     def randomtab(self):
-        return list(sample(['CRON_TZ=Europe/Paris',
-                            'CRABSHELL=/bin/tcsh',
-                            '#comment',
-                            '* * * * * cal',
-                            '0 * * * * date',
-                            '0 0 * * * uname',
-                            '0 0 * * 1-5 gnubeep',
-                            '* * * * * CRABID=minutely /bin/minutely.sh'], 3))
+        return list(sample([
+            'CRON_TZ=Europe/Paris',
+            'CRABSHELL=/bin/tcsh',
+            '#comment',
+            '* * * * * cal',
+            '0 * * * * date',
+            '0 0 * * * uname',
+            '0 0 * * 1-5 gnubeep',
+            '* * * * * CRABID=minutely /bin/minutely.sh'
+        ], 3))
 
 
 class CronJobTester(RandomTester):
@@ -80,8 +86,10 @@ class CronJobTester(RandomTester):
         self.store.get_jobs()
         self.store.get_jobs(self.host, self.user)
         self.store.get_jobs(self.host, self.user, include_deleted=True)
-        self.store.check_job(self.host, self.user, None, sample([
-                             'command1', 'command2', 'command3'], 1)[0])
+        self.store.check_job(
+            self.host, self.user, None, sample([
+                'command1', 'command2', 'command3',
+            ], 1)[0])
         self.store.get_notifications()
 
 
@@ -94,10 +102,14 @@ class CronLogTester(RandomTester):
 
     def run_iteration(self):
         c = ['command1', 'command2', 'command3', 'command4']
-        self.store.log_start(self.host, self.user, None, sample(c, 1)[0])
-        self.store.log_finish(self.host, self.user, None, sample(c, 1)[0],
-                              1, 'stdout', 'stderr')
+        self.store.log_start(
+            self.host, self.user, None, sample(c, 1)[0])
+        self.store.log_finish(
+            self.host, self.user, None, sample(c, 1)[0],
+            1, 'stdout', 'stderr')
+
         id_ = self.store.check_job(self.host, self.user, None, sample(c, 1)[0])
+
         self.store.log_alarm(id_, -1)
         self.store.get_job_info(id_)
         # Need to add the write_config method when implemented

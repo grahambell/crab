@@ -30,9 +30,10 @@ class CrabNotify:
     def __init__(self, config, store):
         self.store = store
 
-        self.send_email = CrabNotifyEmail(config['crab']['home'],
-                                          config['crab']['base_url'],
-                                          config['email'])
+        self.send_email = CrabNotifyEmail(
+            config['crab']['home'],
+            config['crab']['base_url'],
+            config['email'])
 
     def __call__(self, notifications):
         "Sends notification messages."""
@@ -70,16 +71,16 @@ class CrabNotify:
         notification = {}
 
         for entry in notifications:
-            key = (entry.n['method'], entry.n['address'],
-                   entry.n['skip_ok'], entry.n['skip_warning'],
-                   entry.n['skip_error'], entry.n['include_output'])
+            key = (
+                entry.n['method'], entry.n['address'],
+                entry.n['skip_ok'], entry.n['skip_warning'],
+                entry.n['skip_error'], entry.n['include_output'])
 
             id_ = entry.n['id']
-            report_job = CrabReportJob(id_, entry.start, entry.end,
-                                       entry.n['skip_ok'],
-                                       entry.n['skip_warning'],
-                                       entry.n['skip_error'],
-                                       entry.n['include_output'])
+            report_job = CrabReportJob(
+                id_, entry.start, entry.end,
+                entry.n['skip_ok'], entry.n['skip_warning'],
+                entry.n['skip_error'], entry.n['include_output'])
 
             if key in notification:
                 if id_ not in notification[key]:

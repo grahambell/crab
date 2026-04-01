@@ -41,7 +41,7 @@ class CrabReportGenerator:
 
         self.store = store
 
-        self.filter = CrabEventFilter(store, **kwargs)
+        self.filter_ = CrabEventFilter(store, **kwargs)
         self.cache_info = {}
         self.cache_event = {}
         self.cache_error = {}
@@ -96,15 +96,18 @@ class CrabReportGenerator:
                 events = self.cache_event[job]
                 num_errors = self.cache_error[job]
                 num_warnings = self.cache_warning[job]
+
             else:
-                self.filter.set_timezone(info['timezone'])
-                events = self.cache_event[job] = self.filter(
-                             self.store.get_job_events(id_, limit=None,
-                                                       start=start, end=end),
-                             skip_ok=skip_ok, skip_warning=skip_warning,
-                             skip_error=skip_error, skip_start=True)
-                num_errors = self.cache_error[job] = self.filter.errors
-                num_warnings = self.cache_warning[job] = self.filter.warnings
+                self.filter_.set_timezone(info['timezone'])
+
+                events = self.cache_event[job] = self.filter_(
+                    self.store.get_job_events(
+                        id_, limit=None, start=start, end=end),
+                    skip_ok=skip_ok, skip_warning=skip_warning,
+                    skip_error=skip_error, skip_start=True)
+
+                num_errors = self.cache_error[job] = self.filter_.errors
+                num_warnings = self.cache_warning[job] = self.filter_.warnings
 
             if events:
                 num += 1
@@ -130,8 +133,8 @@ class CrabReportGenerator:
                                     self.cache_stderr[finishid]
                             else:
                                 (stdout, stderr) = self.store.get_job_output(
-                                         finishid, info['host'], info['user'],
-                                         id_, info['crabid'])
+                                    finishid, info['host'], info['user'],
+                                    id_, info['crabid'])
 
                                 report_stdout[finishid] = \
                                     self.cache_stdout[finishid] = stdout
@@ -139,8 +142,9 @@ class CrabReportGenerator:
                                     self.cache_stderr[finishid] = stderr
 
         if num:
-            return CrabReport(num, error, warning, ok,
-                              report_info, report_events,
-                              report_stdout, report_stderr)
+            return CrabReport(
+                num, error, warning, ok,
+                report_info, report_events,
+                report_stdout, report_stderr)
         else:
             return None

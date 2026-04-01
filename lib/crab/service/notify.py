@@ -38,8 +38,8 @@ class CrabNotifyService(CrabMinutely):
 
         self.store = store
         self.notify = notify
-        self.schedule = CrabSchedule(config['daily'],
-                                     config['timezone'])
+        self.schedule = CrabSchedule(
+            config['daily'], config['timezone'])
         self.config = {}
         self.sched = {}
 
@@ -72,8 +72,9 @@ class CrabNotifyService(CrabMinutely):
                 self.config[n_id] = notification
                 if notification['time'] is not None:
                     try:
-                        schedule = CrabSchedule(notification['time'],
-                                                notification['timezone'])
+                        schedule = CrabSchedule(
+                            notification['time'],
+                            notification['timezone'])
                     except CrabError as err:
                         schedule = None
                         logger.exception(

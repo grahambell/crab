@@ -30,11 +30,13 @@ class ServerIOTestCase(TestCase):
 
         result = _notify_key(notification)
         self.assertIsInstance(result, tuple)
-        self.assertEqual(result, ('email', 'user@localhost',
-                                  '* * * * *', 'Pacific/Honolulu'))
+        self.assertEqual(result, (
+            'email', 'user@localhost',
+            '* * * * *', 'Pacific/Honolulu'))
 
         result = _notify_key(notification, match=True)
         self.assertIsInstance(result, tuple)
-        self.assertEqual(result, ('localhost', 'user',
-                                  'email', 'user@localhost',
-                                  '* * * * *', 'Pacific/Honolulu'))
+        self.assertEqual(result, (
+            'localhost', 'user',
+            'email', 'user@localhost',
+            '* * * * *', 'Pacific/Honolulu'))

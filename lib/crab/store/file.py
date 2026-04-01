@@ -59,8 +59,9 @@ class CrabStoreFile:
                             'could not make directory ' + directory +
                             ': ' + str(err))
 
-    def write_job_output(self, finishid, host, user, id_, crabid,
-                         stdout, stderr):
+    def write_job_output(
+            self, finishid, host, user, id_, crabid,
+            stdout, stderr):
         """Write the cron job output to a file.
 
         The only parameter required to uniquely identify the event
@@ -101,8 +102,9 @@ class CrabStoreFile:
                     file.write(stderr)
 
         except IOError as err:
-            raise CrabError('file store error: could not write files: ' +
-                            str(err))
+            raise CrabError(
+                'file store error: could not write files: ' +
+                str(err))
 
     def get_job_output(self, finishid, host, user, id_, crabid):
         """Find the file containing the cron job output and read it.
@@ -144,8 +146,9 @@ class CrabStoreFile:
                 stderr = ''
 
         except IOError as err:
-            raise CrabError('file store error: could not read files: ' +
-                            str(err))
+            raise CrabError(
+                'file store error: could not read files: ' +
+                str(err))
 
         return (stdout, stderr)
 
@@ -170,8 +173,9 @@ class CrabStoreFile:
                 file.write('\n'.join(crontab))
 
         except IOError as err:
-            raise CrabError('file store error: could not write crontab: ' +
-                            str(err))
+            raise CrabError(
+                'file store error: could not write crontab: ' +
+                str(err))
 
     def get_raw_crontab(self, host, user):
         """Reads the given user's crontab from a file."""
@@ -186,8 +190,9 @@ class CrabStoreFile:
                 crontab = file.read()
 
         except IOError as err:
-            raise CrabError('file store error: could not read crontab: ' +
-                            str(err))
+            raise CrabError(
+                'file store error: could not read crontab: ' +
+                str(err))
 
         return crontab.split('\n')
 
@@ -223,14 +228,17 @@ class CrabStoreFile:
             finishpath.append('0' * (self.breakdigits - lead) + finish[:lead])
             finish = finish[lead:]
 
-        finishpath.extend([finish[x:x + self.breakdigits]
-                           for x in range(0, len(finish), self.breakdigits)])
+        finishpath.extend(
+            [finish[x:x + self.breakdigits]
+             for x in range(0, len(finish), self.breakdigits)])
 
-        return os.path.join(self.outputdir, alphanum(host), alphanum(user),
-                            job, *finishpath)
+        return os.path.join(
+            self.outputdir, alphanum(host), alphanum(user),
+            job, *finishpath)
 
     def _make_crontab_path(self, host, user):
         """Determine the full path to be used to store a crontab."""
 
-        return (os.path.join(self.tabdir, alphanum(host), alphanum(user)) +
-                '.' + self.tabext)
+        return (
+            os.path.join(self.tabdir, alphanum(host), alphanum(user))
+            + '.' + self.tabext)

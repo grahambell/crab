@@ -48,11 +48,11 @@ def report_to_text(report, event_list=True):
                 if e['type'] == CrabEvent.FINISH:
                     finishid = e['eventid']
                     if finishid in report.stdout and report.stdout[finishid]:
-                        lines.extend(_output_lines(8, 'Std. Out.',
-                                                   report.stdout[finishid]))
+                        lines.extend(_output_lines(
+                            8, 'Std. Out.', report.stdout[finishid]))
                     if finishid in report.stderr and report.stderr[finishid]:
-                        lines.extend(_output_lines(8, 'Std. Error',
-                                                   report.stderr[finishid]))
+                        lines.extend(_output_lines(
+                            8, 'Std. Error', report.stderr[finishid]))
 
             lines.append('')
 
@@ -61,14 +61,15 @@ def report_to_text(report, event_list=True):
 
 def _summary_line(report, id_):
     info = report.info[id_]
-    return '{0:10} {1:10} {2}'.format(info['host'], info['user'],
-                                      info['title'])
+    return '{0:10} {1:10} {2}'.format(
+        info['host'], info['user'], info['title'])
 
 
 def _event_line(event):
-    return '{0:10} {1:10} {2}'.format(CrabEvent.get_name(event['type']),
-                                      CrabStatus.get_name(event['status']),
-                                      event['datetime'])
+    return '{0:10} {1:10} {2}'.format(
+        CrabEvent.get_name(event['type']),
+        CrabStatus.get_name(event['status']),
+        event['datetime'])
 
 
 def _output_lines(indent, title, text):

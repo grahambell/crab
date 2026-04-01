@@ -43,8 +43,10 @@ class CrabStatus:
     INHIBITED = 6
     WATCHDOG = 7
 
-    VALUES = set([SUCCESS, FAIL, UNKNOWN, COULDNOTSTART, ALREADYRUNNING,
-                  WARNING, INHIBITED, WATCHDOG])
+    VALUES = set([
+        SUCCESS, FAIL, UNKNOWN, COULDNOTSTART, ALREADYRUNNING,
+        WARNING, INHIBITED, WATCHDOG,
+    ])
 
     # Additional internal status values (it is not valid for
     # a client to send these).  Also some of these are less bad
@@ -55,11 +57,18 @@ class CrabStatus:
     TIMEOUT = -3
     CLEARED = -4
 
-    INTERNAL_VALUES = set([LATE, MISSED, TIMEOUT, CLEARED])
+    INTERNAL_VALUES = set([
+        LATE, MISSED, TIMEOUT, CLEARED,
+    ])
 
-    _error_names = ['Succeeded', 'Failed', 'Unknown', 'Could not start',
-                    'Already running', 'Warning', 'Inhibited', 'Watchdog']
-    _alarm_names = ['Late', 'Missed', 'Timed out', 'Cleared']
+    _error_names = [
+        'Succeeded', 'Failed', 'Unknown', 'Could not start',
+        'Already running', 'Warning', 'Inhibited', 'Watchdog',
+    ]
+
+    _alarm_names = [
+        'Late', 'Missed', 'Timed out', 'Cleared',
+    ]
 
     @staticmethod
     def get_name(status):
@@ -79,9 +88,10 @@ class CrabStatus:
     def is_trivial(status):
         """Determines whether a status code is trivial and should
         mostly be ignored."""
-        return status in (CrabStatus.LATE,
-                          CrabStatus.CLEARED,
-                          CrabStatus.ALREADYRUNNING)
+        return status in (
+            CrabStatus.LATE,
+            CrabStatus.CLEARED,
+            CrabStatus.ALREADYRUNNING)
 
     @staticmethod
     def is_ok(status):
@@ -91,10 +101,11 @@ class CrabStatus:
     @staticmethod
     def is_warning(status):
         """True if the given status is some kind of warning."""
-        return (status == CrabStatus.UNKNOWN or
-                status == CrabStatus.MISSED or
-                status == CrabStatus.WARNING or
-                status == CrabStatus.INHIBITED)
+        return (
+            status == CrabStatus.UNKNOWN or
+            status == CrabStatus.MISSED or
+            status == CrabStatus.WARNING or
+            status == CrabStatus.INHIBITED)
 
     @staticmethod
     def is_error(status):

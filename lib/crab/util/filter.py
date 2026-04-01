@@ -58,9 +58,10 @@ class CrabEventFilter:
             except pytz.UnknownTimeZoneError:
                 cls.default_timezone = pytz.UTC
 
-    def __call__(self, events, skip_ok=False, skip_warning=False,
-                 skip_error=False, skip_trivial=True, skip_start=False,
-                 squash_start=False):
+    def __call__(
+            self, events, skip_ok=False, skip_warning=False,
+            skip_error=False, skip_trivial=True, skip_start=False,
+            squash_start=False):
         """Performs filtering, and returns the altered event list."""
 
         output = []

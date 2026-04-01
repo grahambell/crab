@@ -61,9 +61,13 @@ class CrabNotifyEmail:
         message['From'] = self.from_
         message['To'] = ', '.join(to)
 
-        message.attach(MIMEText(report_to_text(report), 'plain'))
-        message.attach(MIMEText(report_to_html(report,
-                                self.home, self.base_url), 'html'))
+        message.attach(MIMEText(
+            report_to_text(report),
+            'plain'))
+
+        message.attach(MIMEText(
+            report_to_html(report, self.home, self.base_url),
+            'html'))
 
         smtp = SMTP(self.server)
         smtp.sendmail(self.from_, to, message.as_string())

@@ -50,9 +50,11 @@ def read_crontab(codec):
     string.  Currently ISO-8859-1 encoding is assumed."""
 
     try:
-        p = subprocess.Popen(['crontab', '-l'],
-                             shell=False, stdout=subprocess.PIPE,
-                             **subprocess_options)
+        p = subprocess.Popen(
+            ['crontab', '-l'],
+            shell=False, stdout=subprocess.PIPE,
+            **subprocess_options)
+
         (stdoutdata, stderrdata) = p.communicate()
 
         if p.returncode == 0:
@@ -177,14 +179,14 @@ Commands:
         vars=os.environ)
 
     status_commands = {
-                       'finish': CrabStatus.SUCCESS,
-                       'fail': CrabStatus.FAIL,
-                       'unknown': CrabStatus.UNKNOWN,
-                       'couldnotstart': CrabStatus.COULDNOTSTART,
-                       'alreadyrunning': CrabStatus.ALREADYRUNNING,
-                       'warning': CrabStatus.WARNING,
-                       'watchdog': CrabStatus.WATCHDOG,
-                      }
+        'finish': CrabStatus.SUCCESS,
+        'fail': CrabStatus.FAIL,
+        'unknown': CrabStatus.UNKNOWN,
+        'couldnotstart': CrabStatus.COULDNOTSTART,
+        'alreadyrunning': CrabStatus.ALREADYRUNNING,
+        'warning': CrabStatus.WARNING,
+        'watchdog': CrabStatus.WATCHDOG,
+    }
 
     if len(args) == 0:
         parser.error('no command specified')
@@ -206,7 +208,7 @@ Commands:
                             options.stdoutfile, codec=codec, silent=True)
                         if stdoutdata is None:
                             stdoutdata = 'Failed to read from file: ' + \
-                                         options.stdoutfile
+                                options.stdoutfile
                             if CrabStatus.is_ok(status):
                                 status = CrabStatus.WARNING
 
@@ -215,12 +217,13 @@ Commands:
                             options.stderrfile, codec=codec, silent=True)
                         if stderrdata is None:
                             stderrdata = 'Failed to read from file: ' + \
-                                         options.stderrfile
+                                options.stderrfile
                             if CrabStatus.is_ok(status):
                                 status = CrabStatus.WARNING
 
-                    client.finish(status,
-                                  stdoutdata=stdoutdata, stderrdata=stderrdata)
+                    client.finish(
+                        status,
+                        stdoutdata=stdoutdata, stderrdata=stderrdata)
 
             # except CrabError as err:
             except CrabError:
@@ -233,8 +236,11 @@ Commands:
             client=client, codec=codec, crontabfile=options.crontabfile)
 
     elif args[0] == 'edit':
-        status = subprocess.call(['crontab', '-e'],
-                                 shell=False, **subprocess_options)
+        status = subprocess.call(
+            ['crontab', '-e'],
+            shell=False,
+            **subprocess_options)
+
         if status != 0:
             print(sys.argv[0] + ': failed to edit crontab')
             return 1

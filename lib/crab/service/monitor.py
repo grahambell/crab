@@ -139,9 +139,9 @@ class CrabMonitor(CrabMinutely):
             self.num_warning = 0
             for id_ in self.status:
                 jobstatus = self.status[id_]['status']
-                if (jobstatus is None or CrabStatus.is_ok(jobstatus)):
+                if jobstatus is None or CrabStatus.is_ok(jobstatus):
                     pass
-                elif (CrabStatus.is_warning(jobstatus)):
+                elif CrabStatus.is_warning(jobstatus):
                     self.num_warning += 1
                 else:
                     self.num_error += 1
@@ -181,9 +181,9 @@ class CrabMonitor(CrabMinutely):
         if not self.passive:
             for id_ in self.sched:
                 if self.sched[id_].match(datetime_):
-                    if ((id_ not in self.last_start) or
-                            (self.last_start[id_] +
-                             self.config[id_]['graceperiod'] < datetime_)):
+                    if ((id_ not in self.last_start) or (
+                            self.last_start[id_]
+                            + self.config[id_]['graceperiod'] < datetime_)):
                         # No need to check if the late timeout is already
                         # running as the grace period is currently less
                         # than the minimum scheduling interval.
@@ -230,8 +230,12 @@ class CrabMonitor(CrabMinutely):
         if jobinfo is None or jobinfo['deleted'] is not None:
             raise JobDeleted
 
-        self.status[id_] = {'status': None, 'running': False, 'history': [],
-                            'installed': jobinfo['installed']}
+        self.status[id_] = {
+            'status': None,
+            'running': False,
+            'history': [],
+            'installed': jobinfo['installed'],
+        }
 
         self._schedule_job(id_, jobinfo)
         self._configure_job(id_)
@@ -264,8 +268,9 @@ class CrabMonitor(CrabMinutely):
 
         if jobinfo is not None and jobinfo['time'] is not None:
             try:
-                self.sched[id_] = CrabSchedule(jobinfo['time'],
-                                               jobinfo['timezone'])
+                self.sched[id_] = CrabSchedule(
+                    jobinfo['time'],
+                    jobinfo['timezone'])
             except CrabError as err:
                 logger.exception('Warning: could not add schedule')
 
@@ -288,10 +293,10 @@ class CrabMonitor(CrabMinutely):
         for parameter in default_time:
             if dbconfig is not None and dbconfig[parameter] is not None:
                 self.config[id_][parameter] = timedelta(
-                                              minutes=dbconfig[parameter])
+                    minutes=dbconfig[parameter])
             else:
                 self.config[id_][parameter] = timedelta(
-                                              minutes=default_time[parameter])
+                    minutes=default_time[parameter])
 
     def _remove_job(self, id_):
         """Removes a job from the instance data structures."""
@@ -310,6 +315,7 @@ class CrabMonitor(CrabMinutely):
                 del self.late_timeout[id_]
             if id_ in self.miss_timeout:
                 del self.miss_timeout[id_]
+
         except KeyError:
             logger.warning(
                 'Warning: stopping monitoring job but it is not in monitor.')
@@ -321,9 +327,11 @@ class CrabMonitor(CrabMinutely):
         if (event['type'] == CrabEvent.START and
                 event['eventid'] > self.max_startid):
             self.max_startid = event['eventid']
+
         if (event['type'] == CrabEvent.ALARM and
                 event['eventid'] > self.max_alarmid):
             self.max_alarmid = event['eventid']
+
         if (event['type'] == CrabEvent.FINISH and
                 event['eventid'] > self.max_finishid):
             self.max_finishid = event['eventid']
@@ -445,6 +453,11 @@ class CrabMonitor(CrabMinutely):
             with self.new_event:
                 self.new_event.wait(timeout + self.random.randint(0, 20))
 
-        return {'startid': self.max_startid, 'alarmid': self.max_alarmid,
-                'finishid': self.max_finishid, 'status': self.status,
-                'numwarning': self.num_warning, 'numerror': self.num_error}
+        return {
+            'startid': self.max_startid,
+            'alarmid': self.max_alarmid,
+            'finishid': self.max_finishid,
+            'status': self.status,
+            'numwarning': self.num_warning,
+            'numerror': self.num_error,
+        }

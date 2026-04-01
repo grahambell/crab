@@ -124,11 +124,12 @@ def construct_store(storeconfig, outputstore=None):
         # Only import the MySQL store module when required in case the
         # mysql.connector module isn't installed.
         from crab.store.mysql import CrabStoreMySQL
-        store = CrabStoreMySQL(host=storeconfig['host'],
-                               database=storeconfig['database'],
-                               user=storeconfig['user'],
-                               password=storeconfig['password'],
-                               outputstore=outputstore)
+        store = CrabStoreMySQL(
+            host=storeconfig['host'],
+            database=storeconfig['database'],
+            user=storeconfig['user'],
+            password=storeconfig['password'],
+            outputstore=outputstore)
 
     elif storeconfig['type'] == 'file':
         store = CrabStoreFile(storeconfig['dir'])

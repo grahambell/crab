@@ -100,10 +100,13 @@ class CrabClient:
         # is done to be customized based on other values.
         if not self.config.has_option('client', 'hostname'):
             if self.config.getboolean('client', 'use_fqdn'):
-                self.config.set('client', 'hostname', socket.getfqdn())
+                self.config.set(
+                    'client', 'hostname',
+                    socket.getfqdn())
             else:
-                self.config.set('client', 'hostname',
-                                socket.gethostname().split('.', 1)[0])
+                self.config.set(
+                    'client', 'hostname',
+                    socket.gethostname().split('.', 1)[0])
 
         if not self.config.has_option('client', 'username'):
             self.config.set('client', 'username', pwd.getpwuid(os.getuid())[0])
@@ -115,24 +118,31 @@ class CrabClient:
         an inhibit dictionary item."""
 
         if self.command is None:
-            raise CrabError('client error: command not specified for job start')
+            raise CrabError(
+                'client error: command not specified for job start')
 
-        return self._write_json(self._get_url('start'),
-                                {'command': self.command},
-                                read=True)
+        return self._write_json(
+            self._get_url('start'), {
+                'command': self.command,
+            },
+            read=True)
 
-    def finish(self, status=CrabStatus.UNKNOWN,
-               stdoutdata='', stderrdata=''):
+    def finish(
+            self, status=CrabStatus.UNKNOWN,
+            stdoutdata='', stderrdata=''):
         """Notify the server that the job is finishing."""
 
         if self.command is None:
-            raise CrabError('client error: command not specified for job finish')
+            raise CrabError(
+                'client error: command not specified for job finish')
 
-        self._write_json(self._get_url('finish'),
-                         {'command': self.command,
-                          'status':   status,
-                          'stdout':   stdoutdata,
-                          'stderr':   stderrdata})
+        self._write_json(
+            self._get_url('finish'), {
+                'command': self.command,
+                'status':   status,
+                'stdout':   stdoutdata,
+                'stderr':   stderrdata,
+            })
 
     def send_crontab(self, crontab, timezone=None):
         """Takes the crontab as a string, breaks it into lines,
@@ -140,10 +150,12 @@ class CrabClient:
 
         Returns a list of warnings."""
 
-        data = self._write_json(self._get_url('crontab'),
-                                {'crontab': crontab.split('\n'),
-                                 'timezone': timezone},
-                                read=True)
+        data = self._write_json(
+            self._get_url('crontab'), {
+                'crontab': crontab.split('\n'),
+                'timezone': timezone,
+            },
+            read=True)
 
         return data['warning']
 
@@ -163,38 +175,50 @@ class CrabClient:
 
     def get_info(self, timezone=None, codec=None):
         info = []
-        info.append('Server: ' + self.config.get('server', 'host') +
-                    ':' + self.config.get('server', 'port'))
-        info.append('Client: ' + self.config.get('client', 'username') +
-                    '@' + self.config.get('client', 'hostname'))
+        info.append(
+            'Server: '
+            + self.config.get('server', 'host')
+            + ':' + self.config.get('server', 'port'))
+        info.append(
+            'Client: '
+            + self.config.get('client', 'username')
+            + '@' + self.config.get('client', 'hostname'))
+
         if int(self.config.get('server', 'max_tries')) < 2:
             retry_info = '1 try'
         else:
             retry_info = (
-                self.config.get('server', 'max_tries') +
-                ' tries with ' +
-                self.config.get('server', 'retry_delay') +
-                's delay')
-        info.append('Connection: ' +
-                    self.config.get('server', 'timeout') +
-                    's timeout, ' +
-                    retry_info)
+                self.config.get('server', 'max_tries')
+                + ' tries with '
+                + self.config.get('server', 'retry_delay')
+                + 's delay')
+        info.append(
+            'Connection: '
+            + self.config.get('server', 'timeout')
+            + 's timeout, '
+            + retry_info)
+
         if self.config.has_option('server', 'comm_timeout'):
-            info.append('Communication timeout: ' +
-                self.config.get('server', 'comm_timeout') + 's')
+            info.append(
+                'Communication timeout: '
+                + self.config.get('server', 'comm_timeout') + 's')
+
         info.append('Files: ' + ', '.join(self.configfiles))
+
         if timezone is not None:
             info.append('Time zone: ' + timezone)
         if codec is not None:
             info.append('Encoding: ' + codec.name)
+
         return '\n'.join(info)
 
     def _get_url(self, action):
         """Creates the URL to be used to perform the given server action."""
 
-        url = ('/api/0/' + action +
-               '/' + urlquote(self.config.get('client', 'hostname'), '') +
-               '/' + urlquote(self.config.get('client', 'username'), ''))
+        url = (
+            '/api/0/' + action
+            + '/' + urlquote(self.config.get('client', 'hostname'), '')
+            + '/' + urlquote(self.config.get('client', 'username'), ''))
 
         if self.crabid is not None:
             url = url + '/' + urlquote(self.crabid, '')
@@ -209,13 +233,14 @@ class CrabClient:
         # Python, we must catch the TypeError and construct the object
         # without a timeout.
         try:
-            conn = HTTPConnection(self.config.get('server', 'host'),
-                                  self.config.get('server', 'port'),
-                                  timeout=float(self.config.get(
-                                                  'server', 'timeout')))
+            conn = HTTPConnection(
+                self.config.get('server', 'host'),
+                self.config.get('server', 'port'),
+                timeout=float(self.config.get('server', 'timeout')))
         except TypeError:
-            conn = HTTPConnection(self.config.get('server', 'host'),
-                                  self.config.get('server', 'port'))
+            conn = HTTPConnection(
+                self.config.get('server', 'host'),
+                self.config.get('server', 'port'))
 
         # Now attempt to open the connection, allowing for the configured
         # number of tries.

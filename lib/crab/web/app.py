@@ -69,7 +69,8 @@ class CrabWeb(CrabWebBase):
             raise HTTPError(message=str(err))
 
     @cherrypy.expose
-    def job(self, id_, command=None, finishid=None,
+    def job(
+            self, id_, command=None, finishid=None,
 
             barerows=None, unfiltered=None, limit=None, enddate=None,
 
@@ -128,19 +129,23 @@ class CrabWeb(CrabWebBase):
                 lastdatetime = None
 
             # Filter the events.
-            filter = CrabEventFilter(self.store, info['timezone'])
-            events = filter(events, squash_start=squash_start,
-                            skip_trivial=squash_start)
+            filter_ = CrabEventFilter(self.store, info['timezone'])
+            events = filter_(
+                events,
+                squash_start=squash_start,
+                skip_trivial=squash_start)
 
             if barerows is not None:
                 return self._write_template(
-                    'jobevents.html',
-                    {'id': id_, 'events': events,
-                     'lastdatetime': lastdatetime})
+                    'jobevents.html', {
+                        'id': id_,
+                        'events': events,
+                        'lastdatetime': lastdatetime,
+                    })
 
             # Try to convert the times to the timezone shown on the page.
-            info['installed'] = filter.in_timezone(info['installed'])
-            info['deleted'] = filter.in_timezone(info['deleted'])
+            info['installed'] = filter_.in_timezone(info['installed'])
+            info['deleted'] = filter_.in_timezone(info['deleted'])
 
             # Fetch configuration.
             config = self.store.get_job_config(id_)
@@ -148,16 +153,20 @@ class CrabWeb(CrabWebBase):
             # Fetch job notifications.
             if config is not None:
                 notification = self.store.get_job_notifications(
-                                   config['configid'])
+                    config['configid'])
             else:
                 notification = None
 
             return self._write_template(
-                'job.html',
-                {'id': id_, 'info': info, 'config': config,
-                 'status': self.monitor.get_job_status(id_),
-                 'notification': notification, 'events': events,
-                 'lastdatetime': lastdatetime})
+                'job.html', {
+                    'id': id_,
+                    'info': info,
+                    'config': config,
+                    'status': self.monitor.get_job_status(id_),
+                    'notification': notification,
+                    'events': events,
+                    'lastdatetime': lastdatetime,
+                })
 
         elif command == 'clear':
             if submit_confirm:
@@ -175,11 +184,13 @@ class CrabWeb(CrabWebBase):
 
             else:
                 return self._write_template(
-                    'confirm.html',
-                    {'id': id_, 'info': info,
-                     'title': 'clear status',
-                     'description': 'Reset the job status?',
-                     'target': '/job/' + str(id_) + '/clear'})
+                    'confirm.html', {
+                        'id': id_,
+                        'info': info,
+                        'title': 'clear status',
+                        'description': 'Reset the job status?',
+                        'target': '/job/' + str(id_) + '/clear',
+                    })
 
         elif command == 'uninhibit':
             if submit_confirm:
@@ -189,10 +200,13 @@ class CrabWeb(CrabWebBase):
                 raise HTTPRedirect('/job/' + str(id_))
             else:
                 return self._write_template(
-                    'confirm.html',
-                    {'id': id_, 'info': info, 'title': 'resume',
-                     'description': 'Resume inhibited job?',
-                     'target': '/job/' + str(id_) + '/uninhibit'})
+                    'confirm.html', {
+                        'id': id_,
+                        'info': info,
+                        'title': 'resume',
+                        'description': 'Resume inhibited job?',
+                        'target': '/job/' + str(id_) + '/uninhibit',
+                    })
 
         elif command == 'delete':
             notdeleted = info['deleted'] is None
@@ -209,12 +223,15 @@ class CrabWeb(CrabWebBase):
 
             else:
                 return self._write_template(
-                    'confirm.html',
-                    {'id': id_, 'info': info,
-                     'title': 'delete' if notdeleted else 'undelete',
-                     'description': (('Delete' if notdeleted else 'Undelete') +
-                                     ' this job from the server?'),
-                     'target': '/job/' + str(id_) + '/delete'})
+                    'confirm.html', {
+                        'id': id_,
+                        'info': info,
+                        'title': 'delete' if notdeleted else 'undelete',
+                        'description': (
+                            ('Delete' if notdeleted else 'Undelete')
+                            + ' this job from the server?'),
+                        'target': '/job/' + str(id_) + '/delete',
+                    })
 
         elif command == 'changeid':
             if submit_confirm:
@@ -235,20 +252,25 @@ class CrabWeb(CrabWebBase):
 
             else:
                 return self._write_template(
-                    'confirm.html',
-                    {'id': id_, 'info': info,
-                     'title': 'change identifier',
-                     'description': 'Change Job ID for this job?  Please note '
-                                    'that the ID which will be used to report '
-                                    'events related to this job should be '
-                                    'updated at the same time to ensure that '
-                                    'the job continues to be correctly '
-                                    'identified.  This should be done in the '
-                                    'crontab if the CRABID variable is used, '
-                                    'or in the cron job itself in the case '
-                                    'of Crab-aware cron jobs.',
-                     'target': '/job/' + str(id_) + '/changeid',
-                     'data': {'crabid': crabid}})
+                    'confirm.html', {
+                        'id': id_,
+                        'info': info,
+                        'title': 'change identifier',
+                        'description':
+                            'Change Job ID for this job?  Please note '
+                            'that the ID which will be used to report '
+                            'events related to this job should be '
+                            'updated at the same time to ensure that '
+                            'the job continues to be correctly '
+                            'identified.  This should be done in the '
+                            'crontab if the CRABID variable is used, '
+                            'or in the cron job itself in the case '
+                            'of Crab-aware cron jobs.',
+                        'target': '/job/' + str(id_) + '/changeid',
+                        'data': {
+                            'crabid': crabid,
+                        },
+                    })
 
         elif command == 'output':
             finishid_next = None
@@ -290,14 +312,19 @@ class CrabWeb(CrabWebBase):
             (stdout, stderr) = self.store.get_job_output(
                 finishid, info['host'], info['user'], id_, info['crabid'])
 
-            filter = CrabEventFilter(self.store, info['timezone'])
-            finish['datetime'] = filter.in_timezone(finish['datetime'])
+            filter_ = CrabEventFilter(self.store, info['timezone'])
+            finish['datetime'] = filter_.in_timezone(finish['datetime'])
 
             return self._write_template(
-                'joboutput.html',
-                {'id': id_, 'info': info, 'finish': finish,
-                 'stdout': stdout, 'stderr': stderr,
-                 'next': finishid_next, 'prev': finishid_prev})
+                'joboutput.html', {
+                    'id': id_,
+                    'info': info,
+                    'finish': finish,
+                    'stdout': stdout,
+                    'stderr': stderr,
+                    'next': finishid_next,
+                    'prev': finishid_prev,
+                })
 
         elif command == 'config':
             if submit_relink:
@@ -352,9 +379,12 @@ class CrabWeb(CrabWebBase):
                     orphan = None
 
                 return self._write_template(
-                    'jobconfig.html',
-                    {'id': id_, 'info': info, 'config': config,
-                     'orphan': orphan})
+                    'jobconfig.html', {
+                        'id': id_,
+                        'info': info,
+                        'config': config,
+                        'orphan': orphan,
+                    })
 
         elif command == 'notify':
             if submit_notify:
@@ -389,16 +419,16 @@ class CrabWeb(CrabWebBase):
                         existing.discard(notifyid)
 
                     self.store.write_notification(
-                            notifyid, configid,
-                            None, None,
-                            kwargs['method_' + key],
-                            kwargs['address_' + key],
-                            empty_to_none(kwargs['time_' + key]),
-                            empty_to_none(kwargs['timezone_' + key]),
-                            'include_ok_' + key not in kwargs,
-                            'include_warning_' + key not in kwargs,
-                            'include_error_' + key not in kwargs,
-                            'include_output_' + key in kwargs)
+                        notifyid, configid,
+                        None, None,
+                        kwargs['method_' + key],
+                        kwargs['address_' + key],
+                        empty_to_none(kwargs['time_' + key]),
+                        empty_to_none(kwargs['timezone_' + key]),
+                        'include_ok_' + key not in kwargs,
+                        'include_warning_' + key not in kwargs,
+                        'include_error_' + key not in kwargs,
+                        'include_output_' + key in kwargs)
 
                 # Delete existing notifications which were not present.
                 for notifyid in existing:
@@ -410,15 +440,17 @@ class CrabWeb(CrabWebBase):
 
                 if config is not None:
                     notifications = self.store.get_job_notifications(
-                                        config['configid'])
+                        config['configid'])
                 else:
                     notifications = None
 
                 return self._write_template(
-                    'editnotify.html',
-                    {'match_mode': False,
-                     'id': id_, 'info': info,
-                     'notifications': notifications})
+                    'editnotify.html', {
+                        'match_mode': False,
+                        'id': id_,
+                        'info': info,
+                        'notifications': notifications,
+                    })
 
         else:
             raise HTTPError(404, 'Unknown job command')
@@ -494,27 +526,30 @@ class CrabWeb(CrabWebBase):
                     existing.discard(notifyid)
 
                 self.store.write_notification(
-                        notifyid, None,
-                        empty_to_none(kwargs['host_' + key]),
-                        empty_to_none(kwargs['user_' + key]),
-                        kwargs['method_' + key],
-                        kwargs['address_' + key],
-                        empty_to_none(kwargs['time_' + key]),
-                        empty_to_none(kwargs['timezone_' + key]),
-                        'include_ok_' + key not in kwargs,
-                        'include_warning_' + key not in kwargs,
-                        'include_error_' + key not in kwargs,
-                        'include_output_' + key in kwargs)
+                    notifyid, None,
+                    empty_to_none(kwargs['host_' + key]),
+                    empty_to_none(kwargs['user_' + key]),
+                    kwargs['method_' + key],
+                    kwargs['address_' + key],
+                    empty_to_none(kwargs['time_' + key]),
+                    empty_to_none(kwargs['timezone_' + key]),
+                    'include_ok_' + key not in kwargs,
+                    'include_warning_' + key not in kwargs,
+                    'include_error_' + key not in kwargs,
+                    'include_output_' + key in kwargs)
 
             # Delete existing notifications which were not present.
             for notifyid in existing:
                 self.store.delete_notification(notifyid)
 
             raise HTTPRedirect('/')
+
         else:
-            return self._write_template('editnotify.html',
-                                        {'match_mode': True,
-                                         'notifications': notifications})
+            return self._write_template(
+                'editnotify.html', {
+                    'match_mode': True,
+                    'notifications': notifications,
+                })
 
     @cherrypy.expose
     def dynres(self, name):

@@ -46,11 +46,15 @@ class CrabWebQuery(CrabWebBase):
         from the monitor thread."""
 
         try:
-            s = self.monitor.wait_for_event_since(int(startid),
-                                                  int(alarmid), int(finishid))
-            s['service'] = dict((s, self.service[s].is_alive())
-                                for s in self.service)
+            s = self.monitor.wait_for_event_since(
+                int(startid), int(alarmid), int(finishid))
+
+            s['service'] = dict(
+                (s, self.service[s].is_alive())
+                for s in self.service)
+
             return self.json_encoder.encode(s)
+
         except ValueError:
             raise HTTPError(400, 'Query parameter not an integer')
 
@@ -64,5 +68,5 @@ class CrabWebQuery(CrabWebBase):
         if info is None:
             raise HTTPError(404, 'Job not found')
 
-        info["id"] = id_
+        info['id'] = id_
         return self.json_encoder.encode(info)
