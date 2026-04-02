@@ -1,8 +1,8 @@
 $(document).ready(function () {
-    var events_body = $('#jobevents');
+    var events_table = $('#jobevents');
     var events_form = $('#eventsform');
 
-    var refresh_url = events_body.data('refresh-url');
+    var refresh_url = events_table.data('refresh-url');
 
     var refreshJobEvents = (function (enddate) {
         var params = events_form.serialize();
@@ -15,7 +15,8 @@ $(document).ready(function () {
             dataType: 'html',
             timeout: 10000
         }).done(function (data, text, xhr) {
-            events_body.html(data);
+            events_table.find('tbody').remove();
+            events_table.append(data);
         }).fail(function (xhr, text, error) {
             alert('Failed to retrieve events: ' + text);
         });
@@ -39,6 +40,7 @@ $(document).ready(function () {
     });
 
     $('#eventsprev').click(function (event) {
+        var lastDateTime = events_table.find('tbody').data('last-datetime');
         refreshJobEvents(lastDateTime);
         event.preventDefault();
     });

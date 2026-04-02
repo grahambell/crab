@@ -2,6 +2,7 @@
     from crab import CrabEvent, CrabStatus
     from crab.util.web import server_url as url
 %>
+<tbody data-last-datetime="${lastdatetime | h}">
 % for event in events:
 % if event["type"] == 1:
     <tr id="row_start_${event["eventid"] | h}">
@@ -55,7 +56,4 @@
 % endif
     </tr>
 % endfor
-<script>
-var lastDateTime = '${lastdatetime | h}';
-</script>
-
+</tbody>

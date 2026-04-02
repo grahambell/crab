@@ -158,7 +158,7 @@ Show all
 </form>
 
 
-<table>
+<table id="jobevents" data-refresh-url="${url('/job/{}'.format(id)) | h}">
     <thead>
     <tr>
         <th>Status</th>
@@ -167,7 +167,5 @@ Show all
         <th>Duration</th>
     </tr>
     </thead>
-    <tbody id="jobevents" data-refresh-url="${url('/job/{}'.format(id)) | h}">
 <%include file="jobevents.html" />
-    </tbody>
 </table>
