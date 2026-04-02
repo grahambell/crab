@@ -167,6 +167,8 @@ class CrabWeb(CrabWebBase):
                     'notification': notification,
                     'events': events,
                     'lastdatetime': lastdatetime,
+                    'unfiltered': unfiltered,
+                    'limit': limit,
                 })
 
         elif command == 'clear':

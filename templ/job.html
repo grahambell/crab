@@ -144,16 +144,12 @@ ${noteline | h}</br>
 <form id="eventsform">
 <p>
 <select name="limit">
-<option value="10">10 events</option>
-<option value="20">20 events</option>
-<option value="50">50 events</option>
-<option value="100" selected="selected">100 events</option>
-<option value="200">200 events</option>
-<option value="500">500 events</option>
-<option value="1000">1000 events</option>
+% for numevents in [10, 20, 50, 100, 200, 500, 1000]:
+    <option value="${numevents | h}" ${'selected="selected"' if numevents == limit else ''}>${numevents | h} events</option>
+% endfor
 </select>
 &nbsp; &nbsp;
-<input name="unfiltered" type="checkbox" />
+<input name="unfiltered" type="checkbox" ${'checked="checked"' if unfiltered else ''}/>
 Show all
 &nbsp; &nbsp;
 <a href="#" id="eventsprev"><span class="fa fa-backward"></span> Previous</a>
