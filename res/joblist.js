@@ -243,7 +243,7 @@ $(document).ready(function () {
             setTimeout((function () {
                 refreshStatusCometLoop(0, 0, 0);
                 $('table#joblist').fadeTo(500, 1.0);
-            }), 600000);
+            }), 60000);
             $('table#joblist').fadeTo(500, 0.3);
             if (disconnectFavicon !== null) {
                 setFavicon(disconnectFavicon);
