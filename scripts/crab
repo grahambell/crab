@@ -190,16 +190,22 @@ Commands:
 
     if len(args) == 0:
         parser.error('no command specified')
+    elif len(args) > 1:
+        parser.error('no additional arguments required')
 
-    elif args[0] == 'start' or args[0] in status_commands:
+    # Extract command name from args since we should not be expecting any
+    # other entries.  Not to be confused with options.command (from -c).
+    command = args[0]
+
+    if command == 'start' or command in status_commands:
         if options.command is None:
             parser.error('no command specified')
         else:
             try:
-                if args[0] == 'start':
+                if command == 'start':
                     client.start()
                 else:
-                    status = status_commands[args[0]]
+                    status = status_commands[command]
                     stdoutdata = ''
                     stderrdata = ''
 
@@ -231,11 +237,11 @@ Commands:
                 print(sys.argv[0] + ': ' + str(err))
                 return 1
 
-    elif args[0] == 'import':
+    elif command == 'import':
         return do_import(
             client=client, codec=codec, crontabfile=options.crontabfile)
 
-    elif args[0] == 'edit':
+    elif command == 'edit':
         status = subprocess.call(
             ['crontab', '-e'],
             shell=False,
@@ -248,7 +254,7 @@ Commands:
         print(sys.argv[0] + ': importing crontab')
         return do_import(client=client, codec=codec)
 
-    elif args[0] == 'export':
+    elif command == 'export':
         try:
             crontab = client.fetch_crontab(raw=options.raw)
             print(crontab)
@@ -259,10 +265,10 @@ Commands:
             print(sys.argv[0] + ': failed to fetch crontab: ' + str(err))
             return 1
 
-    elif args[0] == 'help':
+    elif command == 'help':
         parser.print_help()
 
-    elif args[0] == 'info':
+    elif command == 'info':
         print(client.get_info(timezone=guess_timezone(), codec=codec))
 
     else:
