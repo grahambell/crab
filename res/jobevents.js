@@ -1,31 +1,28 @@
-function refreshJobEventsSuccess(data, text, xhr) {
-    $('#jobevents').html(data);
-}
+$(document).ready(function () {
+    var events_body = $('#jobevents');
+    var events_form = $('#eventsform');
 
-function refreshJobEventsError(xhr, text, error) {
-    alert('Failed to retrieve events: ' + text);
-}
+    var refreshJobEvents = (function (enddate) {
+        var params = events_form.serialize();
 
-function refreshJobEvents(enddate) {
-    var params = $('#eventsform').serialize();
+        if (enddate !== null) {
+            params = params + '&enddate=' + encodeURIComponent(enddate);
+        }
 
-    if (enddate !== null) {
-        params = params + '&enddate=' + encodeURIComponent(enddate);
-    }
+        $.ajax('/job/'+ jobidnumber + '?barerows=1&' + params, {
+            dataType: 'html',
+            timeout: 10000
+        }).done(function (data, text, xhr) {
+            events_body.html(data);
+        }).fail(function (xhr, text, error) {
+            alert('Failed to retrieve events: ' + text);
+        });
 
-    $.ajax('/job/'+ jobidnumber + '?barerows=1&' + params, {
-        dateType: 'html',
-        success: refreshJobEventsSuccess,
-        error: refreshJobEventsError,
-        timeout: 10000
+        var stateObj = {'enddate': enddate};
+        history.replaceState(stateObj, '', '/job/' + jobidnumber + '?' + params);
     });
 
-    var stateObj = {'enddate': enddate};
-    history.replaceState(stateObj, '', '/job/' + jobidnumber + '?' + params);
-}
-
-$(document).ready(function () {
-    $('#eventsform').change(function (event) {
+    events_form.change(function (event) {
         if (history.state && ('enddate' in history.state)) {
             refreshJobEvents(history.state.enddate);
         }
