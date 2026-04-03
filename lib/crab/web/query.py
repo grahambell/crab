@@ -19,6 +19,7 @@ from json import JSONEncoder
 
 import cherrypy
 from cherrypy import HTTPError
+import pytz
 
 from crab.util.datetime import format_datetime
 from crab.web import CrabWebBase
@@ -69,4 +70,12 @@ class CrabWebQuery(CrabWebBase):
             raise HTTPError(404, 'Job not found')
 
         info['id'] = id_
+        return self.json_encoder.encode(info)
+
+    @cherrypy.expose
+    def timezones(self):
+        """CherryPy handler to return a list of timezones."""
+
+        info = list(pytz.common_timezones)
+
         return self.json_encoder.encode(info)

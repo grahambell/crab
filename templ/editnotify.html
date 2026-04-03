@@ -1,6 +1,5 @@
 <%!
     from mako.runtime import capture
-    import pytz
 
     from crab.util.string import mergelines
     from crab.util.web import abbr, server_url as url
@@ -66,19 +65,12 @@
             value=""
 % endif
         /></td>
-    <td><select name="timezone_${nid | h}">
+    <td><select name="timezone_${nid | h}" data-selected="${(n.get('timezone') if n.get('timezone') is not None else '') | h}">
         <option value=""
 % if n.get('timezone') is None:
             selected="selected"
 % endif
         >Unspecified</option>
-% for tz in pytz.common_timezones:
-        <option value="${tz | h}"
-% if tz == n.get('timezone'):
-            selected="selected"
-% endif
-        >${tz | h}</option>
-% endfor
     </select></td>
     <td><input name="include_ok_${nid | h}" type="checkbox"
 % if not n.get('skip_ok'):
@@ -137,7 +129,7 @@ by host name and/or by user name on the
 % else:
 <form method="post" action="${url('/job/{}/notify'.format(id)) | h}">
 % endif
-<table id="notifylist" data-row-template="${capture(context, notifyrow, {'notifyid': 'XXX'}) | h}">
+<table id="notifylist" data-timezone-url="${url('/query/timezones') | h}" data-row-template="${capture(context, notifyrow, {'notifyid': 'XXX'}) | h}">
 <tr>
 % if match_mode:
     <th>Host name</th>

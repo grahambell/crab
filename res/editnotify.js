@@ -3,6 +3,21 @@ $(document).ready(function () {
     var notifyrowtemplate = notify_table.data('row-template');
 
     var newRowNumber = 1;
+    var timezones = null;
+
+    var addTimezoneOptions = (function (select) {
+        if (timezones !== null) {
+            for (var i = 0; i < timezones.length; i ++) {
+                var timezone = timezones[i];
+                select.append($('<option/>', {'text': timezone, 'value': timezone}));
+            }
+
+            var selected = select.data('selected');
+            if (selected !== '') {
+                select.val(selected);
+            }
+        }
+    });
 
     var deleteRow = (function (notifyid) {
         var response = confirm(
@@ -18,6 +33,8 @@ $(document).ready(function () {
 
         notify_table.append(notifyrowtemplate.replace(new RegExp('XXX', 'g'), nid));
 
+        addTimezoneOptions($('select[name="timezone_' + nid + '"]'));
+
         $('#delete_' + nid).click(function (event) {
             deleteRow(nid);
             event.preventDefault();
@@ -32,5 +49,15 @@ $(document).ready(function () {
         deleteRow(nid);
 
         event.preventDefault();
+    });
+
+    $.ajax(notify_table.data('timezone-url'), {
+        dataType: 'json',
+    }).done(function (data) {
+        timezones = data;
+
+        $('select[name^="timezone_"]').each(function () {
+            addTimezoneOptions($(this));
+        });
     });
 });
