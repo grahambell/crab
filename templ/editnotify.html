@@ -1,4 +1,5 @@
 <%!
+    from mako.runtime import capture
     import pytz
 
     from crab.util.string import mergelines
@@ -136,7 +137,7 @@ by host name and/or by user name on the
 % else:
 <form method="post" action="${url('/job/{}/notify'.format(id)) | h}">
 % endif
-<table id="notifylist">
+<table id="notifylist" data-row-template="${capture(context, notifyrow, {'notifyid': 'XXX'}) | h}">
 <tr>
 % if match_mode:
     <th>Host name</th>
@@ -165,8 +166,3 @@ by host name and/or by user name on the
 <input type="submit" name="submit_notify" value="Configure" />
 </p>
 </form>
-
-<script>
-<% n = {'notifyid': 'XXX'} %>
-var notifyrowtemplate = '${notifyrow(n)}';
-</script>

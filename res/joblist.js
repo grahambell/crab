@@ -2,6 +2,9 @@ $(document).ready(function () {
     var sortByStatus = false;
     var disconnectFavicon = null;
 
+    var jobs_table = $('#joblist');
+    var joblistrowtemplate = jobs_table.data('row-template');
+
     var jobs_body = $('#joblistbody');
     var refresh_url = jobs_body.data('refresh-url');
     var info_url = jobs_body.data('info-url');

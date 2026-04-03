@@ -1,4 +1,7 @@
 $(document).ready(function () {
+    var notify_table = $('table#notifylist');
+    var notifyrowtemplate = notify_table.data('row-template');
+
     var newRowNumber = 1;
 
     var deleteRow = (function (notifyid) {
@@ -13,7 +16,7 @@ $(document).ready(function () {
     $('#add_notification').click(function (event) {
         var nid = 'new_' + (newRowNumber ++);
 
-        $('table#notifylist').append(notifyrowtemplate.replace(new RegExp('XXX', 'g'), nid));
+        notify_table.append(notifyrowtemplate.replace(new RegExp('XXX', 'g'), nid));
 
         $('#delete_' + nid).click(function (event) {
             deleteRow(nid);

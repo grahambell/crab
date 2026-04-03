@@ -1,4 +1,6 @@
 <%!
+    from mako.runtime import capture
+
     from crab.util.string import mergelines
     from crab.util.web import abbr, server_url as url
 
@@ -37,7 +39,7 @@
 
 <h2>Dashboard</h2>
 
-<table id="joblist">
+<table id="joblist" data-row-template="${capture(context, joblistrow, {'id': 'XXX'}) | h}">
     <thead id="joblisthead">
     <tr>
         <th><span id="preheadingstatus"></span><a href="#" id="headingstatus">Status</a></th>
@@ -54,11 +56,6 @@
 % endfor
     </tbody>
 </table>
-
-<script>
-<% job = {'id': 'XXX'} %>
-var joblistrowtemplate = '${joblistrow(job)}';
-</script>
 
 <ul id="service_status" data-icon-disconnect="${url('/res/favicon-disconnect.png') | h}" data-icon-ok="${url('/res/favicon.png') | h}" data-icon-warning="${url('/res/favicon-warn.png') | h}" data-icon-error="${url('/res/favicon-error.png') | h}" data-icon-stopped="${url('/res/favicon-stopped.png') | h}"></ul>
 
