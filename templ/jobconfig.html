@@ -29,20 +29,12 @@
     <ol>
         <li>
             <label for="graceperiod">Grace period</label>
-            <input type="text" name="graceperiod"
-% if config is not None and config['graceperiod'] is not None:
-                value="${config['graceperiod'] | h}"
-% endif
-            />
+            <input type="text" name="graceperiod" value="${(config['graceperiod'] if (config is not None and config['graceperiod'] is not None) else '') | h}" />
             minutes
         </li>
         <li>
             <label for="timeout">Time-out</label>
-            <input type="text" name="timeout"
-% if config is not None and config['timeout'] is not None:
-                value="${config['timeout'] | h}"
-% endif
-            />
+            <input type="text" name="timeout" value="${(config['timeout'] if (config is not None and config['timeout'] is not None) else '') | h}" />
             minutes
         </li>
     </ol>
@@ -52,27 +44,15 @@
     <ol>
         <li>
             <label for="success_pattern">Success pattern</label>
-            <input type="text" name="success_pattern" size="30"
-% if config is not None and config['success_pattern'] is not None:
-                value="${config['success_pattern'] | h}"
-% endif
-            />
+            <input type="text" name="success_pattern" size="30" value="${(config['success_pattern'] if (config is not None and config['success_pattern'] is not None) else '') | h}" />
         </li>
         <li>
             <label for="warning_pattern">Warning pattern</label>
-            <input type="text" name="warning_pattern" size="30"
-% if config is not None and config['warning_pattern'] is not None:
-                value="${config['warning_pattern'] | h}"
-% endif
-            />
+            <input type="text" name="warning_pattern" size="30" value="${(config['warning_pattern'] if (config is not None and config['warning_pattern'] is not None) else '') | h}" />
         </li>
         <li>
             <label for="fail_pattern">Failure pattern</label>
-            <input type="text" name="fail_pattern" size="30"
-% if config is not None and config['fail_pattern'] is not None:
-                value="${config['fail_pattern'] | h}"
-% endif
-            />
+            <input type="text" name="fail_pattern" size="30" value="${(config['fail_pattern'] if (config is not None and config['fail_pattern'] is not None) else '') | h}" />
         </li>
     </ol>
     <p>
@@ -81,11 +61,7 @@
     <ol>
         <li>
             <label for="note">Notes</label>
-% if config is not None and config['note'] is not None:
-            <textarea name="note" rows="5" cols="40">${config['note'] | h}</textarea>
-% else:
-            <textarea name="note" rows="5" cols="40"></textarea>
-% endif
+            <textarea name="note" rows="5" cols="40">${(config['note'] if (config is not None and config['note'] is not None) else '') | h}</textarea>
         </li>
     </ol>
     <p>
@@ -94,11 +70,7 @@
     <ol>
         <li>
             <label for="inhibit">Inhibit execution</label>
-% if config is not None and config['inhibit']:
-            <input name="inhibit" type="checkbox" checked="checked" />
-% else:
-            <input name="inhibit" type="checkbox" />
-% endif
+            <input name="inhibit" type="checkbox" ${'checked="checked"' if (config is not None and config['inhibit']) else ''} />
         </li>
         <li>
             <label for="submit_config">&nbsp;</label>
@@ -142,12 +114,7 @@ transferred by selecting it for re-linking.
 
 <p>
     <a href="${url('/job/{}/delete'.format(id)) | h}"><span class="fa fa-trash"></span>
-% if info['deleted'] is None:
-        Delete
-% else:
-        Undelete
-% endif
-        job.
+        ${('Delete' if info['deleted'] is None else 'Undelete') | h} job.
     </a>
 </p>
 
@@ -157,13 +124,7 @@ transferred by selecting it for re-linking.
      <ol>
         <li>
             <label for="crabid">New Job ID</label>
-            <input type="text" name="crabid"
-% if info['crabid'] is not None:
-                value="${info['crabid'] | h}"
-% else:
-                value=""
-% endif
-            />
+            <input type="text" name="crabid" value="${(info['crabid'] if info['crabid'] is not None else '') | h}" />
         </li>
         <li>
             <label for="submit_change">&nbsp;</label>

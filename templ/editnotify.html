@@ -23,75 +23,27 @@
 
 <%def name="notifyrow(n)" filter="mergelines">
 <%
-          nid = n['notifyid']
+      nid = n['notifyid']
 %>
 <tr id="row_${nid | h}">
 % if match_mode:
-    <td><input type="text" name="host_${nid | h}"
-%     if n.get('host') is not None:
-            value="${n['host'] | h}"
-%     else:
-            value=""
-%     endif
-    /></td>
-    <td><input type="text" name="user_${nid | h}"
-%     if n.get('user') is not None:
-            value="${n['user'] | h}"
-%     else:
-            value=""
-%     endif
-    /></td>
+    <td><input type="text" name="host_${nid | h}" value="${(n['host'] if n.get('host') is not None else '') | h}" /></td>
+    <td><input type="text" name="user_${nid | h}" value="${(n['user'] if n.get('user') is not None else '') | h}" /></td>
 % endif
     <td><select name="method_${nid | h}">
 % for (method, methodname) in [('email', 'Email')]:
-        <option value="${method}"
-% if method == n.get('method'):
-            selected="selected"
-% endif
-        >${methodname}</option>
+        <option value="${method}" ${'selected="selected"' if method == n.get('method') else ''}>${methodname}</option>
 % endfor
     </select></td>
-    <td><input type="text" id="address_${nid | h}" name="address_${nid | h}"
-% if n.get('address') is not None:
-            value="${n['address'] | h}"
-% else:
-            value=""
-% endif
-        /></td>
-    <td><input type="text" name="time_${nid | h}"
-% if n.get('time') is not None:
-            value="${n['time'] | h}"
-% else:
-            value=""
-% endif
-        /></td>
+    <td><input type="text" id="address_${nid | h}" name="address_${nid | h}" value="${(n['address'] if n.get('address') is not None else '') | h}" /></td>
+    <td><input type="text" name="time_${nid | h}" value="${(n['time'] if n.get('time') is not None else '') | h}" /></td>
     <td><select name="timezone_${nid | h}" data-selected="${(n.get('timezone') if n.get('timezone') is not None else '') | h}">
-        <option value=""
-% if n.get('timezone') is None:
-            selected="selected"
-% endif
-        >Unspecified</option>
+        <option value="" ${'selected="selected"' if n.get('timezone') is None else ''}>Unspecified</option>
     </select></td>
-    <td><input name="include_ok_${nid | h}" type="checkbox"
-% if not n.get('skip_ok'):
-        checked="checked"
-% endif
-    /></td>
-    <td><input name="include_warning_${nid | h}" type="checkbox"
-% if not n.get('skip_warning'):
-        checked="checked"
-% endif
-    /></td>
-    <td><input name="include_error_${nid | h}" type="checkbox"
-% if not n.get('skip_error'):
-        checked="checked"
-% endif
-    /></td>
-    <td><input name="include_output_${nid | h}" type="checkbox"
-% if n.get('include_output'):
-        checked="checked"
-% endif
-    /></td>
+    <td><input name="include_ok_${nid | h}" type="checkbox" ${'' if n.get('skip_ok') else 'checked="checked"'} /></td>
+    <td><input name="include_warning_${nid | h}" type="checkbox" ${'' if n.get('skip_warning') else 'checked="checked"'} /></td>
+    <td><input name="include_error_${nid | h}" type="checkbox" ${'' if n.get('skip_error') else 'checked="checked"'} /></td>
+    <td><input name="include_output_${nid | h}" type="checkbox" ${'checked="checked"' if n.get('include_output') else ''} /></td>
     <td class="linkcell">
         <a href="#" id="delete_${nid | h}"><span class="fa fa-trash"></span> Delete</a>
     </td>

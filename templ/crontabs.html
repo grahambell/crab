@@ -15,14 +15,7 @@
 </%block>
 
 % for (key, joblist) in sorted(jobs.items()):
-<h2>
-% if user is None:
-<a href="${url('/user/{}'.format(key)) | h}">
-% else:
-<a href="${url('/host/{}'.format(key)) | h}">
-% endif
-${key | h}
-</a></h2>
+<h2><a href="${(url('/user/{}'.format(key)) if user is None else url('/host/{}'.format(key))) | h}">${key | h}</a></h2>
 
 <% hasDeleted = False %>
 <table id="table_${key | alphanum}">
