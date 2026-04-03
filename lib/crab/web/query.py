@@ -73,6 +73,7 @@ class CrabWebQuery(CrabWebBase):
         return self.json_encoder.encode(info)
 
     @cherrypy.expose
+    @cherrypy.tools.expires(secs=3600, force=True)
     def timezones(self):
         """CherryPy handler to return a list of timezones."""
 

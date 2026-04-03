@@ -555,6 +555,7 @@ class CrabWeb(CrabWebBase):
                 })
 
     @cherrypy.expose
+    @cherrypy.tools.expires(secs=3600, force=True)
     def dynres(self, name):
         if name == 'crabutil.js':
             return self._write_template('dynres/crabutil.js', {})

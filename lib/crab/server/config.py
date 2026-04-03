@@ -97,6 +97,8 @@ def read_crabd_config():
             'woff': 'application/font-woff',
             'woff2': 'font/woff2',
         },
+        'tools.expires.on': True,
+        'tools.expires.secs': 3600,
     }
 
     if 'base_url' not in config['crab'] or config['crab']['base_url'] is None:
