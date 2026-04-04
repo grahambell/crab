@@ -14,11 +14,14 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from codecs import latin_1_encode, latin_1_decode
-# ConfigParser renamed in Python 3
+# ConfigParser renamed in Python 3, SafeConfigParser removed in 3.12
 try:
-    from configparser import SafeConfigParser
-except:
-    from ConfigParser import SafeConfigParser
+    from configparser import SafeConfigParser as ConfigParser
+except ImportError:
+    try:
+        from configparser import ConfigParser
+    except ImportError:
+        from ConfigParser import SafeConfigParser as ConfigParser
 # Workaround lack of JSON in Python 2.4
 try:
     import json
@@ -63,7 +66,7 @@ class CrabClient:
         self.command = command
         self.crabid = crabid
 
-        self.config = SafeConfigParser()
+        self.config = ConfigParser()
         self.config.add_section('server')
         self.config.set('server', 'host', 'localhost')
         self.config.set('server', 'port', '8000')
