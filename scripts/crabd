@@ -106,6 +106,10 @@ def main():
         '--passive',
         action='store_true', dest='passive',
         help='Run passive server (passive monitor, no notifications)')
+    parser.add_option(
+        '--debug',
+        action='store_true', dest='debug',
+        help='Run web server in development mode (e.g. show backtraces)')
 
     (options, args) = parser.parse_args()
     if len(args) != 0:
@@ -204,6 +208,11 @@ def main():
             config=config['clean']).subscribe()
 
     cherrypy.config.update(config)
+
+    if not options.debug:
+        cherrypy.config.update({
+            'environment': 'production',
+        })
 
     web = CrabWeb(
         config['crab']['home'], {})
