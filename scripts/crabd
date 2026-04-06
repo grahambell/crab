@@ -214,6 +214,20 @@ def main():
             'environment': 'production',
         })
 
+    # Add tool to read the X-Script-Name request header to allow reverse proxy.
+    @cherrypy.tools.register('before_handler')
+    def set_script_name():
+        req = cherrypy.request
+        script = req.headers.get('X-Script-Name')
+        if script is not None:
+            req.script_name = script
+            req.wsgi_environ['SCRIPT_NAME'] = script
+
+    cherrypy.config.update({
+        'tools.proxy.on': True,
+        'tools.set_script_name.on': True,
+    })
+
     web = CrabWeb(
         config['crab']['home'], {})
     web.subscribe()
