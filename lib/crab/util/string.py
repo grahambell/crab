@@ -99,7 +99,7 @@ def split_crab_vars(command):
     Returns: a tuple consisting of the remainder of the command and
     a dictionary of Crab's environment variables."""
 
-    crabvar = re.compile('^(CRAB[A-Z]+)=')
+    crabvar = re.compile(r'^(CRAB[A-Z]+)=')
     vars = {}
 
     while True:
@@ -122,7 +122,7 @@ def alphanum(value):
     'a3_s__x9_t'
     """
 
-    return re.sub('[^a-zA-Z0-9]', '_', value)
+    return re.sub(r'[^a-zA-Z0-9]', '_', value)
 
 
 def mergelines(text):

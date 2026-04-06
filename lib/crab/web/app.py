@@ -409,7 +409,7 @@ class CrabWeb(CrabWebBase):
 
                 # Update existing notifications.
                 for kwarg in kwargs:
-                    match = re.search('method_(new_)?(\d+)', kwarg)
+                    match = re.search(r'method_(new_)?(\d+)', kwarg)
                     if not match:
                         continue
 
@@ -516,7 +516,7 @@ class CrabWeb(CrabWebBase):
 
             # Update existing notifications.
             for kwarg in kwargs:
-                match = re.search('method_(new_)?(\d+)', kwarg)
+                match = re.search(r'method_(new_)?(\d+)', kwarg)
                 if not match:
                     continue
 

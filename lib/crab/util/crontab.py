@@ -21,11 +21,11 @@ from crab.util.string import \
 
 # These patterns do not deal with quoting or trailing spaces,
 # so these must be dealt with in the parse_crontab function.
-blankline = re.compile('^\s*$')
-comment = re.compile('^\s*#')
-variable = re.compile('^\s*(\w+)\s*=\s*(.*)$')
-cronrule = re.compile('^\s*(@\w+|\S+\s+\S+\s+\S+\s+\S+\s+\S+)\s+(.*)$')
-plain_percent = re.compile('(?<!\\\\)%')
+blankline = re.compile(r'^\s*$')
+comment = re.compile(r'^\s*#')
+variable = re.compile(r'^\s*(\w+)\s*=\s*(.*)$')
+cronrule = re.compile(r'^\s*(@\w+|\S+\s+\S+\s+\S+\s+\S+\s+\S+)\s+(.*)$')
+plain_percent = re.compile(r'(?<!\\)%')
 
 
 def parse_crontab(crontab, timezone=None):

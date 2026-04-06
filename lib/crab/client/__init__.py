@@ -370,7 +370,7 @@ class CrabClient:
 
         try:
             body = latin_1_decode(res.read(), 'replace')[0]
-            match = re.search('<p>([^<]*)', body)
+            match = re.search(r'<p>([^<]*)', body)
             if match:
                 message = match.group(1)
         except:

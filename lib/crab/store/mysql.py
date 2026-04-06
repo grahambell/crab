@@ -38,10 +38,10 @@ class CrabStoreMySQLCursor(MySQLCursor):
         written for SQLite."""
 
         # Replace placeholders.
-        query = re.sub('\?', '%s', query)
+        query = re.sub(r'\?', '%s', query)
 
         # Remove column type instructions.
-        query = re.sub('AS "([a-z]+) \[timestamp\]"', '', query)
+        query = re.sub(r'AS "([a-z]+) \[timestamp\]"', '', query)
 
         return MySQLCursor.execute(self, query, params)
 

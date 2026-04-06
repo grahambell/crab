@@ -41,7 +41,7 @@ def guess_timezone():
     # Before reading /etc/localtime, see if it is a symlink.
     try:
         link = os.readlink('/etc/localtime')
-        m = re.search('/share/zoneinfo/([-_A-Za-z0-9/]+)$', link)
+        m = re.search(r'/zoneinfo/([-_A-Za-z0-9/]+)$', link)
         if m:
             zone = m.group(1)
             if zone in pytz.all_timezones:
