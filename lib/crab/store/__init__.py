@@ -1,5 +1,5 @@
 # Copyright (C) 2012 Science and Technology Facilities Council.
-# Copyright (C) 2015-2016 East Asian Observatory.
+# Copyright (C) 2015-2026 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -80,7 +80,8 @@ class CrabStore:
         unless both stdout and stderr are empty."""
 
         with self.lock as c:
-            id_ = self._check_job(c, host, user, crabid, command)
+            id_ = self._check_job(
+                c, host, user, crabid, command, no_undelete=True)
 
             # Fetch the configuration so that we can check the status.
             config = self._get_job_config(c, id_)
@@ -232,13 +233,20 @@ class CrabStore:
 
     def _check_job(
             self, c, host, user, crabid, command,
-            time=None, timezone=None):
+            time=None, timezone=None,
+            no_undelete=False):
         """Ensure that a job exists in the store.
 
         Tries to find (and update if necessary) the corresponding job.
         If it is not found, the job is stored as a new entry.
 
         In either case, the job's ID number is returned.
+
+        If the `no_undelete` option is True, when determining whether
+        to update the job, do not do so if the only difference is that
+        the job is deleted.  (Currently this only affects the decision
+        of whether to update the job or not, so it may be undeleted
+        if something else changed.)
 
         This is a private method because the lock must be acquired
         prior to calling it."""
@@ -256,7 +264,7 @@ class CrabStore:
                 job = jobs[0]
                 id_ = job['id']
 
-                if (job['deleted'] is None and
+                if ((job['deleted'] is None or no_undelete) and
                         command == job['command'] and
                         (time is None or time == job['time']) and
                         (timezone is None or timezone == job['timezone'])):
@@ -297,7 +305,7 @@ class CrabStore:
                 job = jobs[0]
                 id_ = job['id']
 
-                if (job['deleted'] is None and
+                if ((job['deleted'] is None or no_undelete) and
                         (time is None or time == job['time']) and
                         (timezone is None or timezone == job['timezone'])):
                     pass

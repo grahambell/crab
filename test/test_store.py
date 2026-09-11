@@ -37,3 +37,55 @@ class JobIdentifyTestCase(CrabDBTestCase):
 
         id_ = self.store.check_job('host1', 'user1', 'crabid3', 'command4')
         self.assertEqual(id_, 7, 'New ID should create  another new job')
+
+    def test_undelete(self):
+        """Test that _check_job undeletes jobs when desired."""
+
+        # Create job via check - should not be deleted.
+        id_ = self.store.check_job('host1', 'user1', 'crabid1', 'command1')
+        self.assertEqual(id_, 1, 'Job should have ID 1')
+
+        jobs = self.store.get_jobs(crabid='crabid1', include_deleted=True)
+        self.assertTrue(len(jobs) == 1 and jobs[0]['deleted'] is None)
+
+        # Delete job - should be deleted.
+        self.store.delete_job(id_)
+
+        jobs = self.store.get_jobs(crabid='crabid1', include_deleted=True)
+        self.assertTrue(len(jobs) == 1 and jobs[0]['deleted'] is not None)
+
+        # Check via crabid, should undelete.
+        result = self.store.check_job('host1', 'user1', 'crabid1', 'command1')
+        self.assertEqual(id_, 1, 'Job should have ID 1')
+
+        jobs = self.store.get_jobs(crabid='crabid1', include_deleted=True)
+        self.assertTrue(len(jobs) == 1 and jobs[0]['deleted'] is None)
+
+        # Delete job.
+        self.store.delete_job(id_)
+
+        # Check via command, should undelete.
+        result = self.store.check_job('host1', 'user1', None, 'command1')
+        self.assertEqual(id_, 1, 'Job should have ID 1')
+
+        jobs = self.store.get_jobs(crabid='crabid1', include_deleted=True)
+        self.assertTrue(len(jobs) == 1 and jobs[0]['deleted'] is None)
+
+        # Delete job.
+        self.store.delete_job(id_)
+
+        # Check via crabid with no_undelete, should not undelete.
+        result = self.store.check_job(
+            'host1', 'user1', 'crabid1', 'command1', no_undelete=True)
+        self.assertEqual(id_, 1, 'Job should have ID 1')
+
+        jobs = self.store.get_jobs(crabid='crabid1', include_deleted=True)
+        self.assertTrue(len(jobs) == 1 and jobs[0]['deleted'] is not None)
+
+        # Check via command with no_undelete, should not undelete.
+        result = self.store.check_job(
+            'host1', 'user1', None, 'command1', no_undelete=True)
+        self.assertEqual(id_, 1, 'Job should have ID 1')
+
+        jobs = self.store.get_jobs(crabid='crabid1', include_deleted=True)
+        self.assertTrue(len(jobs) == 1 and jobs[0]['deleted'] is not None)
