@@ -1,3 +1,6 @@
+from datetime import datetime, timedelta, UTC
+from crab import CrabStatus
+
 from . import CrabDBTestCase
 
 
@@ -89,3 +92,23 @@ class JobIdentifyTestCase(CrabDBTestCase):
 
         jobs = self.store.get_jobs(crabid='crabid1', include_deleted=True)
         self.assertTrue(len(jobs) == 1 and jobs[0]['deleted'] is not None)
+
+    def test_timestamp(self):
+        now = datetime.now(UTC)
+
+        id_ = self.store.check_job(
+            'testhost', 'testuser', None, 'command')
+        self.store.log_start(
+            'testhost', 'testuser', id_, 'command')
+        self.store.log_finish(
+            'testhost', 'testuser', id_, 'command',
+            CrabStatus.SUCCESS, 'stdout', 'stderr')
+
+        fs = self.store.get_job_finishes(id_, 1)
+        self.assertEqual(len(fs), 1)
+        f = fs[0]
+        timestamp = f['datetime']
+
+        self.assertIsInstance(timestamp, datetime)
+        diff = timestamp - now
+        self.assertLess(abs(diff.total_seconds()), 2)

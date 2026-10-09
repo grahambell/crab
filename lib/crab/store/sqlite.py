@@ -1,5 +1,5 @@
 # Copyright (C) 2012 Science and Technology Facilities Council.
-# Copyright (C) 2015-2016 East Asian Observatory.
+# Copyright (C) 2015-2026 East Asian Observatory.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,13 +14,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from codecs import ascii_decode
 from contextlib import closing
+from datetime import datetime
 import os
 import pytz
 
 import sqlite3
 
 from crab.store.db import CrabStoreDB, CrabDBLock
+
+
+def convert_timestamp(val):
+    """Timetamp converter from example in sqlite3 module documentation."""
+
+    return datetime.fromisoformat(ascii_decode(val)[0])
+
+
+sqlite3.register_converter('timestamp', convert_timestamp)
 
 
 class CrabStoreSQLite(CrabStoreDB):
