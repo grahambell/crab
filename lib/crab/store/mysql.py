@@ -22,17 +22,24 @@ import mysql.connector
 from mysql.connector.errors import Error as _MySQLError
 from mysql.connector.cursor import MySQLCursor
 
+have_c_ext = True
+try:
+    from mysql.connector.connection_cext import CMySQLConnection
+    from mysql.connector.cursor_cext import CMySQLCursor
+except ImportError:
+    have_c_ext = False
+
 from crab.store.db import CrabStoreDB, CrabDBLock
 
 
-class CrabStoreMySQLCursor(MySQLCursor):
+class _CrabStoreMySQLCursor(object):
     """MySQL compatability cursor class."""
 
     def execute(self, query, params):
         """Execute an SQL query.
 
         This method prepares the query for use with MySQL and then
-        calls the (superclass) MySQLCursor.execute method.
+        calls the (superclass) execute method.
 
         This is for compatability with SQL statements which were
         written for SQLite."""
@@ -43,7 +50,16 @@ class CrabStoreMySQLCursor(MySQLCursor):
         # Remove column type instructions.
         query = re.sub(r'AS "([a-z]+) \[timestamp\]"', '', query)
 
-        return MySQLCursor.execute(self, query, params)
+        return super(_CrabStoreMySQLCursor, self).execute(query, params)
+
+
+class CrabStoreMySQLCursor(_CrabStoreMySQLCursor, MySQLCursor):
+    """Cursor for MySQL Connector's pure-Python connection."""
+
+
+if have_c_ext:
+    class CrabStoreCMySQLCursor(_CrabStoreMySQLCursor, CMySQLCursor):
+        """Cursor for MySQL Connector's C-extension connection."""
 
 
 class CrabStoreMySQL(CrabStoreDB):
@@ -60,6 +76,11 @@ class CrabStoreMySQL(CrabStoreDB):
             self,
             lock=CrabDBLock(
                 conn, error_class=_MySQLError,
-                cursor_args={'cursor_class': CrabStoreMySQLCursor},
+                cursor_args={
+                    'cursor_class':
+                        CrabStoreCMySQLCursor
+                        if (have_c_ext and isinstance(conn, CMySQLConnection))
+                        else CrabStoreMySQLCursor
+                },
                 ping=True),
             outputstore=outputstore)
